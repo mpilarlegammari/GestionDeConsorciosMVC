@@ -6,12 +6,12 @@ public class GestionConsorciosContext : DbContext
     public DbSet<UnidadFuncional> UnidadesFuncionales { get; set; }
     public DbSet<Gasto> Gastos { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer(
             @"Server=DESKTOP-MPILARL;Database=GestionConsorciosDB;Trusted_Connection=True;TrustServerCertificate=True;"
         );
-    }
+    }*]*/
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
