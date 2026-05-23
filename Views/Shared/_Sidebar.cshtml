@@ -1,0 +1,69 @@
+@{
+    var currentPath = Context.Request.Path.Value ?? "/";
+    var currentRole = (ViewData["Role"] as string ?? "Administrador").Trim();
+
+    var adminItems = new[]
+    {
+        new { Text = "Inicio", Url = Url.Action("Index", "Home") ?? "/", Key = "/" },
+        new { Text = "Consorcios", Url = "/Consorcios", Key = "/Consorcios" },
+        new { Text = "Gastos", Url = "/Gastos", Key = "/Gastos" },
+        new { Text = "Expensas", Url = "/Expensas", Key = "/Expensas" },
+        new { Text = "Comunicados", Url = "/Comunicados", Key = "/Comunicados" },
+        new { Text = "Reclamos", Url = "/Reclamos", Key = "/Reclamos" },
+        new { Text = "Reservas", Url = "/Reservas", Key = "/Reservas" },
+        new { Text = "Configuracion", Url = "/Configuracion", Key = "/Configuracion" }
+    };
+
+    var propietarioItems = new[]
+    {
+        new { Text = "Inicio", Url = Url.Action("Index", "Home") ?? "/", Key = "/" },
+        new { Text = "Expensas", Url = "/Expensas/MisExpensas", Key = "/Expensas/MisExpensas" },
+        new { Text = "Pagos", Url = "/Pagos/MisPagos", Key = "/Pagos/MisPagos" },
+        new { Text = "Informar pago", Url = "/Pagos/InformarPago", Key = "/Pagos/InformarPago" },
+        new { Text = "Gastos", Url = "/Gastos", Key = "/Gastos" },
+        new { Text = "Comunicados", Url = "/Comunicados/MisComunicados", Key = "/Comunicados/MisComunicados" },
+        new { Text = "Reclamos", Url = "/Reclamos", Key = "/Reclamos" },
+        new { Text = "Reservas", Url = "/Reservas", Key = "/Reservas" }
+    };
+
+    var menuItems = currentRole.Equals("Propietario", StringComparison.OrdinalIgnoreCase) ? propietarioItems : adminItems;
+}
+
+<aside class="app-sidebar" data-sidebar>
+    <div class="sidebar-brand">
+        <a class="brand-link" asp-area="" asp-controller="Home" asp-action="Index">
+            <span class="brand-mark">GC</span>
+            <span>
+                <strong>Gestion</strong>
+                <small>de Consorcios</small>
+            </span>
+        </a>
+    </div>
+
+    <div class="sidebar-section">
+        <span class="sidebar-label">Menu @currentRole</span>
+        <nav class="sidebar-nav" aria-label="Menu principal">
+            @foreach (var item in menuItems)
+            {
+                var isHome = item.Key == "/" && (currentPath == "/" || currentPath.StartsWith("/Home", StringComparison.OrdinalIgnoreCase));
+                var isActive = isHome || (item.Key != "/" && currentPath.StartsWith(item.Key, StringComparison.OrdinalIgnoreCase));
+
+                <a class="sidebar-link @(isActive ? "active" : "")" href="@item.Url">
+                    <span class="sidebar-link-icon">@item.Text.Substring(0, 1)</span>
+                    <span>@item.Text</span>
+                </a>
+            }
+        </nav>
+    </div>
+
+    <div class="sidebar-footer">
+        <span class="sidebar-label">Estado</span>
+        <div class="role-card">
+            <span class="status-dot"></span>
+            <div>
+                <strong>Rol mock</strong>
+                <small>@currentRole</small>
+            </div>
+        </div>
+    </div>
+</aside>

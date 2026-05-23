@@ -1,0 +1,28 @@
+@{
+    var pageTitle = ViewData["Title"] as string ?? "Inicio";
+    var currentRole = ViewData["Role"] as string ?? "Administrador";
+}
+
+<header class="app-header">
+    <button class="sidebar-toggle" type="button" data-sidebar-toggle aria-label="Abrir menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <div class="header-title">
+        <span>Sistema de Gestion de Consorcios</span>
+        <h1>@pageTitle</h1>
+    </div>
+
+    <div class="header-actions">
+        <div class="role-switcher" aria-label="Rol actual de visualizacion">
+            <span>Vista</span>
+            <strong>@currentRole</strong>
+        </div>
+        <div class="user-chip">
+            <span class="user-avatar">US</span>
+            <span>Usuario mock</span>
+        </div>
+    </div>
+</header>

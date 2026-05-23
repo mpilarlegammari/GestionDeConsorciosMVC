@@ -1,8 +1,123 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Inicio";
+    ViewData["Role"] = "Administrador";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="page-intro">
+    <div>
+        <h2>Dashboard de administracion</h2>
+        <p>
+            Resumen visual del sistema inspirado en la referencia de Figma. Usa datos mock para validar
+            la estructura base, los componentes reutilizables y el comportamiento responsive.
+        </p>
+    </div>
+    <a class="btn btn-primary" href="/Auth/Login">Ir a login mock</a>
+</section>
+
+<section class="dashboard-grid" aria-label="Indicadores principales">
+    <article class="app-card metric-card">
+        <span>Consorcios activos</span>
+        <strong>8</strong>
+        <small>+2 este mes</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Expensas pendientes</span>
+        <strong>24</strong>
+        <small>Datos mock</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Reclamos abiertos</span>
+        <strong>12</strong>
+        <small>3 urgentes</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Reservas del mes</span>
+        <strong>17</strong>
+        <small>SUM y terraza</small>
+    </article>
+</section>
+
+<section class="quick-actions" aria-label="Accesos rapidos">
+    <a class="quick-action" href="/Consorcios">
+        <span class="quick-action-icon">C</span>
+        <span>
+            <strong>Consorcios</strong>
+            <span>Gestionar edificios y unidades</span>
+        </span>
+    </a>
+    <a class="quick-action" href="/Expensas">
+        <span class="quick-action-icon">E</span>
+        <span>
+            <strong>Expensas</strong>
+            <span>Consultar y generar periodos</span>
+        </span>
+    </a>
+    <a class="quick-action" href="/Reclamos">
+        <span class="quick-action-icon">R</span>
+        <span>
+            <strong>Reclamos</strong>
+            <span>Seguimiento de solicitudes</span>
+        </span>
+    </a>
+</section>
+
+<section class="content-grid">
+    <article class="app-card">
+        <div class="app-card-title">
+            <h3>Actividad reciente</h3>
+            <span class="status-badge">Datos mock</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-clean">
+                <thead>
+                    <tr>
+                        <th>Modulo</th>
+                        <th>Detalle</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Expensas</td>
+                        <td>Generacion mensual pendiente de backend</td>
+                        <td><span class="status-badge warning">Pendiente</span></td>
+                    </tr>
+                    <tr>
+                        <td>Pagos</td>
+                        <td>Informes de pago para validar por administrador</td>
+                        <td><span class="status-badge">Mock</span></td>
+                    </tr>
+                    <tr>
+                        <td>Reclamos</td>
+                        <td>Listado preparado para ViewModels</td>
+                        <td><span class="status-badge success">Base UI</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <aside class="app-card">
+        <div class="app-card-title">
+            <h3>Preparado para roles</h3>
+        </div>
+        <ul class="simple-list">
+            <li>
+                <span>Administrador</span>
+                <strong>Menu completo</strong>
+            </li>
+            <li>
+                <span>Propietario</span>
+                <strong>Menu acotado</strong>
+            </li>
+            <li>
+                <span>Backend</span>
+                <strong>ViewModels futuros</strong>
+            </li>
+            <li>
+                <span>Referencia</span>
+                <strong>Figma adaptado</strong>
+            </li>
+        </ul>
+    </aside>
+</section>

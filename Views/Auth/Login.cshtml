@@ -1,0 +1,86 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Login";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Sistema de Gestion de Consorcios</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="auth-page">
+    <main class="auth-shell">
+        <section class="auth-panel">
+            <a class="brand-link" asp-area="" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark">GC</span>
+                <span>
+                    <strong>Gestion</strong>
+                    <small>de Consorcios</small>
+                </span>
+            </a>
+
+            <div class="auth-panel-content">
+                <span class="sidebar-label">Acceso al sistema</span>
+                <h1>Administracion simple para consorcios, propietarios y reservas.</h1>
+                <p>
+                    Pantalla mock preparada para conectar luego con autenticacion real,
+                    roles y dashboards diferenciados.
+                </p>
+            </div>
+
+            <div class="role-card">
+                <span class="status-dot"></span>
+                <div>
+                    <strong>Estado frontend</strong>
+                    <small>Login sin validacion real</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="auth-content">
+            <div class="auth-card">
+                <div class="auth-card-header">
+                    <span class="status-badge">Mock</span>
+                    <h2>Ingresar</h2>
+                    <p>Usa cualquier dato para previsualizar el flujo visual.</p>
+                </div>
+
+                <form asp-controller="Auth" asp-action="Login" method="post" class="auth-form">
+                    @Html.AntiForgeryToken()
+
+                    <div>
+                        <label class="form-label" for="email">Email</label>
+                        <input class="form-control" id="email" name="email" type="email" placeholder="usuario@consorcio.com" autocomplete="email" />
+                    </div>
+
+                    <div>
+                        <label class="form-label" for="password">Contrasena</label>
+                        <input class="form-control" id="password" name="password" type="password" placeholder="Ingresar contrasena" autocomplete="current-password" />
+                    </div>
+
+                    <div>
+                        <label class="form-label" for="role">Rol para vista mock</label>
+                        <select class="form-select" id="role" name="role">
+                            <option value="Administrador">Administrador</option>
+                            <option value="Propietario">Propietario</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary w-100" type="submit">Ingresar al panel</button>
+                </form>
+
+                <div class="auth-helper">
+                    <span>No hay usuarios reales todavia.</span>
+                    <a asp-area="" asp-controller="Home" asp-action="Index">Volver al inicio</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
