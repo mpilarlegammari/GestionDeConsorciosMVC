@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "Consorcios";
+    ViewData["Role"] = "Administrador";
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Consorcios</h2>
+        <p>Administracion de edificios y unidades funcionales.</p>
+    </div>
+    <a class="btn btn-primary" href="/Consorcios/Create">+ Crear Consorcio</a>
+</section>
+
+<section class="app-card filter-card" aria-label="Filtros de consorcios">
+    <div class="form-grid">
+        <div>
+            <label class="form-label" for="filtroNombre">Buscar por nombre</label>
+            <input class="form-control" id="filtroNombre" type="search" placeholder="Ej: Las Heras" />
+        </div>
+        <div>
+            <label class="form-label" for="filtroDireccion">Buscar por direccion</label>
+            <input class="form-control" id="filtroDireccion" type="search" placeholder="Ej: Av. Santa Fe" />
+        </div>
+        <div>
+            <label class="form-label" for="filtroEstado">Estado</label>
+            <select class="form-select" id="filtroEstado">
+                <option value="">Todos</option>
+                <option>Activo</option>
+                <option>Pendiente</option>
+                <option>Inactivo</option>
+            </select>
+        </div>
+    </div>
+</section>
+
+<section class="app-card section-card">
+    <div class="app-card-title">
+        <h3>Listado de consorcios</h3>
+        <span class="status-badge">Datos mock</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-clean">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Direccion</th>
+                    <th>Cantidad UF</th>
+                    <th>Administrador</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Consorcio Las Heras</td>
+                    <td>Av. Las Heras 2450</td>
+                    <td>28</td>
+                    <td>Mariana Perez</td>
+                    <td><span class="status-badge success">Activo</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="/Consorcios/Details/1">Ver detalle</a>
+                            <a href="/Consorcios/Edit/1">Editar</a>
+                            <button type="button">Eliminar</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Edificio San Martin</td>
+                    <td>San Martin 1180</td>
+                    <td>20</td>
+                    <td>Diego Alvarez</td>
+                    <td><span class="status-badge success">Activo</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="/Consorcios/Details/2">Ver detalle</a>
+                            <a href="/Consorcios/Edit/2">Editar</a>
+                            <button type="button">Eliminar</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Complejo Los Robles</td>
+                    <td>Mitre 630</td>
+                    <td>24</td>
+                    <td>Laura Gomez</td>
+                    <td><span class="status-badge warning">Pendiente</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="/Consorcios/Details/3">Ver detalle</a>
+                            <a href="/Consorcios/Edit/3">Editar</a>
+                            <button type="button">Eliminar</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Torres del Parque</td>
+                    <td>Paraguay 410</td>
+                    <td>14</td>
+                    <td>Jorge Medina</td>
+                    <td><span class="status-badge neutral">Inactivo</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="/Consorcios/Details/4">Ver detalle</a>
+                            <a href="/Consorcios/Edit/4">Editar</a>
+                            <button type="button">Eliminar</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>

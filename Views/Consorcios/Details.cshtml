@@ -1,0 +1,142 @@
+@{
+    ViewData["Title"] = "Detalle Consorcio";
+    ViewData["Role"] = "Administrador";
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Consorcio Las Heras</h2>
+        <p>Av. Las Heras 2450</p>
+        <span class="status-badge success">Activo</span>
+    </div>
+    <div class="button-group">
+        <a class="btn btn-outline-primary" href="/Consorcios/Edit/1">Editar consorcio</a>
+        <a class="btn btn-outline-primary" href="/Gastos/Create">Registrar gasto</a>
+        <a class="btn btn-primary" href="/Expensas/Generar">Generar expensas</a>
+    </div>
+</section>
+
+<section class="dashboard-grid" aria-label="Resumen consorcio">
+    <article class="app-card metric-card">
+        <span>Cantidad UF</span>
+        <strong>28</strong>
+        <small>Unidades activas</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Expensas pendientes</span>
+        <strong>9</strong>
+        <small>Mayo 2026</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Gastos del mes</span>
+        <strong>$420.000</strong>
+        <small>Mock frontend</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Reclamos abiertos</span>
+        <strong>3</strong>
+        <small>En seguimiento</small>
+    </article>
+</section>
+
+<section class="content-grid">
+    <article class="app-card">
+        <div class="app-card-title">
+            <h3>Datos generales del consorcio</h3>
+        </div>
+        <dl class="detail-list">
+            <div>
+                <dt>Nombre</dt>
+                <dd>Consorcio Las Heras</dd>
+            </div>
+            <div>
+                <dt>Direccion</dt>
+                <dd>Av. Las Heras 2450</dd>
+            </div>
+            <div>
+                <dt>Ciudad</dt>
+                <dd>Ciudad Autonoma de Buenos Aires</dd>
+            </div>
+            <div>
+                <dt>Codigo Postal</dt>
+                <dd>1425</dd>
+            </div>
+            <div>
+                <dt>Cantidad pisos</dt>
+                <dd>12</dd>
+            </div>
+            <div>
+                <dt>Estado</dt>
+                <dd><span class="status-badge success">Activo</span></dd>
+            </div>
+        </dl>
+    </article>
+
+    <aside class="app-card">
+        <div class="app-card-title">
+            <h3>Ultimos movimientos</h3>
+            <span class="status-badge">Mock</span>
+        </div>
+        <ul class="activity-list">
+            <li><span class="activity-dot success"></span><span>Gasto registrado.</span></li>
+            <li><span class="activity-dot"></span><span>Expensa generada.</span></li>
+            <li><span class="activity-dot danger"></span><span>Reclamo creado.</span></li>
+            <li><span class="activity-dot warning"></span><span>Comunicado enviado.</span></li>
+        </ul>
+    </aside>
+</section>
+
+<section class="app-card section-card">
+    <div class="app-card-title">
+        <h3>Unidades funcionales</h3>
+        <span class="status-badge">28 UF</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-clean">
+            <thead>
+                <tr>
+                    <th>UF</th>
+                    <th>Piso</th>
+                    <th>Departamento</th>
+                    <th>Propietario</th>
+                    <th>Mail</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>001</td>
+                    <td>1</td>
+                    <td>A</td>
+                    <td>Lucia Rivas</td>
+                    <td>lucia.rivas@mail.com</td>
+                    <td><span class="status-badge success">Activo</span></td>
+                </tr>
+                <tr>
+                    <td>002</td>
+                    <td>1</td>
+                    <td>B</td>
+                    <td>Martin Diaz</td>
+                    <td>martin.diaz@mail.com</td>
+                    <td><span class="status-badge success">Activo</span></td>
+                </tr>
+                <tr>
+                    <td>305</td>
+                    <td>3</td>
+                    <td>E</td>
+                    <td>Camila Suarez</td>
+                    <td>camila.suarez@mail.com</td>
+                    <td><span class="status-badge warning">Pendiente</span></td>
+                </tr>
+                <tr>
+                    <td>904</td>
+                    <td>9</td>
+                    <td>D</td>
+                    <td>Roberto Nunez</td>
+                    <td>roberto.nunez@mail.com</td>
+                    <td><span class="status-badge neutral">Inactivo</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>

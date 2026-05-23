@@ -4,7 +4,7 @@
 
     var adminItems = new[]
     {
-        new { Text = "Inicio", Url = Url.Action("Index", "Home") ?? "/", Key = "/" },
+        new { Text = "Inicio", Url = Url.Action("AdminDashboard", "Home") ?? "/Home/AdminDashboard", Key = "/Home/AdminDashboard" },
         new { Text = "Consorcios", Url = "/Consorcios", Key = "/Consorcios" },
         new { Text = "Gastos", Url = "/Gastos", Key = "/Gastos" },
         new { Text = "Expensas", Url = "/Expensas", Key = "/Expensas" },
@@ -16,7 +16,7 @@
 
     var propietarioItems = new[]
     {
-        new { Text = "Inicio", Url = Url.Action("Index", "Home") ?? "/", Key = "/" },
+        new { Text = "Inicio", Url = Url.Action("PropietarioDashboard", "Home") ?? "/Home/PropietarioDashboard", Key = "/Home/PropietarioDashboard" },
         new { Text = "Expensas", Url = "/Expensas/MisExpensas", Key = "/Expensas/MisExpensas" },
         new { Text = "Pagos", Url = "/Pagos/MisPagos", Key = "/Pagos/MisPagos" },
         new { Text = "Informar pago", Url = "/Pagos/InformarPago", Key = "/Pagos/InformarPago" },

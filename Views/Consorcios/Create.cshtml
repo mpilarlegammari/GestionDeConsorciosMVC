@@ -1,0 +1,111 @@
+@{
+    ViewData["Title"] = "Crear Consorcio";
+    ViewData["Role"] = "Administrador";
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Crear Consorcio</h2>
+        <p>Alta de nuevo edificio y unidades funcionales.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="/Consorcios">Cancelar</a>
+</section>
+
+<form class="consorcio-form" data-consorcio-form novalidate>
+    <section class="app-card">
+        <div class="app-card-title">
+            <h3>Datos del consorcio</h3>
+            <span class="status-badge">Mock</span>
+        </div>
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="nombreConsorcio">Nombre del consorcio</label>
+                <input class="form-control" id="nombreConsorcio" name="nombreConsorcio" type="text" placeholder="Ej: Consorcio Las Heras" data-required />
+                <span class="field-validation" data-error-for="nombreConsorcio"></span>
+            </div>
+            <div>
+                <label class="form-label" for="cuit">CUIT</label>
+                <input class="form-control" id="cuit" name="cuit" type="text" placeholder="30-00000000-0" data-required />
+                <span class="field-validation" data-error-for="cuit"></span>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="direccion">Direccion</label>
+                <input class="form-control" id="direccion" name="direccion" type="text" placeholder="Calle y altura" data-required />
+                <span class="field-validation" data-error-for="direccion"></span>
+            </div>
+            <div>
+                <label class="form-label" for="ciudad">Ciudad</label>
+                <input class="form-control" id="ciudad" name="ciudad" type="text" placeholder="Ciudad" data-required />
+                <span class="field-validation" data-error-for="ciudad"></span>
+            </div>
+            <div>
+                <label class="form-label" for="codigoPostal">Codigo Postal</label>
+                <input class="form-control" id="codigoPostal" name="codigoPostal" type="text" placeholder="Ej: 1425" data-required />
+                <span class="field-validation" data-error-for="codigoPostal"></span>
+            </div>
+            <div>
+                <label class="form-label" for="cantidadPisos">Cantidad de pisos</label>
+                <input class="form-control" id="cantidadPisos" name="cantidadPisos" type="number" min="1" placeholder="Ej: 12" data-required />
+                <span class="field-validation" data-error-for="cantidadPisos"></span>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="observaciones">Observaciones</label>
+                <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Notas internas o datos relevantes"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="app-card section-card">
+        <div class="app-card-title">
+            <div>
+                <h3>Unidades funcionales</h3>
+                <p class="card-description">Agrega una o mas UF para previsualizar la carga inicial.</p>
+            </div>
+            <button class="btn btn-primary" type="button" onclick="agregarUF()">+ Agregar UF</button>
+        </div>
+        <div class="form-alert" data-uf-summary></div>
+        <div class="table-responsive">
+            <table class="table table-clean uf-table">
+                <thead>
+                    <tr>
+                        <th>Numero UF</th>
+                        <th>Piso</th>
+                        <th>Departamento</th>
+                        <th>Nombre propietario</th>
+                        <th>Mail propietario</th>
+                        <th>DNI propietario</th>
+                        <th>Telefono</th>
+                        <th>Accion</th>
+                    </tr>
+                </thead>
+                <tbody data-uf-body>
+                    <tr data-uf-row>
+                        <td>
+                            <input class="form-control" name="ufNumero" type="text" placeholder="001" data-uf-numero data-required />
+                            <span class="field-validation" data-error-for="ufNumero"></span>
+                        </td>
+                        <td><input class="form-control" name="ufPiso" type="text" placeholder="1" /></td>
+                        <td><input class="form-control" name="ufDepartamento" type="text" placeholder="A" /></td>
+                        <td><input class="form-control" name="ufPropietario" type="text" placeholder="Nombre y apellido" /></td>
+                        <td>
+                            <input class="form-control" name="ufMail" type="email" placeholder="propietario@mail.com" data-uf-email />
+                            <span class="field-validation" data-error-for="ufMail"></span>
+                        </td>
+                        <td>
+                            <input class="form-control" name="ufDni" type="text" placeholder="DNI" data-uf-dni data-required />
+                            <span class="field-validation" data-error-for="ufDni"></span>
+                        </td>
+                        <td><input class="form-control" name="ufTelefono" type="tel" placeholder="Telefono" /></td>
+                        <td><button class="btn btn-outline-danger btn-sm" type="button" onclick="eliminarUF(this)">Eliminar</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="form-actions">
+        <a class="btn btn-outline-secondary" href="/Consorcios">Cancelar</a>
+        <button class="btn btn-outline-primary" type="button">Guardar borrador</button>
+        <button class="btn btn-primary" type="submit">Crear Consorcio</button>
+    </section>
+</form>

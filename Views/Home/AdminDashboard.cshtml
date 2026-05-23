@@ -1,0 +1,163 @@
+@{
+    ViewData["Title"] = "Panel Administrador";
+    ViewData["Role"] = "Administrador";
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Panel Administrador</h2>
+        <p>Resumen general de consorcios, expensas, pagos y reclamos.</p>
+    </div>
+    <span class="status-badge">Datos mock</span>
+</section>
+
+<section class="dashboard-grid" aria-label="Metricas administrador">
+    <article class="app-card metric-card">
+        <span>Consorcios administrados</span>
+        <strong>4</strong>
+        <small>Activos</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Unidades funcionales</span>
+        <strong>86</strong>
+        <small>Registradas</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Expensas pendientes</span>
+        <strong>23</strong>
+        <small>Periodo actual</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Reclamos abiertos</span>
+        <strong>7</strong>
+        <small>En seguimiento</small>
+    </article>
+</section>
+
+<section class="quick-actions" aria-label="Accesos rapidos administrador">
+    <a class="quick-action" href="/Consorcios/Create">
+        <span class="quick-action-icon">C</span>
+        <span>
+            <strong>Crear consorcio</strong>
+            <span>Alta de edificio o complejo</span>
+        </span>
+    </a>
+    <a class="quick-action" href="/Gastos/Create">
+        <span class="quick-action-icon">G</span>
+        <span>
+            <strong>Registrar gasto</strong>
+            <span>Cargar gastos del periodo</span>
+        </span>
+    </a>
+    <a class="quick-action" href="/Expensas/Generar">
+        <span class="quick-action-icon">E</span>
+        <span>
+            <strong>Generar expensas</strong>
+            <span>Preparar liquidacion mensual</span>
+        </span>
+    </a>
+    <a class="quick-action" href="/Comunicados/Create">
+        <span class="quick-action-icon">M</span>
+        <span>
+            <strong>Nuevo comunicado</strong>
+            <span>Informar novedades</span>
+        </span>
+    </a>
+</section>
+
+<section class="content-grid">
+    <article class="app-card">
+        <div class="app-card-title">
+            <h3>Actividad reciente</h3>
+            <span class="status-badge">Mock</span>
+        </div>
+        <ul class="activity-list">
+            <li>
+                <span class="activity-dot success"></span>
+                <span>Se registro un nuevo gasto de mantenimiento.</span>
+            </li>
+            <li>
+                <span class="activity-dot warning"></span>
+                <span>Se informo un pago pendiente de revision.</span>
+            </li>
+            <li>
+                <span class="activity-dot"></span>
+                <span>Se creo un comunicado para el Consorcio Las Heras.</span>
+            </li>
+            <li>
+                <span class="activity-dot danger"></span>
+                <span>Se abrio un nuevo reclamo.</span>
+            </li>
+        </ul>
+    </article>
+
+    <aside class="app-card">
+        <div class="app-card-title">
+            <h3>Estado operativo</h3>
+        </div>
+        <ul class="simple-list">
+            <li>
+                <span>Pagos para revisar</span>
+                <strong>12</strong>
+            </li>
+            <li>
+                <span>Comunicados activos</span>
+                <strong>5</strong>
+            </li>
+            <li>
+                <span>Reservas pendientes</span>
+                <strong>3</strong>
+            </li>
+        </ul>
+    </aside>
+</section>
+
+<section class="app-card section-card">
+    <div class="app-card-title">
+        <h3>Consorcios recientes</h3>
+        <span class="status-badge">Vista previa</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-clean">
+            <thead>
+                <tr>
+                    <th>Consorcio</th>
+                    <th>Direccion</th>
+                    <th>Cantidad UF</th>
+                    <th>Estado</th>
+                    <th>Accion</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Consorcio Las Heras</td>
+                    <td>Av. Las Heras 2450</td>
+                    <td>28</td>
+                    <td><span class="status-badge success">Activo</span></td>
+                    <td><a href="/Consorcios" class="table-action">Ver</a></td>
+                </tr>
+                <tr>
+                    <td>Edificio San Martin</td>
+                    <td>San Martin 1180</td>
+                    <td>20</td>
+                    <td><span class="status-badge success">Activo</span></td>
+                    <td><a href="/Consorcios" class="table-action">Ver</a></td>
+                </tr>
+                <tr>
+                    <td>Complejo Los Robles</td>
+                    <td>Mitre 630</td>
+                    <td>24</td>
+                    <td><span class="status-badge warning">Revision</span></td>
+                    <td><a href="/Consorcios" class="table-action">Ver</a></td>
+                </tr>
+                <tr>
+                    <td>Torres del Parque</td>
+                    <td>Paraguay 410</td>
+                    <td>14</td>
+                    <td><span class="status-badge success">Activo</span></td>
+                    <td><a href="/Consorcios" class="table-action">Ver</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>

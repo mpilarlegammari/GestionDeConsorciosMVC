@@ -408,6 +408,211 @@ a {
   color: #b45309;
 }
 
+.status-badge.neutral {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.section-card {
+  margin-top: 1.5rem;
+}
+
+.activity-list {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.activity-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  background: #f8fafc;
+}
+
+.activity-dot {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  margin-top: 0.45rem;
+  border-radius: 50%;
+  background: var(--app-primary);
+}
+
+.activity-dot.success {
+  background: #059669;
+}
+
+.activity-dot.warning {
+  background: #d97706;
+}
+
+.activity-dot.danger {
+  background: #dc2626;
+}
+
+.table-action {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.table-actions a,
+.table-actions button {
+  color: var(--app-primary);
+  border: 0;
+  background: transparent;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.table-actions button {
+  color: #dc2626;
+  padding: 0;
+}
+
+.filter-card {
+  margin-bottom: 1.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.form-span-2 {
+  grid-column: span 2;
+}
+
+.card-description {
+  margin: 0.25rem 0 0;
+  color: var(--app-muted);
+  font-size: 0.92rem;
+}
+
+.consorcio-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.uf-table {
+  min-width: 1100px;
+}
+
+.uf-table .form-control {
+  min-width: 130px;
+}
+
+.form-alert {
+  display: none;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  border-radius: var(--app-radius);
+  background: #fef2f2;
+}
+
+.form-alert.show {
+  display: block;
+}
+
+.form-alert.success {
+  color: #065f46;
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.button-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+.detail-list div {
+  padding: 1rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  background: #f8fafc;
+}
+
+.detail-list dt {
+  color: var(--app-muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.detail-list dd {
+  margin: 0.25rem 0 0;
+  font-weight: 700;
+}
+
+.expense-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.expense-card h3 {
+  margin: 0.35rem 0;
+  font-size: 1.3rem;
+}
+
+.expense-card p {
+  margin: 0;
+  color: var(--app-muted);
+}
+
+.card-kicker {
+  color: var(--app-muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.expense-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.expense-summary strong {
+  color: var(--app-text);
+  font-size: 2rem;
+  line-height: 1;
+}
+
 .quick-actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -578,6 +783,20 @@ a {
   min-height: 46px;
 }
 
+.field-validation {
+  display: block;
+  min-height: 1.1rem;
+  margin-top: 0.35rem;
+  color: #dc2626;
+  font-size: 0.82rem;
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.12);
+}
+
 .auth-helper {
   display: flex;
   align-items: center;
@@ -601,6 +820,21 @@ a {
 
   .quick-actions {
     grid-template-columns: 1fr;
+  }
+
+  .form-grid,
+  .detail-list {
+    grid-template-columns: 1fr;
+  }
+
+  .form-span-2 {
+    grid-column: auto;
+  }
+
+  .expense-card,
+  .expense-summary {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .auth-shell {
@@ -680,5 +914,16 @@ a {
   .auth-helper {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .form-actions,
+  .button-group {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .form-actions .btn,
+  .button-group .btn {
+    width: 100%;
   }
 }

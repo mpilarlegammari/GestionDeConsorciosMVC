@@ -49,25 +49,27 @@
                     <p>Usa cualquier dato para previsualizar el flujo visual.</p>
                 </div>
 
-                <form asp-controller="Auth" asp-action="Login" method="post" class="auth-form">
-                    @Html.AntiForgeryToken()
-
+                <form class="auth-form" data-login-form novalidate>
                     <div>
                         <label class="form-label" for="email">Email</label>
-                        <input class="form-control" id="email" name="email" type="email" placeholder="usuario@consorcio.com" autocomplete="email" />
+                        <input class="form-control" id="email" name="email" type="email" placeholder="usuario@consorcio.com" autocomplete="email" required />
+                        <span class="field-validation" data-error-for="email"></span>
                     </div>
 
                     <div>
                         <label class="form-label" for="password">Contrasena</label>
-                        <input class="form-control" id="password" name="password" type="password" placeholder="Ingresar contrasena" autocomplete="current-password" />
+                        <input class="form-control" id="password" name="password" type="password" placeholder="Ingresar contrasena" autocomplete="current-password" required />
+                        <span class="field-validation" data-error-for="password"></span>
                     </div>
 
                     <div>
                         <label class="form-label" for="role">Rol para vista mock</label>
-                        <select class="form-select" id="role" name="role">
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="">Seleccionar rol</option>
                             <option value="Administrador">Administrador</option>
                             <option value="Propietario">Propietario</option>
                         </select>
+                        <span class="field-validation" data-error-for="role"></span>
                     </div>
 
                     <button class="btn btn-primary w-100" type="submit">Ingresar al panel</button>
@@ -82,5 +84,6 @@
     </main>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
 </body>
 </html>

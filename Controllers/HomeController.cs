@@ -8,6 +8,16 @@ namespace GestionDeConsorciosMVC.Controllers
     {
         public IActionResult Index()
         {
+            return RedirectToAction("Login", "Auth");
+        }
+
+        public IActionResult AdminDashboard()
+        {
+            return View();
+        }
+
+        public IActionResult PropietarioDashboard()
+        {
             return View();
         }
 
