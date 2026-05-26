@@ -1,0 +1,102 @@
+@{
+    ViewData["Title"] = "Registrar Gasto";
+    ViewData["Role"] = "Administrador";
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Registrar Gasto</h2>
+        <p>Carga visual de gastos del consorcio preparada para futura integracion MVC.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="/Gastos">Cancelar</a>
+</section>
+
+@* TODO backend: Validar que no exista otro gasto con el mismo número de factura. *@
+<form asp-action="Create" method="post" enctype="multipart/form-data" class="consorcio-form" data-gasto-form novalidate>
+    <section class="app-card">
+        <div class="app-card-title">
+            <div>
+                <h3>Datos del gasto</h3>
+                <p class="card-description">Los datos son mock y no se persisten todavia.</p>
+            </div>
+            <span class="status-badge">Frontend</span>
+        </div>
+
+        <div class="form-alert" data-gasto-summary></div>
+
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="ConsorcioId">Consorcio</label>
+                <select class="form-select" id="ConsorcioId" name="ConsorcioId" data-gasto-required>
+                    <option value="">Seleccionar consorcio</option>
+                    <option value="1">Consorcio Las Heras</option>
+                    <option value="2">Edificio San Martin</option>
+                    <option value="3">Complejo Los Robles</option>
+                </select>
+                <span class="field-validation" data-error-for="ConsorcioId"></span>
+            </div>
+            <div>
+                <label class="form-label" for="NumeroFactura">Numero de factura</label>
+                <input class="form-control" id="NumeroFactura" name="NumeroFactura" type="text" placeholder="FAC-0001" data-gasto-required />
+                <span class="field-validation" data-error-for="NumeroFactura"></span>
+            </div>
+            <div>
+                <label class="form-label" for="Fecha">Fecha</label>
+                <input class="form-control" id="Fecha" name="Fecha" type="date" data-gasto-required />
+                <span class="field-validation" data-error-for="Fecha"></span>
+            </div>
+            <div>
+                <label class="form-label" for="Monto">Monto</label>
+                <input class="form-control" id="Monto" name="Monto" type="number" min="1" step="0.01" placeholder="0.00" data-gasto-required data-gasto-monto />
+                <span class="field-validation" data-error-for="Monto"></span>
+            </div>
+            <div>
+                <label class="form-label" for="Categoria">Categoria</label>
+                <select class="form-select" id="Categoria" name="Categoria" data-gasto-required>
+                    <option value="">Seleccionar categoria</option>
+                    <option>Limpieza</option>
+                    <option>Mantenimiento</option>
+                    <option>Servicios</option>
+                    <option>Seguridad</option>
+                    <option>Administracion</option>
+                    <option>Otros</option>
+                </select>
+                <span class="field-validation" data-error-for="Categoria"></span>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="Concepto">Concepto</label>
+                <input class="form-control" id="Concepto" name="Concepto" type="text" placeholder="Ej: Reparacion de bomba de agua" data-gasto-required />
+                <span class="field-validation" data-error-for="Concepto"></span>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="Descripcion">Descripcion opcional</label>
+                <textarea class="form-control" id="Descripcion" name="Descripcion" rows="4" placeholder="Detalle interno del gasto"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="app-card">
+        <div class="app-card-title">
+            <div>
+                <h3>Comprobante</h3>
+                <p class="card-description">Formatos permitidos: pdf, jpg, jpeg, png.</p>
+            </div>
+        </div>
+        <label class="file-drop" for="ArchivoFactura">
+            <span class="quick-action-icon">F</span>
+            <span>
+                <strong>Adjuntar factura/comprobante</strong>
+                <small>Selecciona un archivo desde tu equipo</small>
+            </span>
+        </label>
+        <input class="visually-hidden" id="ArchivoFactura" name="ArchivoFactura" type="file" accept=".pdf,.jpg,.jpeg,.png" data-gasto-file onchange="mostrarArchivoSeleccionado(this)" />
+        <span class="field-validation" data-error-for="ArchivoFactura"></span>
+        <div class="file-preview" data-file-preview></div>
+    </section>
+
+    <section class="form-actions">
+        <a class="btn btn-outline-secondary" href="/Gastos">Cancelar</a>
+        <button class="btn btn-outline-primary" type="button">Guardar borrador mock</button>
+        <button class="btn btn-primary" type="submit">Registrar gasto mock</button>
+    </section>
+</form>

@@ -306,3 +306,68 @@ Actualmente solo existen acciones GET mock para visualizar frontend. Backend deb
 - Estados de consorcio y UF.
 - Errores de validacion por campo.
 - Mensajes de exito o error para altas y ediciones.
+
+# Requerimientos Backend - Gastos
+
+## 1. Modelo esperado
+
+### Gasto
+
+Campos minimos:
+
+- `Id`
+- `ConsorcioId`
+- `NumeroFactura`
+- `Fecha`
+- `Monto`
+- `Concepto`
+- `Categoria`
+- `Descripcion`
+- `ArchivoFacturaPath`
+- `FechaCreacion`
+
+## 2. Relacion
+
+- Un `Consorcio` tiene muchos `Gasto`.
+- Cada `Gasto` pertenece a un unico `Consorcio`.
+
+## 3. Validaciones backend
+
+- Consorcio obligatorio.
+- Numero de factura obligatorio.
+- No repetir numero de factura.
+- Monto mayor a 0.
+- Fecha valida.
+- Categoria obligatoria.
+- Validar tipo y tamaño de archivo.
+- Validar que el archivo se guarde en una ubicacion segura si se implementa upload.
+
+## 4. Acciones esperadas
+
+- `GET /Gastos`
+- `GET /Gastos/Create`
+- `POST /Gastos/Create`
+- `GET /Gastos/Details/{id}`
+- `GET /Gastos/Edit/{id}`
+- `POST /Gastos/Edit`
+- `POST /Gastos/Delete/{id}`
+
+Actualmente solo existen acciones GET mock para visualizar frontend. Backend debera implementar POST, persistencia, validaciones y manejo de archivos.
+
+## 5. ViewModels sugeridos
+
+- `GastoViewModel`
+- `GastoCreateViewModel`
+- `GastoDetailsViewModel`
+
+`GastoCreateViewModel` deberia contemplar archivo adjunto mediante `IFormFile`. `GastoDetailsViewModel` podria incluir datos del consorcio, datos del gasto, estado del comprobante e historial.
+
+## 6. Que espera frontend
+
+- Listado de gastos.
+- Filtros por consorcio, mes, año, categoria y busqueda por factura/concepto.
+- Resumen mensual.
+- Detalle de gasto.
+- Carga de archivo.
+- Errores de validacion por campo.
+- Mensajes de exito o error para altas y ediciones.

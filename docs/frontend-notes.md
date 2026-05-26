@@ -149,3 +149,82 @@ La pantalla `Create` usa estas funciones solo para interaccion frontend. No pers
 - Cargar detalle real por id.
 - Implementar edicion y eliminacion real.
 - Conectar acciones de gastos, expensas y comunicados cuando existan esos modulos.
+
+# Frontend - Gastos
+
+## 1. Vistas creadas
+
+- `Views/Gastos/Index.cshtml`: listado mock de gastos.
+- `Views/Gastos/Create.cshtml`: formulario mock para registrar gasto.
+- `Views/Gastos/Details.cshtml`: detalle mock de gasto.
+
+Tambien se creo `GastosController` con acciones GET minimas:
+
+- `GET /Gastos`
+- `GET /Gastos/Create`
+- `GET /Gastos/Details/{id}`
+
+Estas acciones solo renderizan vistas y no persisten datos.
+
+## 2. Datos mock usados
+
+- Listado con seis gastos de ejemplo.
+- Categorias visuales: Limpieza, Mantenimiento, Servicios, Seguridad, Administracion y Otros.
+- Resumen mensual con total, cantidad de gastos, categoria principal y ultima factura.
+- Detalle mock de factura `FAC-0961`.
+- Historial mock: gasto registrado, comprobante adjuntado y pendiente de incluir en expensas.
+
+## 3. Campos del formulario
+
+- `ConsorcioId`
+- `NumeroFactura`
+- `Fecha`
+- `Monto`
+- `Concepto`
+- `Categoria`
+- `Descripcion`
+- `ArchivoFactura`
+
+El formulario esta preparado para futuro MVC real con `asp-action="Create"`, `method="post"` y `enctype="multipart/form-data"`, pero actualmente el submit se intercepta con JavaScript y no guarda datos.
+
+## 4. Validaciones frontend
+
+- Consorcio requerido.
+- Numero de factura requerido.
+- Fecha requerida.
+- Monto requerido y mayor a 0.
+- Concepto requerido.
+- Categoria requerida.
+- Archivo opcional con extension permitida: `pdf`, `jpg`, `jpeg`, `png`.
+
+La validacion real de factura duplicada queda pendiente para backend.
+
+## 5. Interacciones JS
+
+En `wwwroot/js/site.js` se agregaron:
+
+- `validarFormularioGasto()`
+- `mostrarArchivoSeleccionado()`
+- `quitarArchivoSeleccionado()`
+
+Estas funciones muestran errores visuales, validan extension de archivo y renderizan una vista previa con nombre y tamaño del archivo.
+
+## 6. Rutas futuras
+
+- `/Gastos`
+- `/Gastos/Create`
+- `/Gastos/Details/{id}`
+- `/Gastos/Edit/{id}`
+
+La edicion y eliminacion son solo enlaces/acciones visuales por ahora.
+
+## 7. Falta conectar con backend
+
+- Guardar gastos reales.
+- Validar numero de factura duplicado.
+- Asociar gasto a consorcio real.
+- Subir y almacenar comprobantes.
+- Cargar listado real con filtros.
+- Calcular resumen mensual.
+- Mostrar detalle real por id.
+- Mostrar errores de validacion desde servidor.

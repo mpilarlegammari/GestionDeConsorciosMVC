@@ -1,0 +1,165 @@
+@{
+    ViewData["Title"] = "Gastos";
+    ViewData["Role"] = "Administrador";
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Gastos</h2>
+        <p>Registro y consulta de gastos del consorcio.</p>
+    </div>
+    <a class="btn btn-primary" href="/Gastos/Create">+ Registrar gasto</a>
+</section>
+
+<section class="app-card filter-card" aria-label="Filtros de gastos">
+    <div class="form-grid">
+        <div>
+            <label class="form-label" for="filtroConsorcio">Consorcio</label>
+            <select class="form-select" id="filtroConsorcio">
+                <option value="">Todos</option>
+                <option>Consorcio Las Heras</option>
+                <option>Edificio San Martin</option>
+                <option>Complejo Los Robles</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label" for="filtroMes">Mes</label>
+            <select class="form-select" id="filtroMes">
+                <option>Mayo</option>
+                <option>Abril</option>
+                <option>Marzo</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label" for="filtroAnio">Año</label>
+            <select class="form-select" id="filtroAnio">
+                <option>2026</option>
+                <option>2025</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label" for="filtroCategoria">Categoria</label>
+            <select class="form-select" id="filtroCategoria">
+                <option value="">Todas</option>
+                <option>Limpieza</option>
+                <option>Mantenimiento</option>
+                <option>Servicios</option>
+                <option>Seguridad</option>
+                <option>Administracion</option>
+                <option>Otros</option>
+            </select>
+        </div>
+        <div class="form-span-2">
+            <label class="form-label" for="buscarGasto">Buscar por factura o concepto</label>
+            <input class="form-control" id="buscarGasto" type="search" placeholder="Ej: FAC-001 o ascensor" />
+        </div>
+    </div>
+</section>
+
+<section class="dashboard-grid" aria-label="Resumen de gastos">
+    <article class="app-card metric-card">
+        <span>Total gastos del mes</span>
+        <strong>$1.245.800</strong>
+        <small>Mayo 2026</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Cantidad de gastos</span>
+        <strong>18</strong>
+        <small>Registrados</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Categoria con mayor gasto</span>
+        <strong>Servicios</strong>
+        <small>$520.000</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Ultima factura registrada</span>
+        <strong>FAC-0961</strong>
+        <small>Hace 2 dias</small>
+    </article>
+</section>
+
+<section class="app-card section-card">
+    <div class="app-card-title">
+        <h3>Listado de gastos</h3>
+        <span class="status-badge">Datos mock</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-clean">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Consorcio</th>
+                    <th>N° Factura</th>
+                    <th>Concepto</th>
+                    <th>Categoria</th>
+                    <th>Monto</th>
+                    <th>Comprobante</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>23/05/2026</td>
+                    <td>Consorcio Las Heras</td>
+                    <td>FAC-0961</td>
+                    <td>Mantenimiento de ascensor</td>
+                    <td><span class="status-badge warning">Mantenimiento</span></td>
+                    <td>$180.000</td>
+                    <td><span class="status-badge success">Adjunto</span></td>
+                    <td><div class="table-actions"><a href="/Gastos/Details/1">Ver detalle</a><a href="/Gastos/Edit/1">Editar</a><button type="button">Eliminar</button></div></td>
+                </tr>
+                <tr>
+                    <td>21/05/2026</td>
+                    <td>Edificio San Martin</td>
+                    <td>FAC-0957</td>
+                    <td>Servicio de limpieza</td>
+                    <td><span class="status-badge success">Limpieza</span></td>
+                    <td>$92.500</td>
+                    <td><span class="status-badge success">Adjunto</span></td>
+                    <td><div class="table-actions"><a href="/Gastos/Details/2">Ver detalle</a><a href="/Gastos/Edit/2">Editar</a><button type="button">Eliminar</button></div></td>
+                </tr>
+                <tr>
+                    <td>18/05/2026</td>
+                    <td>Complejo Los Robles</td>
+                    <td>FAC-0948</td>
+                    <td>Edesur espacios comunes</td>
+                    <td><span class="status-badge">Servicios</span></td>
+                    <td>$240.300</td>
+                    <td><span class="status-badge success">Adjunto</span></td>
+                    <td><div class="table-actions"><a href="/Gastos/Details/3">Ver detalle</a><a href="/Gastos/Edit/3">Editar</a><button type="button">Eliminar</button></div></td>
+                </tr>
+                <tr>
+                    <td>15/05/2026</td>
+                    <td>Consorcio Las Heras</td>
+                    <td>FAC-0939</td>
+                    <td>Servicio de vigilancia</td>
+                    <td><span class="status-badge neutral">Seguridad</span></td>
+                    <td>$310.000</td>
+                    <td><span class="status-badge success">Adjunto</span></td>
+                    <td><div class="table-actions"><a href="/Gastos/Details/4">Ver detalle</a><a href="/Gastos/Edit/4">Editar</a><button type="button">Eliminar</button></div></td>
+                </tr>
+                <tr>
+                    <td>12/05/2026</td>
+                    <td>Torres del Parque</td>
+                    <td>FAC-0926</td>
+                    <td>Honorarios administracion</td>
+                    <td><span class="status-badge">Administracion</span></td>
+                    <td>$150.000</td>
+                    <td><span class="status-badge neutral">Pendiente</span></td>
+                    <td><div class="table-actions"><a href="/Gastos/Details/5">Ver detalle</a><a href="/Gastos/Edit/5">Editar</a><button type="button">Eliminar</button></div></td>
+                </tr>
+                <tr>
+                    <td>09/05/2026</td>
+                    <td>Edificio San Martin</td>
+                    <td>FAC-0918</td>
+                    <td>Compra de lamparas</td>
+                    <td><span class="status-badge warning">Otros</span></td>
+                    <td>$28.600</td>
+                    <td><span class="status-badge success">Adjunto</span></td>
+                    <td><div class="table-actions"><a href="/Gastos/Details/6">Ver detalle</a><a href="/Gastos/Edit/6">Editar</a><button type="button">Eliminar</button></div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
