@@ -520,3 +520,86 @@ Campos minimos:
 - El monto pagado debe ser mayor a 0.
 - Se debe validar tipo y tamaño del archivo antes de guardarlo.
 - La aprobacion o rechazo debe registrar fecha de revision y observacion administrativa si corresponde.
+
+# Estructura Base de Modelos
+
+## 1. Modelos creados o actualizados
+
+- `Usuario`: representa la identidad base del sistema. Incluye nombre, apellido, email, hash de password, rol, estado activo y fecha de creacion. Queda preparado para futura autenticacion real.
+- `Consorcio`: representa el edificio o consorcio administrado. Centraliza datos generales, estado y relaciones con unidades funcionales, gastos, comunicados y amenities.
+- `UnidadFuncional`: representa una UF dentro de un consorcio. Contiene datos del propietario mock/base y relaciones con expensas, reservas y reclamos.
+- `Gasto`: representa gastos cargados por administracion para un consorcio. Incluye factura, fecha, monto, concepto, categoria y archivo de comprobante.
+- `Expensa`: representa la liquidacion de una unidad funcional para un periodo. Incluye fechas, monto total, estado, observaciones y pagos asociados.
+- `Pago`: representa un pago informado por propietario. Incluye fecha, monto, medio de pago, comprobante, estado de revision y observacion administrativa.
+- `Comunicado`: representa mensajes publicados por administracion para un consorcio.
+- `Reclamo`: representa reclamos creados desde una unidad funcional y gestionados por administracion.
+- `Amenity`: representa espacios comunes reservables dentro de un consorcio.
+- `Reserva`: representa una reserva de amenity realizada por una unidad funcional.
+
+## 2. Responsabilidad de cada modelo
+
+- `Usuario` debera integrarse con autenticacion, roles y permisos.
+- `Consorcio` sera la entidad principal para agrupar unidades, gastos, comunicados y amenities.
+- `UnidadFuncional` sera el punto de asociacion entre propietarios, expensas, reservas y reclamos.
+- `Gasto` sera cargado por administracion y usado para calcular o justificar expensas.
+- `Expensa` sera la liquidacion mensual o periodica emitida a una unidad funcional.
+- `Pago` sera el comprobante informado por el propietario y revisado por administracion.
+- `Comunicado` sera informacion publicada para propietarios de un consorcio.
+- `Reclamo` sera el circuito de consulta/incidencia entre propietario y administracion.
+- `Amenity` sera un recurso comun que puede reservarse.
+- `Reserva` sera la solicitud o confirmacion de uso de un amenity.
+
+## 3. Relaciones entre entidades
+
+- Un `Consorcio` tiene muchas `UnidadFuncional`.
+- Un `Consorcio` tiene muchos `Gasto`.
+- Un `Consorcio` tiene muchos `Comunicado`.
+- Un `Consorcio` tiene muchos `Amenity`.
+- Una `UnidadFuncional` pertenece a un `Consorcio`.
+- Una `UnidadFuncional` tiene muchas `Expensa`.
+- Una `UnidadFuncional` tiene muchas `Reserva`.
+- Una `UnidadFuncional` tiene muchas `Reclamo`.
+- Una `Expensa` pertenece a una `UnidadFuncional`.
+- Una `Expensa` tiene muchos `Pago`.
+- Un `Pago` pertenece a una `Expensa`.
+- Un `Amenity` pertenece a un `Consorcio`.
+- Un `Amenity` tiene muchas `Reserva`.
+- Una `Reserva` pertenece a un `Amenity` y a una `UnidadFuncional`.
+- Un `Reclamo` pertenece a una `UnidadFuncional`.
+
+## 4. Enums definidos
+
+- `RolUsuario`: `Administrador`, `Propietario`.
+- `EstadoConsorcio`: `Activo`, `Pendiente`, `Inactivo`.
+- `EstadoUnidadFuncional`: `Activa`, `Morosa`, `Inactiva`.
+- `CategoriaGasto`: `Limpieza`, `Mantenimiento`, `Servicios`, `Seguridad`, `Administracion`, `Otros`.
+- `EstadoExpensa`: `Pendiente`, `Pagada`, `Vencida`.
+- `EstadoPago`: `PendienteRevision`, `Aprobado`, `Rechazado`.
+- `EstadoReclamo`: `Abierto`, `EnProceso`, `Cerrado`.
+- `EstadoReserva`: `Pendiente`, `Confirmada`, `Cancelada`.
+
+## 5. Que falta implementar
+
+- `DbContext` definitivo y revisado.
+- Migraciones nuevas y consistentes.
+- Configuracion de relaciones con EF Core.
+- Validaciones de dominio y validaciones de formulario.
+- Autenticacion real.
+- Persistencia en base de datos.
+- Reglas de negocio.
+- Servicios o capa de aplicacion si el equipo decide usarlos.
+- Controladores reales conectados a datos.
+- ViewModels especificos para cada pantalla.
+
+Nota: el repositorio ya contiene archivos previos de contexto/migraciones. En esta etapa no se generaron migraciones nuevas ni se modifico la persistencia.
+
+# Próximos pasos sugeridos Backend
+
+1. Crear o revisar `ApplicationDbContext`.
+2. Configurar EF Core.
+3. Crear migración inicial limpia.
+4. Configurar relaciones.
+5. Crear ViewModels.
+6. Crear controladores.
+7. Crear autenticación.
+8. Reemplazar datos mock frontend.
