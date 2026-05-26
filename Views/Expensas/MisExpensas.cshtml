@@ -1,0 +1,170 @@
+@{
+    ViewData["Title"] = "Mis Expensas";
+    ViewData["Role"] = "Propietario";
+}
+
+@* TODO backend: reemplazar datos mock por Model.Expensas. *@
+@* TODO backend: obtener expensas desde usuario autenticado. *@
+@* TODO backend: calcular estado automáticamente. *@
+@* TODO backend: generar PDF real de liquidación. *@
+@* TODO backend: validar permisos por propietario. *@
+
+<section class="page-intro">
+    <div>
+        <h2>Mis Expensas</h2>
+        <p>Consultá tus liquidaciones y estado de pagos.</p>
+    </div>
+    <span class="status-badge warning">Pendiente</span>
+</section>
+
+<section class="app-card expense-card">
+    <div>
+        <span class="card-kicker">Período actual</span>
+        <h3>Mayo 2026</h3>
+        <p>Vencimiento: 10/06/2026</p>
+    </div>
+    <div class="expense-summary">
+        <div>
+            <span class="card-kicker">Estado</span>
+            <strong><span class="status-badge warning">Pendiente</span></strong>
+        </div>
+        <div>
+            <span class="card-kicker">Monto</span>
+            <strong>$85.000</strong>
+        </div>
+    </div>
+    <div class="button-group">
+        <a class="btn btn-outline-primary" asp-controller="Expensas" asp-action="Details" asp-route-id="105">Ver detalle</a>
+        <a class="btn btn-primary" href="/Pagos/InformarPago">Informar pago</a>
+        <a class="btn btn-outline-secondary" href="#">Descargar liquidación</a>
+    </div>
+</section>
+
+<section class="app-card filter-card" aria-label="Filtros de mis expensas">
+    <form method="get" asp-action="MisExpensas">
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="mes">Mes</label>
+                <select class="form-select" id="mes" name="mes">
+                    <option value="5">Mayo</option>
+                    <option value="4">Abril</option>
+                    <option value="3">Marzo</option>
+                    <option value="2">Febrero</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="anio">Año</label>
+                <select class="form-select" id="anio" name="anio">
+                    <option>2026</option>
+                    <option>2025</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="estado">Estado</label>
+                <select class="form-select" id="estado" name="estado">
+                    <option value="">Todos</option>
+                    <option>Pendiente</option>
+                    <option>Pagada</option>
+                    <option>Vencida</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="dashboard-grid">
+    <article class="app-card metric-card">
+        <span>Expensas pagadas</span>
+        <strong>14</strong>
+        <small>Historial disponible</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Expensas pendientes</span>
+        <strong>2</strong>
+        <small>Requieren seguimiento</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Total abonado este año</span>
+        <strong>$980.000</strong>
+        <small>Enero a mayo</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Último pago informado</span>
+        <strong>12/05</strong>
+        <small>Transferencia bancaria</small>
+    </article>
+</section>
+
+<section class="app-card section-card">
+    <div class="app-card-title">
+        <h3>Historial de expensas</h3>
+        <span class="status-badge">Datos mock</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-clean">
+            <thead>
+                <tr>
+                    <th>Período</th>
+                    <th>Fecha emisión</th>
+                    <th>Vencimiento</th>
+                    <th>Monto</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Mayo 2026</td>
+                    <td>31/05/2026</td>
+                    <td>10/06/2026</td>
+                    <td>$85.000</td>
+                    <td><span class="status-badge warning">Pendiente</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="105">Ver detalle</a><a href="#">Descargar</a><a href="/Pagos/InformarPago">Informar pago</a></div></td>
+                </tr>
+                <tr>
+                    <td>Abril 2026</td>
+                    <td>30/04/2026</td>
+                    <td>10/05/2026</td>
+                    <td>$78.500</td>
+                    <td><span class="status-badge success">Pagada</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="104">Ver detalle</a><a href="#">Descargar</a></div></td>
+                </tr>
+                <tr>
+                    <td>Marzo 2026</td>
+                    <td>31/03/2026</td>
+                    <td>10/04/2026</td>
+                    <td>$74.800</td>
+                    <td><span class="status-badge success">Pagada</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="103">Ver detalle</a><a href="#">Descargar</a></div></td>
+                </tr>
+                <tr>
+                    <td>Febrero 2026</td>
+                    <td>28/02/2026</td>
+                    <td>10/03/2026</td>
+                    <td>$72.300</td>
+                    <td><span class="status-badge danger">Vencida</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="102">Ver detalle</a><a href="#">Descargar</a><a href="/Pagos/InformarPago">Informar pago</a></div></td>
+                </tr>
+                <tr>
+                    <td>Enero 2026</td>
+                    <td>31/01/2026</td>
+                    <td>10/02/2026</td>
+                    <td>$69.200</td>
+                    <td><span class="status-badge success">Pagada</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="101">Ver detalle</a><a href="#">Descargar</a></div></td>
+                </tr>
+                <tr>
+                    <td>Diciembre 2025</td>
+                    <td>31/12/2025</td>
+                    <td>10/01/2026</td>
+                    <td>$66.900</td>
+                    <td><span class="status-badge success">Pagada</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="100">Ver detalle</a><a href="#">Descargar</a></div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>

@@ -408,6 +408,11 @@ a {
   color: #b45309;
 }
 
+.status-badge.danger {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
 .status-badge.neutral {
   background: #f1f5f9;
   color: #475569;
@@ -534,6 +539,33 @@ a {
   color: #065f46;
   border-color: #a7f3d0;
   background: #ecfdf5;
+}
+
+.form-note {
+  margin: 1rem 0 0;
+  color: var(--app-muted);
+  font-size: 0.92rem;
+}
+
+.form-summary {
+  display: none;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #fecaca;
+  border-radius: var(--app-radius);
+  background: #fef2f2;
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.form-summary.show {
+  display: block;
+}
+
+.form-summary.success {
+  border-color: #bbf7d0;
+  background: #ecfdf5;
+  color: #047857;
 }
 
 .form-actions {

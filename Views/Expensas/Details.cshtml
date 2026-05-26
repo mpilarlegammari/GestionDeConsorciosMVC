@@ -1,0 +1,158 @@
+@{
+    ViewData["Title"] = "Detalle de Expensa";
+    ViewData["Role"] = "Propietario";
+}
+
+@* TODO backend: reemplazar datos mock por Model.Expensas. *@
+@* TODO backend: obtener expensas desde usuario autenticado. *@
+@* TODO backend: calcular estado automáticamente. *@
+@* TODO backend: obtener detalle de gastos asociados. *@
+@* TODO backend: generar PDF real de liquidación. *@
+@* TODO backend: validar permisos por propietario. *@
+
+<section class="page-intro">
+    <div>
+        <h2>Detalle de Expensa</h2>
+        <p>Período Mayo 2026</p>
+    </div>
+    <span class="status-badge warning">Pendiente</span>
+</section>
+
+<section class="dashboard-grid">
+    <article class="app-card metric-card">
+        <span>Total</span>
+        <strong>$85.000</strong>
+        <small>Liquidación mensual</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Vencimiento</span>
+        <strong>10/06</strong>
+        <small>Año 2026</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Estado</span>
+        <strong><span class="status-badge warning">Pendiente</span></strong>
+        <small>Pago no registrado</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Fecha emisión</span>
+        <strong>31/05</strong>
+        <small>Año 2026</small>
+    </article>
+</section>
+
+<section class="content-grid section-card">
+    <article class="app-card">
+        <div class="app-card-title">
+            <h3>Datos generales</h3>
+        </div>
+        <dl class="detail-list">
+            <div>
+                <dt>Consorcio</dt>
+                <dd>Edificio Las Heras</dd>
+            </div>
+            <div>
+                <dt>Unidad funcional</dt>
+                <dd>UF 3B</dd>
+            </div>
+            <div>
+                <dt>Período</dt>
+                <dd>Mayo 2026</dd>
+            </div>
+            <div>
+                <dt>Fecha emisión</dt>
+                <dd>31/05/2026</dd>
+            </div>
+            <div>
+                <dt>Fecha vencimiento</dt>
+                <dd>10/06/2026</dd>
+            </div>
+            <div>
+                <dt>Estado</dt>
+                <dd><span class="status-badge warning">Pendiente</span></dd>
+            </div>
+            <div class="detail-span-2">
+                <dt>Método de distribución mock</dt>
+                <dd>Distribución proporcional según porcentaje asignado a la unidad funcional.</dd>
+            </div>
+        </dl>
+    </article>
+
+    <aside class="app-card">
+        <div class="app-card-title">
+            <h3>Pagos</h3>
+        </div>
+        <ul class="simple-list">
+            <li>
+                <span>Estado actual</span>
+                <strong>Pendiente</strong>
+            </li>
+            <li>
+                <span>Fecha último pago</span>
+                <strong>12/05/2026</strong>
+            </li>
+            <li>
+                <span>Medio de pago</span>
+                <strong>Transferencia</strong>
+            </li>
+            <li>
+                <span>Observaciones</span>
+                <strong>Pago anterior aprobado</strong>
+            </li>
+        </ul>
+    </aside>
+</section>
+
+<section class="app-card section-card">
+    <div class="app-card-title">
+        <h3>Detalle de gastos</h3>
+        <span class="status-badge">Incluidos en la liquidación</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-clean">
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    <th>Categoría</th>
+                    <th>Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Servicio integral de limpieza</td>
+                    <td><span class="status-badge success">Limpieza</span></td>
+                    <td>$250.000</td>
+                </tr>
+                <tr>
+                    <td>Servicio de vigilancia nocturna</td>
+                    <td><span class="status-badge neutral">Seguridad</span></td>
+                    <td>$320.000</td>
+                </tr>
+                <tr>
+                    <td>Luz y agua de espacios comunes</td>
+                    <td><span class="status-badge">Servicios</span></td>
+                    <td>$430.000</td>
+                </tr>
+                <tr>
+                    <td>Mantenimiento de ascensores</td>
+                    <td><span class="status-badge warning">Mantenimiento</span></td>
+                    <td>$245.000</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="2">Total general</th>
+                    <th>$1.245.000</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</section>
+
+<section class="app-card section-card">
+    <div class="button-group">
+        <a class="btn btn-outline-secondary" asp-controller="Expensas" asp-action="MisExpensas">Volver</a>
+        <a class="btn btn-primary" href="/Pagos/InformarPago">Informar pago</a>
+        <a class="btn btn-outline-primary" href="#">Descargar liquidación</a>
+    </div>
+</section>

@@ -293,4 +293,114 @@
       window.validarFormularioGasto();
     });
   }
+
+  const pagoForm = document.querySelector("[data-pago-form]");
+  const allowedPagoExtensions = ["pdf", "jpg", "jpeg", "png"];
+
+  window.mostrarComprobanteSeleccionado = (input) => {
+    const file = input.files?.[0];
+    const preview = document.querySelector("[data-payment-file-preview]");
+
+    setFieldError(input, "");
+
+    if (!preview) {
+      return;
+    }
+
+    if (!file) {
+      preview.classList.remove("show");
+      preview.innerHTML = "";
+      return;
+    }
+
+    const size = file.size ? `${(file.size / 1024).toFixed(1)} KB` : "Tamaño no disponible";
+
+    preview.innerHTML = `
+      <div>
+        <strong>${file.name}</strong>
+        <span>${size}</span>
+      </div>
+      <button class="btn btn-outline-danger btn-sm" type="button" onclick="quitarComprobanteSeleccionado()">Quitar archivo</button>
+    `;
+    preview.classList.add("show");
+  };
+
+  window.quitarComprobanteSeleccionado = () => {
+    const input = document.querySelector("[data-pago-file]");
+    const preview = document.querySelector("[data-payment-file-preview]");
+
+    if (input) {
+      input.value = "";
+      setFieldError(input, "");
+    }
+
+    if (preview) {
+      preview.classList.remove("show");
+      preview.innerHTML = "";
+    }
+  };
+
+  window.validarFormularioPago = () => {
+    if (!pagoForm) {
+      return true;
+    }
+
+    let isValid = true;
+    const summary = pagoForm.querySelector("[data-pago-summary]");
+
+    pagoForm.querySelectorAll("[data-pago-required]").forEach((field) => {
+      const value = field.value.trim();
+
+      if (!value) {
+        setFieldError(field, "Campo requerido.");
+        isValid = false;
+      } else {
+        setFieldError(field, "");
+      }
+    });
+
+    const monto = pagoForm.querySelector("[data-pago-monto]");
+    const montoValue = Number(monto?.value ?? 0);
+
+    if (monto && (!monto.value || montoValue <= 0)) {
+      setFieldError(monto, "El monto debe ser mayor a 0.");
+      isValid = false;
+    } else if (monto) {
+      setFieldError(monto, "");
+    }
+
+    const fileInput = pagoForm.querySelector("[data-pago-file]");
+    const file = fileInput?.files?.[0];
+
+    if (fileInput && !file) {
+      setFieldError(fileInput, "El comprobante es obligatorio.");
+      isValid = false;
+    }
+
+    if (fileInput && file) {
+      const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+
+      if (!allowedPagoExtensions.includes(extension)) {
+        setFieldError(fileInput, "Formato permitido: pdf, jpg, jpeg o png.");
+        isValid = false;
+      }
+    }
+
+    if (summary) {
+      summary.textContent = isValid
+        ? "Pago mock validado correctamente. No se enviaron datos."
+        : "Revisa los campos marcados antes de continuar.";
+      summary.classList.toggle("show", true);
+      summary.classList.toggle("success", isValid);
+    }
+
+    return isValid;
+  };
+
+  if (pagoForm) {
+    pagoForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      window.validarFormularioPago();
+    });
+  }
 })();

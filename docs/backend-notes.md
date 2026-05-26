@@ -421,3 +421,102 @@ Los filtros deberian aplicarse sobre los gastos del consorcio asociado al propie
 - Los gastos los carga la administracion.
 - El propietario solo visualiza informacion filtrada por su consorcio.
 - La participacion estimada debe calcularse segun el criterio de distribucion definido para el consorcio o la unidad funcional.
+
+# Requerimientos Backend - Expensas Propietario
+
+## 1. Acciones esperadas
+
+- `GET /Expensas/MisExpensas`
+- `GET /Expensas/Details/{id}`
+
+Estas acciones deberan cargar informacion real del propietario autenticado y sus expensas asociadas.
+
+## 2. ViewModels sugeridos
+
+- `MisExpensasViewModel`
+- `ExpensaDetailsViewModel`
+
+`MisExpensasViewModel` podria incluir la expensa actual, filtros seleccionados, historial de expensas y resumen anual. `ExpensaDetailsViewModel` podria incluir datos generales, detalle de gastos, estado de pago y datos para descarga de liquidacion.
+
+## 3. Datos esperados
+
+- Periodo.
+- Monto.
+- Estado.
+- Vencimiento.
+- Fecha de emision.
+- Detalle de gastos.
+- Pagos asociados.
+- Liquidacion PDF.
+
+Tambien se espera identificar consorcio, unidad funcional y criterio de distribucion aplicado.
+
+## 4. Seguridad
+
+- El propietario solo puede ver sus expensas.
+- El acceso debe estar restringido por usuario autenticado.
+- El detalle de expensa debe validar que el `id` solicitado pertenezca al propietario autenticado.
+- Las funciones de generacion, edicion o eliminacion de expensas deben quedar fuera del rol Propietario.
+
+## 5. Reglas de negocio
+
+- El estado de la expensa debe calcularse automaticamente segun pago y vencimiento.
+- El monto debe calcularse segun el criterio de distribucion definido para la unidad funcional.
+- Debe existir historial de pagos asociados a cada expensa.
+- La liquidacion PDF debe generarse o recuperarse desde backend.
+
+# Requerimientos Backend - Pagos Propietario
+
+## 1. Acciones esperadas
+
+- `GET /Pagos/InformarPago`
+- `POST /Pagos/InformarPago`
+- `GET /Pagos/MisPagos`
+- `GET /Pagos/Details/{id}`
+
+El GET de informar pago debera cargar expensas pendientes del propietario. El POST debera registrar el pago informado y dejarlo pendiente de revision.
+
+## 2. ViewModels sugeridos
+
+- `InformarPagoViewModel`
+- `MisPagosViewModel`
+- `PagoDetailsViewModel`
+
+`InformarPagoViewModel` deberia incluir expensas disponibles, datos del formulario y archivo adjunto mediante `IFormFile`. `MisPagosViewModel` deberia incluir filtros y listado de pagos. `PagoDetailsViewModel` deberia incluir datos generales, comprobante y datos de revision.
+
+## 3. Modelo esperado
+
+### Pago
+
+Campos minimos:
+
+- `Id`
+- `ExpensaId`
+- `FechaPago`
+- `MontoPagado`
+- `MedioPago`
+- `NumeroOperacion`
+- `BancoEntidad`
+- `ComprobantePath`
+- `Comentarios`
+- `Estado`
+- `FechaCreacion`
+- `FechaRevision`
+- `ObservacionAdministracion`
+
+## 4. Seguridad
+
+- El propietario solo puede informar pagos propios.
+- El propietario solo puede ver sus pagos.
+- El administrador revisa y aprueba o rechaza pagos.
+- El detalle de pago debe validar que el `id` pertenezca al usuario autenticado.
+- Las acciones de aprobacion, rechazo o eliminacion administrativa no deben estar disponibles para Propietario.
+
+## 5. Reglas de negocio
+
+- Todo pago informado queda en estado `PendienteRevision`.
+- Al aprobar un pago, la expensa asociada pasa a `Pagada`.
+- El comprobante es obligatorio.
+- El monto pagado debe ser mayor a 0.
+- Se debe validar tipo y tamaño del archivo antes de guardarlo.
+- La aprobacion o rechazo debe registrar fecha de revision y observacion administrativa si corresponde.

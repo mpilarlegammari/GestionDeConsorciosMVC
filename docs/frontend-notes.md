@@ -284,3 +284,130 @@ Por ahora los filtros son solo visuales y no ejecutan consulta real contra backe
 - Calcular participacion estimada segun el criterio de distribucion del consorcio.
 - Proteger la ruta para que solo accedan usuarios con rol Propietario.
 - Garantizar que el propietario solo vea gastos de su propio consorcio.
+
+# Frontend - Expensas Propietario
+
+## 1. Vistas creadas
+
+- `Views/Expensas/MisExpensas.cshtml`: listado mock de expensas del propietario.
+- `Views/Expensas/Details.cshtml`: detalle mock de una expensa.
+
+Tambien se creo `ExpensasController` con acciones GET minimas:
+
+- `GET /Expensas/MisExpensas`
+- `GET /Expensas/Details/{id}`
+
+Estas acciones solo renderizan vistas y no consultan ni persisten datos.
+
+## 2. Datos mock usados
+
+- Periodo actual: Mayo 2026.
+- Monto actual: `$85.000`.
+- Vencimiento: `10/06/2026`.
+- Estado actual: Pendiente.
+- Historial con seis expensas mock.
+- Resumen con expensas pagadas, pendientes, total abonado del año y ultimo pago informado.
+- Detalle con consorcio, unidad funcional, fechas, metodo de distribucion mock, gastos incluidos y datos de pago.
+
+## 3. Estados visuales implementados
+
+- Pendiente: badge amarillo.
+- Pagada: badge verde.
+- Vencida: badge rojo.
+
+Se agrego la variante `.status-badge.danger` en `wwwroot/css/site.css` para representar estados vencidos o criticos.
+
+## 4. Acciones disponibles para propietario
+
+- Ver detalle.
+- Descargar liquidacion mock.
+- Informar pago mediante enlace visual a `/Pagos/InformarPago`.
+
+No se muestran acciones administrativas como generar, editar o eliminar expensas.
+
+## 5. Diferencias con futuras pantallas admin
+
+La pantalla de propietario es solo de consulta y seguimiento de pago. Las futuras pantallas de administracion deberian contemplar generacion de expensas, revision, recalculo, anulacion o emision masiva, pero esas funciones no se incluyen en esta etapa.
+
+## 6. Pendiente para backend
+
+- Reemplazar datos mock por ViewModels reales.
+- Obtener expensas desde el usuario autenticado.
+- Calcular estado automaticamente segun pago y vencimiento.
+- Obtener detalle de gastos asociados a cada liquidacion.
+- Generar PDF real de liquidacion.
+- Validar permisos para que cada propietario vea solo sus expensas.
+
+# Frontend - Pagos Propietario
+
+## 1. Vistas creadas
+
+- `Views/Pagos/InformarPago.cshtml`: formulario mock para informar el pago de una expensa.
+- `Views/Pagos/MisPagos.cshtml`: listado mock de pagos informados por el propietario.
+- `Views/Pagos/Details.cshtml`: detalle mock de un pago informado.
+
+Tambien se creo `PagosController` con acciones GET minimas:
+
+- `GET /Pagos/InformarPago`
+- `GET /Pagos/MisPagos`
+- `GET /Pagos/Details/{id}`
+
+## 2. Datos mock usados
+
+- Consorcio: Edificio Las Heras.
+- Unidad funcional: UF 3B.
+- Expensa asociada: Mayo 2026.
+- Monto a pagar: `$85.000`.
+- Vencimiento: `10/06/2026`.
+- Listado con seis pagos mock.
+- Detalle mock con datos de transferencia, comprobante y observacion de administracion.
+
+## 3. Campos del formulario Informar Pago
+
+- `ExpensaId`
+- `FechaPago`
+- `MontoPagado`
+- `MedioPago`
+- `NumeroOperacion`
+- `BancoEntidad`
+- `ComprobantePago`
+- `Comentarios`
+
+El formulario queda preparado para futura integracion MVC con `asp-action="InformarPago"`, `method="post"` y `enctype="multipart/form-data"`. Actualmente el submit se intercepta con JavaScript y no envia datos reales.
+
+## 4. Estados visuales implementados
+
+- Pendiente de revision: badge amarillo.
+- Aprobado: badge verde.
+- Rechazado: badge rojo.
+
+El propietario solo visualiza estados y no tiene acciones de aprobacion o rechazo.
+
+## 5. Validaciones frontend
+
+- Expensa requerida.
+- Fecha de pago requerida.
+- Monto mayor a 0.
+- Medio de pago requerido.
+- Comprobante obligatorio.
+- Archivo permitido: `pdf`, `jpg`, `jpeg`, `png`.
+
+## 6. Interacciones JS
+
+En `wwwroot/js/site.js` se agregaron:
+
+- `validarFormularioPago()`
+- `mostrarComprobanteSeleccionado()`
+- `quitarComprobanteSeleccionado()`
+
+Estas funciones validan el formulario, muestran errores visuales y renderizan una vista previa del comprobante con nombre y tamaño.
+
+## 7. Pendiente para backend
+
+- Implementar `POST /Pagos/InformarPago`.
+- Obtener expensas pendientes del usuario autenticado.
+- Asociar el pago informado a una `ExpensaId` real.
+- Guardar comprobante en servidor.
+- Validar tipo y tamaño de archivo.
+- Dejar el pago en estado `PendienteRevision`.
+- Permitir aprobacion o rechazo solo al rol Administrador.

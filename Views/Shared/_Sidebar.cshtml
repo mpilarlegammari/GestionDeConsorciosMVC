@@ -2,7 +2,7 @@
     var currentPath = Context.Request.Path.Value ?? "/";
     var currentRole = (ViewData["Role"] as string ?? "Administrador").Trim();
 
-    // TODO backend: cuando exista autenticación real, renderizar menú según rol del usuario autenticado.
+    // TODO backend: renderizar menú según rol autenticado.
 
     var adminItems = new[]
     {

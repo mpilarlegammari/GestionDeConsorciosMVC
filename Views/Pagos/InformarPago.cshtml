@@ -1,0 +1,116 @@
+@{
+    ViewData["Title"] = "Informar Pago";
+    ViewData["Role"] = "Propietario";
+}
+
+@* TODO backend: reemplazar datos mock por Model.Pagos. *@
+@* TODO backend: obtener expensas pendientes del usuario autenticado. *@
+@* TODO backend: asociar pago a ExpensaId. *@
+@* TODO backend: guardar comprobante en servidor. *@
+@* TODO backend: validar tipo y tamaño de archivo. *@
+@* TODO backend: dejar pago en estado PendienteRevision. *@
+@* TODO backend: permitir aprobación/rechazo solo a Administrador. *@
+
+<section class="page-intro">
+    <div>
+        <h2>Informar Pago</h2>
+        <p>Cargá los datos del pago realizado para que la administración lo revise.</p>
+    </div>
+    <span class="status-badge warning">Pendiente de revisión</span>
+</section>
+
+<section class="app-card expense-card">
+    <div>
+        <span class="card-kicker">Consorcio</span>
+        <h3>Edificio Las Heras</h3>
+        <p>Unidad funcional: UF 3B</p>
+    </div>
+    <div class="expense-summary">
+        <div>
+            <span class="card-kicker">Período</span>
+            <strong>Mayo 2026</strong>
+        </div>
+        <div>
+            <span class="card-kicker">Monto a pagar</span>
+            <strong>$85.000</strong>
+        </div>
+        <div>
+            <span class="card-kicker">Vencimiento</span>
+            <strong>10/06/2026</strong>
+        </div>
+        <div>
+            <span class="card-kicker">Estado</span>
+            <strong><span class="status-badge warning">Pendiente</span></strong>
+        </div>
+    </div>
+    <a class="btn btn-outline-primary" asp-controller="Expensas" asp-action="Details" asp-route-id="105">Ver detalle de expensa</a>
+</section>
+
+<form asp-action="InformarPago" method="post" enctype="multipart/form-data" data-pago-form>
+    <section class="app-card section-card">
+        <div class="app-card-title">
+            <h3>Datos del pago</h3>
+            <span class="status-badge">Formulario mock</span>
+        </div>
+
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="ExpensaId">Expensa / Período</label>
+                <select class="form-select" id="ExpensaId" name="ExpensaId" data-pago-required>
+                    <option value="">Seleccionar expensa</option>
+                    <option value="105" selected>Mayo 2026 - $85.000</option>
+                    <option value="102">Febrero 2026 - $72.300</option>
+                </select>
+                <span class="field-validation" data-error-for="ExpensaId"></span>
+            </div>
+            <div>
+                <label class="form-label" for="FechaPago">Fecha de pago</label>
+                <input class="form-control" id="FechaPago" name="FechaPago" type="date" data-pago-required />
+                <span class="field-validation" data-error-for="FechaPago"></span>
+            </div>
+            <div>
+                <label class="form-label" for="MontoPagado">Monto pagado</label>
+                <input class="form-control" id="MontoPagado" name="MontoPagado" type="number" min="1" step="0.01" placeholder="85000" data-pago-monto />
+                <span class="field-validation" data-error-for="MontoPagado"></span>
+            </div>
+            <div>
+                <label class="form-label" for="MedioPago">Medio de pago</label>
+                <select class="form-select" id="MedioPago" name="MedioPago" data-pago-required>
+                    <option value="">Seleccionar medio</option>
+                    <option>Transferencia bancaria</option>
+                    <option>Depósito</option>
+                    <option>Mercado Pago</option>
+                    <option>Efectivo</option>
+                    <option>Otro</option>
+                </select>
+                <span class="field-validation" data-error-for="MedioPago"></span>
+            </div>
+            <div>
+                <label class="form-label" for="NumeroOperacion">Número de operación / referencia</label>
+                <input class="form-control" id="NumeroOperacion" name="NumeroOperacion" type="text" placeholder="Ej: TRX-548921" />
+            </div>
+            <div>
+                <label class="form-label" for="BancoEntidad">Banco o entidad</label>
+                <input class="form-control" id="BancoEntidad" name="BancoEntidad" type="text" placeholder="Ej: Banco Nación" />
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="ComprobantePago">Comprobante de pago</label>
+                <input class="form-control" id="ComprobantePago" name="ComprobantePago" type="file" accept=".pdf,.jpg,.jpeg,.png" data-pago-file onchange="mostrarComprobanteSeleccionado(this)" />
+                <span class="field-validation" data-error-for="ComprobantePago"></span>
+                <div class="file-preview" data-payment-file-preview></div>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="Comentarios">Comentarios opcionales</label>
+                <textarea class="form-control" id="Comentarios" name="Comentarios" rows="4" placeholder="Podés agregar una aclaración para la administración."></textarea>
+            </div>
+        </div>
+
+        <p class="form-note">El pago quedará pendiente de revisión hasta que la administración lo apruebe.</p>
+        <div class="form-summary" data-pago-summary></div>
+
+        <div class="form-actions">
+            <a class="btn btn-outline-secondary" asp-controller="Pagos" asp-action="MisPagos">Cancelar</a>
+            <button class="btn btn-primary" type="submit">Enviar pago para revisión</button>
+        </div>
+    </section>
+</form>

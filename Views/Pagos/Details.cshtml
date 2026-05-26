@@ -1,0 +1,136 @@
+@{
+    ViewData["Title"] = "Detalle del Pago";
+    ViewData["Role"] = "Propietario";
+}
+
+@* TODO backend: reemplazar datos mock por Model.Pagos. *@
+@* TODO backend: asociar pago a ExpensaId. *@
+@* TODO backend: guardar comprobante en servidor. *@
+@* TODO backend: permitir aprobación/rechazo solo a Administrador. *@
+@* TODO backend: validar permisos por propietario. *@
+
+<section class="page-intro">
+    <div>
+        <h2>Detalle del Pago</h2>
+        <p>Pago informado para la expensa de Mayo 2026.</p>
+    </div>
+    <span class="status-badge warning">Pendiente de revisión</span>
+</section>
+
+<section class="dashboard-grid">
+    <article class="app-card metric-card">
+        <span>Monto pagado</span>
+        <strong>$85.000</strong>
+        <small>Importe informado</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Fecha de pago</span>
+        <strong>05/06</strong>
+        <small>Año 2026</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Medio</span>
+        <strong>Transferencia</strong>
+        <small>Banco Nación</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Estado</span>
+        <strong><span class="status-badge warning">Pendiente</span></strong>
+        <small>Revisión administrativa</small>
+    </article>
+</section>
+
+<section class="content-grid section-card">
+    <article class="app-card">
+        <div class="app-card-title">
+            <h3>Datos generales</h3>
+        </div>
+        <dl class="detail-list">
+            <div>
+                <dt>Consorcio</dt>
+                <dd>Edificio Las Heras</dd>
+            </div>
+            <div>
+                <dt>Unidad funcional</dt>
+                <dd>UF 3B</dd>
+            </div>
+            <div>
+                <dt>Período</dt>
+                <dd>Mayo 2026</dd>
+            </div>
+            <div>
+                <dt>Fecha de pago</dt>
+                <dd>05/06/2026</dd>
+            </div>
+            <div>
+                <dt>Monto</dt>
+                <dd>$85.000</dd>
+            </div>
+            <div>
+                <dt>Medio de pago</dt>
+                <dd>Transferencia bancaria</dd>
+            </div>
+            <div>
+                <dt>Número de operación</dt>
+                <dd>TRX-548921</dd>
+            </div>
+            <div>
+                <dt>Banco o entidad</dt>
+                <dd>Banco Nación</dd>
+            </div>
+            <div class="detail-span-2">
+                <dt>Comentarios</dt>
+                <dd>Pago realizado desde cuenta propia. Se adjunta comprobante de transferencia.</dd>
+            </div>
+        </dl>
+    </article>
+
+    <aside class="app-card">
+        <div class="app-card-title">
+            <h3>Estado / revisión</h3>
+        </div>
+        <ul class="simple-list">
+            <li>
+                <span>Estado actual</span>
+                <strong>Pendiente de revisión</strong>
+            </li>
+            <li>
+                <span>Fecha de revisión</span>
+                <strong>Sin revisar</strong>
+            </li>
+            <li>
+                <span>Observación administración</span>
+                <strong>Pago recibido, pendiente de validar.</strong>
+            </li>
+        </ul>
+    </aside>
+</section>
+
+<section class="app-card section-card">
+    <div class="app-card-title">
+        <h3>Comprobante</h3>
+        <span class="status-badge">Archivo mock</span>
+    </div>
+    <div class="detail-list">
+        <div>
+            <dt>Nombre de archivo</dt>
+            <dd>comprobante-transferencia-mayo-2026.pdf</dd>
+        </div>
+        <div>
+            <dt>Acciones</dt>
+            <dd>
+                <span class="table-actions">
+                    <a href="#">Ver comprobante</a>
+                    <a href="#">Descargar comprobante</a>
+                </span>
+            </dd>
+        </div>
+    </div>
+</section>
+
+<section class="app-card section-card">
+    <div class="button-group">
+        <a class="btn btn-outline-secondary" asp-controller="Pagos" asp-action="MisPagos">Volver</a>
+        <a class="btn btn-primary" asp-controller="Expensas" asp-action="Details" asp-route-id="105">Ver expensa asociada</a>
+    </div>
+</section>
