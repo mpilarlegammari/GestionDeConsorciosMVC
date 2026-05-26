@@ -2,6 +2,8 @@
     var currentPath = Context.Request.Path.Value ?? "/";
     var currentRole = (ViewData["Role"] as string ?? "Administrador").Trim();
 
+    // TODO backend: cuando exista autenticación real, renderizar menú según rol del usuario autenticado.
+
     var adminItems = new[]
     {
         new { Text = "Inicio", Url = Url.Action("AdminDashboard", "Home") ?? "/Home/AdminDashboard", Key = "/Home/AdminDashboard" },
@@ -20,7 +22,7 @@
         new { Text = "Expensas", Url = "/Expensas/MisExpensas", Key = "/Expensas/MisExpensas" },
         new { Text = "Pagos", Url = "/Pagos/MisPagos", Key = "/Pagos/MisPagos" },
         new { Text = "Informar pago", Url = "/Pagos/InformarPago", Key = "/Pagos/InformarPago" },
-        new { Text = "Gastos", Url = "/Gastos", Key = "/Gastos" },
+        new { Text = "Gastos", Url = "/Gastos/MisGastos", Key = "/Gastos/MisGastos" },
         new { Text = "Comunicados", Url = "/Comunicados/MisComunicados", Key = "/Comunicados/MisComunicados" },
         new { Text = "Reclamos", Url = "/Reclamos", Key = "/Reclamos" },
         new { Text = "Reservas", Url = "/Reservas", Key = "/Reservas" }

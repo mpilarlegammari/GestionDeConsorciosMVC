@@ -228,3 +228,59 @@ La edicion y eliminacion son solo enlaces/acciones visuales por ahora.
 - Calcular resumen mensual.
 - Mostrar detalle real por id.
 - Mostrar errores de validacion desde servidor.
+
+# Frontend - Gastos Propietario
+
+## 1. Problema detectado
+
+El menu del perfil Propietario apuntaba a la pantalla administrativa de gastos (`/Gastos`). Eso mezclaba la experiencia de administracion, donde se registran y editan gastos, con la experiencia de propietario, que debe ser solo de consulta.
+
+## 2. Vista creada
+
+- `Views/Gastos/MisGastos.cshtml`
+
+La vista representa la consulta de gastos comunes del consorcio para un propietario. No permite crear, editar ni eliminar gastos.
+
+## 3. Ruta esperada
+
+- `GET /Gastos/MisGastos`
+
+El item "Gastos" del sidebar para Propietario ahora apunta a esta ruta. El menu Administrador mantiene la ruta administrativa `/Gastos`.
+
+## 4. Diferencias con Gastos Admin
+
+- Gastos Admin (`/Gastos`) permite acceder visualmente a registro, detalle, edicion y eliminacion mock.
+- Gastos Propietario (`/Gastos/MisGastos`) es una pantalla de solo lectura.
+- Propietario no ve botones de registrar gasto, crear gasto, editar ni eliminar.
+- Propietario solo consulta gastos del consorcio, comprobantes mock, resumen por categoria y notas de administracion.
+
+## 5. Datos mock usados
+
+- Consorcio: Edificio Las Heras.
+- Unidad funcional: UF 3B.
+- Periodo seleccionado: Mayo 2026.
+- Total gastos del periodo: `$1.245.000`.
+- Participacion estimada: `$85.000`.
+- Tabla con seis gastos comunes.
+- Resumen por categoria: Limpieza, Servicios, Seguridad y Mantenimiento.
+- Notas de administracion informativas.
+
+## 6. Filtros visuales disponibles
+
+El formulario queda preparado para GET con `asp-action="MisGastos"` y campos:
+
+- `mes`
+- `anio`
+- `categoria`
+- `busqueda`
+
+Por ahora los filtros son solo visuales y no ejecutan consulta real contra backend.
+
+## 7. Pendiente para backend
+
+- Reemplazar datos mock por un `MisGastosViewModel`.
+- Obtener consorcio y unidad funcional desde el usuario autenticado.
+- Filtrar gastos por `ConsorcioId`, periodo, categoria y busqueda.
+- Calcular participacion estimada segun el criterio de distribucion del consorcio.
+- Proteger la ruta para que solo accedan usuarios con rol Propietario.
+- Garantizar que el propietario solo vea gastos de su propio consorcio.

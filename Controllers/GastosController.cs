@@ -17,6 +17,12 @@ namespace GestionDeConsorciosMVC.Controllers
         }
 
         [HttpGet]
+        public IActionResult MisGastos()
+        {
+            return View();
+        }
+
+        [HttpGet]
         public IActionResult Details(int id)
         {
             ViewData["GastoId"] = id;

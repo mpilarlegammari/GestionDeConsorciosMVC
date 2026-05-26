@@ -371,3 +371,53 @@ Actualmente solo existen acciones GET mock para visualizar frontend. Backend deb
 - Carga de archivo.
 - Errores de validacion por campo.
 - Mensajes de exito o error para altas y ediciones.
+
+# Requerimientos Backend - Gastos Propietario
+
+## 1. Accion esperada
+
+- `GET /Gastos/MisGastos`
+
+Esta accion debera renderizar la pantalla de consulta de gastos para usuarios con rol Propietario.
+
+## 2. ViewModel sugerido
+
+- `MisGastosViewModel`
+
+Podria contener datos de cabecera, filtros seleccionados, listado de gastos, resumen por categoria y notas/aclaraciones.
+
+## 3. Datos esperados
+
+- `NombreConsorcio`
+- `UnidadFuncional`
+- `PeriodoSeleccionado`
+- `TotalGastosPeriodo`
+- `ParticipacionEstimada`
+- Lista de gastos
+- Resumen por categoria
+- Notas o aclaraciones
+
+Cada gasto mostrado al propietario deberia incluir fecha, concepto, categoria, numero de factura, monto y datos del comprobante si existe.
+
+## 4. Seguridad esperada
+
+- Solo usuarios con rol Propietario pueden acceder a `GET /Gastos/MisGastos`.
+- El propietario solo puede ver gastos de su propio consorcio.
+- El propietario no puede crear, editar ni eliminar gastos desde esta pantalla.
+- Las acciones administrativas de gastos deben quedar restringidas al rol Administrador.
+
+## 5. Filtros backend
+
+- Mes
+- Año
+- Categoria
+- Busqueda por concepto o factura
+
+Los filtros deberian aplicarse sobre los gastos del consorcio asociado al propietario autenticado.
+
+## 6. Regla de negocio
+
+- La pantalla es solo consulta.
+- Los gastos los carga la administracion.
+- El propietario solo visualiza informacion filtrada por su consorcio.
+- La participacion estimada debe calcularse segun el criterio de distribucion definido para el consorcio o la unidad funcional.
