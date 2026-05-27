@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "Comunicados";
+    ViewData["Role"] = "Administrador";
+}
+
+@* TODO backend: reemplazar comunicados mock por Model.Comunicados. *@
+@* TODO backend: obtener comunicados según rol. *@
+@* TODO backend: admin ve comunicados enviados. *@
+@* TODO backend: guardar adjuntos en servidor. *@
+@* TODO backend: validar permisos. *@
+
+<section class="page-intro">
+    <div>
+        <h2>Comunicados</h2>
+        <p>Gestión de avisos enviados a los consorcios.</p>
+    </div>
+    <a class="btn btn-primary" asp-controller="Comunicados" asp-action="Create">Nuevo comunicado</a>
+</section>
+
+<section class="app-card filter-card" aria-label="Filtros de comunicados">
+    <form method="get" asp-action="Index">
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="consorcio">Consorcio</label>
+                <select class="form-select" id="consorcio" name="consorcio">
+                    <option value="">Todos</option>
+                    <option>Edificio Las Heras</option>
+                    <option>Consorcio San Martín</option>
+                    <option>Torre Belgrano</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="mes">Mes</label>
+                <select class="form-select" id="mes" name="mes">
+                    <option value="">Todos</option>
+                    <option value="5">Mayo</option>
+                    <option value="4">Abril</option>
+                    <option value="3">Marzo</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="importancia">Importancia</label>
+                <select class="form-select" id="importancia" name="importancia">
+                    <option value="">Todos</option>
+                    <option>Importante</option>
+                    <option>Normal</option>
+                </select>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="busqueda">Buscar por título</label>
+                <input class="form-control" id="busqueda" name="busqueda" type="search" placeholder="Ej: asamblea o mantenimiento" />
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="app-card section-card">
+    <div class="app-card-title">
+        <h3>Comunicados enviados</h3>
+        <span class="status-badge">Datos mock</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-clean">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Consorcio</th>
+                    <th>Título</th>
+                    <th>Importante</th>
+                    <th>Adjunto</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>26/05/2026</td>
+                    <td>Edificio Las Heras</td>
+                    <td>Corte de agua programado</td>
+                    <td><span class="status-badge warning">Importante</span></td>
+                    <td>Sí</td>
+                    <td><div class="table-actions"><a asp-controller="Comunicados" asp-action="Details" asp-route-id="301">Ver detalle</a><a href="#">Editar</a><button type="button">Eliminar</button></div></td>
+                </tr>
+                <tr>
+                    <td>24/05/2026</td>
+                    <td>Torre Belgrano</td>
+                    <td>Limpieza de tanques</td>
+                    <td><span class="status-badge warning">Importante</span></td>
+                    <td>No</td>
+                    <td><div class="table-actions"><a asp-controller="Comunicados" asp-action="Details" asp-route-id="302">Ver detalle</a><a href="#">Editar</a><button type="button">Eliminar</button></div></td>
+                </tr>
+                <tr>
+                    <td>18/05/2026</td>
+                    <td>Consorcio San Martín</td>
+                    <td>Asamblea ordinaria</td>
+                    <td><span class="status-badge neutral">Normal</span></td>
+                    <td>Sí</td>
+                    <td><div class="table-actions"><a asp-controller="Comunicados" asp-action="Details" asp-route-id="303">Ver detalle</a><a href="#">Editar</a><button type="button">Eliminar</button></div></td>
+                </tr>
+                <tr>
+                    <td>10/05/2026</td>
+                    <td>Edificio Las Heras</td>
+                    <td>Mantenimiento de ascensores</td>
+                    <td><span class="status-badge neutral">Normal</span></td>
+                    <td>No</td>
+                    <td><div class="table-actions"><a asp-controller="Comunicados" asp-action="Details" asp-route-id="304">Ver detalle</a><a href="#">Editar</a><button type="button">Eliminar</button></div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>

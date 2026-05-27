@@ -1,0 +1,90 @@
+@{
+    ViewData["Title"] = "Detalle Comunicado";
+    var role = (ViewData["Role"] as string ?? "Administrador").Trim();
+    var esPropietario = role.Equals("Propietario", StringComparison.OrdinalIgnoreCase)
+        || Context.Request.Path.Value?.Contains("MisComunicados", StringComparison.OrdinalIgnoreCase) == true
+        || Context.Request.Query["rol"] == "propietario";
+    ViewData["Role"] = esPropietario ? "Propietario" : "Administrador";
+}
+
+@* TODO backend: reemplazar comunicados mock por Model.Comunicados. *@
+@* TODO backend: obtener comunicados según rol. *@
+@* TODO backend: admin ve comunicados enviados. *@
+@* TODO backend: propietario ve solo comunicados de su consorcio. *@
+@* TODO backend: guardar adjuntos en servidor. *@
+@* TODO backend: validar permisos. *@
+
+<section class="page-intro">
+    <div>
+        <h2>Corte de agua programado</h2>
+        <p>Detalle del comunicado publicado el 26/05/2026.</p>
+    </div>
+    <span class="status-badge warning">Importante</span>
+</section>
+
+<section class="content-grid">
+    <article class="app-card">
+        <div class="app-card-title">
+            <h3>Mensaje completo</h3>
+            <span class="status-badge">Edificio Las Heras</span>
+        </div>
+        <dl class="detail-list">
+            <div>
+                <dt>Fecha</dt>
+                <dd>26/05/2026</dd>
+            </div>
+            <div>
+                <dt>Consorcio</dt>
+                <dd>Edificio Las Heras</dd>
+            </div>
+            <div>
+                <dt>Estado importante</dt>
+                <dd><span class="status-badge warning">Importante</span></dd>
+            </div>
+            <div>
+                <dt>Archivo adjunto</dt>
+                <dd>cronograma-corte-agua.pdf</dd>
+            </div>
+            <div class="detail-span-2">
+                <dt>Mensaje</dt>
+                <dd>Se informa a los propietarios que el día 28/05/2026 entre las 9:00 y las 13:00 se realizará un corte de agua programado por tareas de mantenimiento en el tanque principal. Se recomienda tomar los recaudos necesarios durante esa franja horaria.</dd>
+            </div>
+        </dl>
+    </article>
+
+    <aside class="app-card">
+        <div class="app-card-title">
+            <h3>Adjunto</h3>
+            <span class="status-badge">Mock</span>
+        </div>
+        <ul class="simple-list">
+            <li>
+                <span>Archivo</span>
+                <strong>cronograma-corte-agua.pdf</strong>
+            </li>
+            <li>
+                <span>Tipo</span>
+                <strong>PDF</strong>
+            </li>
+            <li>
+                <span>Disponibilidad</span>
+                <strong>Consulta mock</strong>
+            </li>
+        </ul>
+    </aside>
+</section>
+
+<section class="app-card section-card">
+    <div class="button-group">
+        @if (esPropietario)
+        {
+            <a class="btn btn-outline-secondary" asp-controller="Comunicados" asp-action="MisComunicados">Volver</a>
+        }
+        else
+        {
+            <a class="btn btn-outline-secondary" asp-controller="Comunicados" asp-action="Index">Volver</a>
+            <a class="btn btn-outline-primary" href="#">Editar comunicado</a>
+        }
+        <a class="btn btn-primary" href="#">Descargar adjunto</a>
+    </div>
+</section>

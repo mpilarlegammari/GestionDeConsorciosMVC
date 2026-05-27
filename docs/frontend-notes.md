@@ -475,3 +475,56 @@ El formulario queda preparado con `asp-action="Generar"` y `method="post"`, pero
 - Validar que no se genere dos veces el mismo periodo para el mismo consorcio.
 - Persistir expensas.
 - Generar liquidacion PDF en una etapa futura.
+
+# Frontend - Comunicados
+
+## 1. Vistas creadas
+
+- `Views/Comunicados/Index.cshtml`: listado administrativo de comunicados enviados.
+- `Views/Comunicados/Create.cshtml`: formulario mock para nuevo comunicado.
+- `Views/Comunicados/MisComunicados.cshtml`: consulta de comunicados para propietario.
+- `Views/Comunicados/Details.cshtml`: detalle visual de comunicado.
+
+Tambien se creo `ComunicadosController` con acciones GET mock:
+
+- `GET /Comunicados`
+- `GET /Comunicados/Create`
+- `GET /Comunicados/MisComunicados`
+- `GET /Comunicados/Details/{id}`
+
+## 2. Diferencias Admin vs Propietario
+
+- Administrador puede ver comunicados enviados, acceder a nuevo comunicado y ver acciones visuales de editar/eliminar.
+- Propietario solo puede consultar comunicados de su consorcio y abrir el detalle.
+- El detalle oculta la accion de edicion cuando se abre desde el perfil Propietario.
+
+## 3. Datos mock usados
+
+- Resumen admin con comunicados enviados, importantes, consorcios notificados y ultimo comunicado.
+- Tabla admin con comunicados de ejemplo.
+- Resumen propietario con comunicados nuevos, importantes y total recibidos.
+- Listado propietario de comunicados recibidos.
+- Detalle mock del comunicado "Corte de agua programado" con adjunto.
+
+## 4. Validaciones frontend
+
+- Consorcio requerido.
+- Titulo requerido.
+- Mensaje requerido.
+- Archivo opcional con extension permitida: `pdf`, `jpg`, `jpeg`, `png`.
+
+## 5. Rutas
+
+- `/Comunicados`
+- `/Comunicados/Create`
+- `/Comunicados/MisComunicados`
+- `/Comunicados/Details/{id}`
+
+## 6. Pendiente para backend
+
+- Reemplazar comunicados mock por ViewModels reales.
+- Obtener comunicados segun rol.
+- Permitir que Administrador cree y vea comunicados enviados.
+- Permitir que Propietario vea solo comunicados de su consorcio.
+- Guardar adjuntos en servidor.
+- Validar permisos por rol y pertenencia al consorcio.

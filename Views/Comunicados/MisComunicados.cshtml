@@ -1,0 +1,115 @@
+@{
+    ViewData["Title"] = "Mis Comunicados";
+    ViewData["Role"] = "Propietario";
+}
+
+@* TODO backend: reemplazar comunicados mock por Model.Comunicados. *@
+@* TODO backend: obtener comunicados según rol. *@
+@* TODO backend: propietario ve solo comunicados de su consorcio. *@
+@* TODO backend: validar permisos. *@
+
+<section class="page-intro">
+    <div>
+        <h2>Mis Comunicados</h2>
+        <p>Avisos y novedades enviados por la administración.</p>
+    </div>
+    <span class="status-badge">Solo lectura</span>
+</section>
+
+<section class="app-card filter-card" aria-label="Filtros de mis comunicados">
+    <form method="get" asp-action="MisComunicados">
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="mes">Mes</label>
+                <select class="form-select" id="mes" name="mes">
+                    <option value="">Todos</option>
+                    <option value="5">Mayo</option>
+                    <option value="4">Abril</option>
+                    <option value="3">Marzo</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="importancia">Importancia</label>
+                <select class="form-select" id="importancia" name="importancia">
+                    <option value="">Todos</option>
+                    <option>Importante</option>
+                    <option>Normal</option>
+                </select>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="busqueda">Buscar por título</label>
+                <input class="form-control" id="busqueda" name="busqueda" type="search" placeholder="Ej: asamblea" />
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="content-grid">
+    <article class="app-card">
+        <div class="app-card-title">
+            <h3>Comunicados recibidos</h3>
+            <span class="status-badge">Edificio Las Heras</span>
+        </div>
+        <ul class="activity-list">
+            <li>
+                <span class="activity-dot warning"></span>
+                <span>
+                    <strong>26/05/2026 - Corte de agua programado</strong><br />
+                    Se informa un corte de agua por tareas de mantenimiento en el tanque principal.
+                    <span class="status-badge warning">Importante</span>
+                    <span class="table-actions"><a asp-controller="Comunicados" asp-action="Details" asp-route-id="301" asp-route-rol="propietario">Ver detalle</a></span>
+                </span>
+            </li>
+            <li>
+                <span class="activity-dot success"></span>
+                <span>
+                    <strong>24/05/2026 - Limpieza de tanques</strong><br />
+                    La administración informa fecha y horario de limpieza programada de tanques.
+                    <span class="status-badge warning">Importante</span>
+                    <span class="table-actions"><a asp-controller="Comunicados" asp-action="Details" asp-route-id="302" asp-route-rol="propietario">Ver detalle</a></span>
+                </span>
+            </li>
+            <li>
+                <span class="activity-dot"></span>
+                <span>
+                    <strong>18/05/2026 - Asamblea ordinaria</strong><br />
+                    Convocatoria a asamblea ordinaria para tratar temas del consorcio.
+                    <span class="status-badge neutral">Normal</span>
+                    <span class="table-actions"><a asp-controller="Comunicados" asp-action="Details" asp-route-id="303" asp-route-rol="propietario">Ver detalle</a></span>
+                </span>
+            </li>
+            <li>
+                <span class="activity-dot"></span>
+                <span>
+                    <strong>10/05/2026 - Mantenimiento de ascensores</strong><br />
+                    Aviso de revisión técnica mensual de ascensores.
+                    <span class="status-badge neutral">Normal</span>
+                    <span class="table-actions"><a asp-controller="Comunicados" asp-action="Details" asp-route-id="304" asp-route-rol="propietario">Ver detalle</a></span>
+                </span>
+            </li>
+        </ul>
+    </article>
+
+    <aside class="app-card">
+        <div class="app-card-title">
+            <h3>Notas</h3>
+        </div>
+        <ul class="simple-list">
+            <li>
+                <span>Perfil</span>
+                <strong>Propietario</strong>
+            </li>
+            <li>
+                <span>Acciones</span>
+                <strong>Solo lectura</strong>
+            </li>
+            <li>
+                <span>Adjuntos</span>
+                <strong>Consulta mock</strong>
+            </li>
+        </ul>
+    </aside>
+</section>

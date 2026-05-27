@@ -655,3 +655,52 @@ Estas acciones deberan separar la consulta administrativa de expensas ya generad
 - Solo rol Administrador puede acceder.
 - Administrador solo puede generar expensas para sus consorcios.
 - Las acciones de generacion real deben validar permisos antes de persistir.
+
+# Requerimientos Backend - Comunicados
+
+## 1. Modelo Comunicado
+
+El modelo `Comunicado` representa un aviso publicado por la administracion para un consorcio. Campos base esperados:
+
+- `Id`
+- `ConsorcioId`
+- `Titulo`
+- `Mensaje`
+- `FechaPublicacion`
+- `ArchivoAdjuntoPath`
+- `Importante`
+
+Debe relacionarse con `Consorcio`.
+
+## 2. Acciones esperadas
+
+- `GET /Comunicados`
+- `GET /Comunicados/Create`
+- `POST /Comunicados/Create`
+- `GET /Comunicados/MisComunicados`
+- `GET /Comunicados/Details/{id}`
+
+## 3. ViewModels sugeridos
+
+- `ComunicadoCreateViewModel`
+- `ComunicadosAdminViewModel`
+- `MisComunicadosViewModel`
+- `ComunicadoDetailsViewModel`
+
+`ComunicadoCreateViewModel` deberia contemplar archivo adjunto mediante `IFormFile`. Los ViewModels de listado deberian separar filtros, metricas y filas de comunicados.
+
+## 4. Seguridad
+
+- Admin crea comunicados y ve comunicados enviados.
+- Propietario solo lee comunicados de su consorcio.
+- El detalle debe validar que el usuario tenga permiso para ver el comunicado solicitado.
+- Las acciones de edicion o eliminacion deben restringirse a Administrador.
+
+## 5. Validaciones
+
+- Titulo obligatorio.
+- Mensaje obligatorio.
+- Consorcio obligatorio.
+- Adjunto permitido: `pdf`, `jpg`, `jpeg`, `png`.
+- Validar tipo y tamaño del archivo en servidor.
+- Validar que el administrador pueda publicar para el consorcio seleccionado.

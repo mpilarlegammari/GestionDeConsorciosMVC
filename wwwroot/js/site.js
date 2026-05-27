@@ -481,4 +481,101 @@
       window.validarGeneracionExpensas(false);
     });
   }
+
+  const comunicadoForm = document.querySelector("[data-comunicado-form]");
+  const allowedComunicadoExtensions = ["pdf", "jpg", "jpeg", "png"];
+
+  window.mostrarAdjuntoComunicadoSeleccionado = (input) => {
+    const file = input.files?.[0];
+    const preview = document.querySelector("[data-comunicado-file-preview]");
+
+    setFieldError(input, "");
+
+    if (!preview) {
+      return;
+    }
+
+    if (!file) {
+      preview.classList.remove("show");
+      preview.innerHTML = "";
+      return;
+    }
+
+    const size = file.size ? `${(file.size / 1024).toFixed(1)} KB` : "Tamaño no disponible";
+
+    preview.innerHTML = `
+      <div>
+        <strong>${file.name}</strong>
+        <span>${size}</span>
+      </div>
+      <button class="btn btn-outline-danger btn-sm" type="button" onclick="quitarAdjuntoComunicadoSeleccionado()">Quitar archivo</button>
+    `;
+    preview.classList.add("show");
+  };
+
+  window.quitarAdjuntoComunicadoSeleccionado = () => {
+    const input = document.querySelector("[data-comunicado-file]");
+    const preview = document.querySelector("[data-comunicado-file-preview]");
+
+    if (input) {
+      input.value = "";
+      setFieldError(input, "");
+    }
+
+    if (preview) {
+      preview.classList.remove("show");
+      preview.innerHTML = "";
+    }
+  };
+
+  window.validarFormularioComunicado = (draftOnly = false) => {
+    if (!comunicadoForm) {
+      return true;
+    }
+
+    let isValid = true;
+    const summary = comunicadoForm.querySelector("[data-comunicado-summary]");
+
+    comunicadoForm.querySelectorAll("[data-comunicado-required]").forEach((field) => {
+      const value = field.value.trim();
+
+      if (!value) {
+        setFieldError(field, "Campo requerido.");
+        isValid = false;
+      } else {
+        setFieldError(field, "");
+      }
+    });
+
+    const fileInput = comunicadoForm.querySelector("[data-comunicado-file]");
+    const file = fileInput?.files?.[0];
+
+    if (fileInput && file) {
+      const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+
+      if (!allowedComunicadoExtensions.includes(extension)) {
+        setFieldError(fileInput, "Formato permitido: pdf, jpg, jpeg o png.");
+        isValid = false;
+      }
+    }
+
+    if (summary) {
+      summary.textContent = isValid
+        ? (draftOnly
+          ? "Borrador mock validado. No se guardaron datos."
+          : "Comunicado mock validado. No se enviaron datos.")
+        : "Revisa los campos marcados antes de continuar.";
+      summary.classList.toggle("show", true);
+      summary.classList.toggle("success", isValid);
+    }
+
+    return isValid;
+  };
+
+  if (comunicadoForm) {
+    comunicadoForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      window.validarFormularioComunicado(false);
+    });
+  }
 })();

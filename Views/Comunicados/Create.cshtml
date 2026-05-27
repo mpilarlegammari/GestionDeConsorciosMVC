@@ -1,0 +1,72 @@
+@{
+    ViewData["Title"] = "Nuevo Comunicado";
+    ViewData["Role"] = "Administrador";
+}
+
+@* TODO backend: reemplazar comunicados mock por Model.Comunicados. *@
+@* TODO backend: obtener comunicados según rol. *@
+@* TODO backend: admin ve comunicados enviados. *@
+@* TODO backend: guardar adjuntos en servidor. *@
+@* TODO backend: validar permisos. *@
+
+<section class="page-intro">
+    <div>
+        <h2>Nuevo comunicado</h2>
+        <p>Publicá un aviso para los propietarios de un consorcio.</p>
+    </div>
+    <span class="status-badge">Formulario mock</span>
+</section>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data" data-comunicado-form>
+    <section class="app-card section-card">
+        <div class="app-card-title">
+            <h3>Datos del comunicado</h3>
+            <span class="status-badge">Sin persistencia</span>
+        </div>
+
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="ConsorcioId">Consorcio</label>
+                <select class="form-select" id="ConsorcioId" name="ConsorcioId" data-comunicado-required>
+                    <option value="">Seleccionar consorcio</option>
+                    <option value="1">Edificio Las Heras</option>
+                    <option value="2">Consorcio San Martín</option>
+                    <option value="3">Torre Belgrano</option>
+                </select>
+                <span class="field-validation" data-error-for="ConsorcioId"></span>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="Titulo">Título</label>
+                <input class="form-control" id="Titulo" name="Titulo" type="text" placeholder="Ej: Corte de agua programado" data-comunicado-required />
+                <span class="field-validation" data-error-for="Titulo"></span>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="Mensaje">Mensaje</label>
+                <textarea class="form-control" id="Mensaje" name="Mensaje" rows="6" placeholder="Escribí el contenido del comunicado." data-comunicado-required></textarea>
+                <span class="field-validation" data-error-for="Mensaje"></span>
+            </div>
+            <div>
+                <label class="form-label" for="Importante">Importancia</label>
+                <div class="form-check">
+                    <input class="form-check-input" id="Importante" name="Importante" type="checkbox" value="true" />
+                    <label class="form-check-label" for="Importante">Marcar como importante</label>
+                </div>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="ArchivoAdjunto">Adjuntar archivo opcional</label>
+                <input class="form-control" id="ArchivoAdjunto" name="ArchivoAdjunto" type="file" accept=".pdf,.jpg,.jpeg,.png" data-comunicado-file onchange="mostrarAdjuntoComunicadoSeleccionado(this)" />
+                <span class="field-validation" data-error-for="ArchivoAdjunto"></span>
+                <div class="file-preview" data-comunicado-file-preview></div>
+            </div>
+        </div>
+
+        <p class="form-note">El comunicado será visible para los propietarios del consorcio seleccionado.</p>
+        <div class="form-summary" data-comunicado-summary></div>
+
+        <div class="form-actions">
+            <a class="btn btn-outline-secondary" asp-controller="Comunicados" asp-action="Index">Cancelar</a>
+            <button class="btn btn-outline-primary" type="button" onclick="validarFormularioComunicado(true)">Guardar borrador mock</button>
+            <button class="btn btn-primary" type="submit">Enviar comunicado mock</button>
+        </div>
+    </section>
+</form>
