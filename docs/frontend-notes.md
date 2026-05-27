@@ -411,3 +411,67 @@ Estas funciones validan el formulario, muestran errores visuales y renderizan un
 - Validar tipo y tamaño de archivo.
 - Dejar el pago en estado `PendienteRevision`.
 - Permitir aprobacion o rechazo solo al rol Administrador.
+
+# Frontend - Expensas Administrador
+
+## 1. Vistas creadas
+
+- `Views/Expensas/Index.cshtml`: listado administrativo mock de expensas generadas.
+- `Views/Expensas/Generar.cshtml`: formulario mock para generar expensas.
+
+Tambien se ampliaron las acciones GET mock de `ExpensasController`:
+
+- `GET /Expensas`
+- `GET /Expensas/Index`
+- `GET /Expensas/Generar`
+
+## 2. Datos mock usados
+
+- Resumen mensual: total liquidado, expensas generadas, pendientes y pagadas.
+- Listado con ocho expensas mock de distintos consorcios y estados.
+- Resumen previo de generacion con total de gastos, cantidad de UF, monto estimado por UF y gastos incluidos.
+- Tabla mock de gastos incluidos en la liquidacion.
+
+## 3. Campos del formulario Generar Expensas
+
+- `ConsorcioId`
+- `Periodo`
+- `FechaEmision`
+- `FechaVencimiento`
+- `CriterioDistribucion`
+- `Observaciones`
+
+El formulario queda preparado con `asp-action="Generar"` y `method="post"`, pero el submit se intercepta con JavaScript y no guarda datos.
+
+## 4. Estados visuales implementados
+
+- Pendiente: badge amarillo.
+- Pagada: badge verde.
+- Vencida: badge rojo.
+
+## 5. Validaciones frontend
+
+- Consorcio requerido.
+- Periodo requerido.
+- Fecha de emision requerida.
+- Fecha de vencimiento requerida.
+- Fecha de vencimiento posterior a fecha de emision.
+- Criterio de distribucion requerido.
+
+## 6. Rutas disponibles
+
+- `/Expensas`
+- `/Expensas/Index`
+- `/Expensas/Generar`
+
+## 7. Pendiente para backend
+
+- Reemplazar datos mock por ViewModels reales.
+- Obtener consorcios administrados por el usuario.
+- Obtener gastos del periodo seleccionado.
+- Calcular total de gastos.
+- Distribuir el monto segun criterio seleccionado.
+- Generar una expensa por UF.
+- Validar que no se genere dos veces el mismo periodo para el mismo consorcio.
+- Persistir expensas.
+- Generar liquidacion PDF en una etapa futura.

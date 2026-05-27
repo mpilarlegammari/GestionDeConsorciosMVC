@@ -1,0 +1,188 @@
+@{
+    ViewData["Title"] = "Expensas";
+    ViewData["Role"] = "Administrador";
+}
+
+@* TODO backend: reemplazar datos mock por ViewModel. *@
+@* TODO backend: obtener consorcios administrados por el usuario. *@
+@* TODO backend: reemplazar tabla mock por Model.Expensas. *@
+@* TODO backend: generar liquidación PDF en etapa futura. *@
+
+<section class="page-intro">
+    <div>
+        <h2>Expensas</h2>
+        <p>Gestión de liquidaciones por consorcio y período.</p>
+    </div>
+    <a class="btn btn-primary" asp-controller="Expensas" asp-action="Generar">Generar Expensas</a>
+</section>
+
+<section class="dashboard-grid">
+    <article class="app-card metric-card">
+        <span>Total liquidado del mes</span>
+        <strong>$8.450.000</strong>
+        <small>Mayo 2026</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Expensas generadas</span>
+        <strong>86</strong>
+        <small>Liquidaciones emitidas</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Pendientes de pago</span>
+        <strong>23</strong>
+        <small>Requieren seguimiento</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Pagadas</span>
+        <strong>63</strong>
+        <small>Con pago aprobado</small>
+    </article>
+</section>
+
+<section class="app-card filter-card" aria-label="Filtros de expensas">
+    <form method="get" asp-action="Index">
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="consorcio">Consorcio</label>
+                <select class="form-select" id="consorcio" name="consorcio">
+                    <option value="">Todos</option>
+                    <option>Edificio Las Heras</option>
+                    <option>Consorcio San Martín</option>
+                    <option>Torre Belgrano</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="mes">Mes</label>
+                <select class="form-select" id="mes" name="mes">
+                    <option value="5">Mayo</option>
+                    <option value="4">Abril</option>
+                    <option value="3">Marzo</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="anio">Año</label>
+                <select class="form-select" id="anio" name="anio">
+                    <option>2026</option>
+                    <option>2025</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="estado">Estado</label>
+                <select class="form-select" id="estado" name="estado">
+                    <option value="">Todos</option>
+                    <option>Pendiente</option>
+                    <option>Pagada</option>
+                    <option>Vencida</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="app-card section-card">
+    <div class="app-card-title">
+        <h3>Liquidaciones generadas</h3>
+        <span class="status-badge">Datos mock</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-clean">
+            <thead>
+                <tr>
+                    <th>Período</th>
+                    <th>Consorcio</th>
+                    <th>UF</th>
+                    <th>Propietario</th>
+                    <th>Monto</th>
+                    <th>Vencimiento</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Mayo 2026</td>
+                    <td>Edificio Las Heras</td>
+                    <td>UF 3B</td>
+                    <td>María Gómez</td>
+                    <td>$85.000</td>
+                    <td>10/06/2026</td>
+                    <td><span class="status-badge warning">Pendiente</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="105">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#">Descargar</a></div></td>
+                </tr>
+                <tr>
+                    <td>Mayo 2026</td>
+                    <td>Edificio Las Heras</td>
+                    <td>UF 2A</td>
+                    <td>Jorge Pérez</td>
+                    <td>$83.000</td>
+                    <td>10/06/2026</td>
+                    <td><span class="status-badge success">Pagada</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="106">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#">Descargar</a></div></td>
+                </tr>
+                <tr>
+                    <td>Mayo 2026</td>
+                    <td>Consorcio San Martín</td>
+                    <td>UF 1C</td>
+                    <td>Lucía Torres</td>
+                    <td>$92.500</td>
+                    <td>10/06/2026</td>
+                    <td><span class="status-badge warning">Pendiente</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="107">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#">Descargar</a></div></td>
+                </tr>
+                <tr>
+                    <td>Mayo 2026</td>
+                    <td>Torre Belgrano</td>
+                    <td>UF 8D</td>
+                    <td>Andrés Molina</td>
+                    <td>$110.000</td>
+                    <td>10/06/2026</td>
+                    <td><span class="status-badge danger">Vencida</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="108">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#">Descargar</a></div></td>
+                </tr>
+                <tr>
+                    <td>Abril 2026</td>
+                    <td>Edificio Las Heras</td>
+                    <td>UF 3B</td>
+                    <td>María Gómez</td>
+                    <td>$78.500</td>
+                    <td>10/05/2026</td>
+                    <td><span class="status-badge success">Pagada</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="104">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#">Descargar</a></div></td>
+                </tr>
+                <tr>
+                    <td>Abril 2026</td>
+                    <td>Consorcio San Martín</td>
+                    <td>UF 4A</td>
+                    <td>Carolina Ruiz</td>
+                    <td>$88.900</td>
+                    <td>10/05/2026</td>
+                    <td><span class="status-badge success">Pagada</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="109">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#">Descargar</a></div></td>
+                </tr>
+                <tr>
+                    <td>Abril 2026</td>
+                    <td>Torre Belgrano</td>
+                    <td>UF 6B</td>
+                    <td>Martín Silva</td>
+                    <td>$101.200</td>
+                    <td>10/05/2026</td>
+                    <td><span class="status-badge warning">Pendiente</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="110">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#">Descargar</a></div></td>
+                </tr>
+                <tr>
+                    <td>Marzo 2026</td>
+                    <td>Edificio Las Heras</td>
+                    <td>UF 5C</td>
+                    <td>Paula Fernández</td>
+                    <td>$74.800</td>
+                    <td>10/04/2026</td>
+                    <td><span class="status-badge success">Pagada</span></td>
+                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="111">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#">Descargar</a></div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>

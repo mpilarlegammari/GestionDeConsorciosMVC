@@ -403,4 +403,82 @@
       window.validarFormularioPago();
     });
   }
+
+  const expensasForm = document.querySelector("[data-expensas-form]");
+  const expensasMock = {
+    "1": { total: "$1.245.000", uf: "15", montoUf: "$83.000", gastos: "6" },
+    "2": { total: "$1.680.000", uf: "24", montoUf: "$70.000", gastos: "8" },
+    "3": { total: "$2.420.000", uf: "32", montoUf: "$75.625", gastos: "9" }
+  };
+
+  window.actualizarResumenExpensasMock = () => {
+    if (!expensasForm) {
+      return;
+    }
+
+    const consorcio = expensasForm.querySelector("[name='ConsorcioId']")?.value ?? "1";
+    const data = expensasMock[consorcio] ?? expensasMock["1"];
+
+    const total = document.querySelector("[data-expensas-total]");
+    const uf = document.querySelector("[data-expensas-uf]");
+    const montoUf = document.querySelector("[data-expensas-monto-uf]");
+    const gastos = document.querySelector("[data-expensas-gastos]");
+
+    if (total) total.textContent = data.total;
+    if (uf) uf.textContent = data.uf;
+    if (montoUf) montoUf.textContent = data.montoUf;
+    if (gastos) gastos.textContent = data.gastos;
+  };
+
+  window.validarGeneracionExpensas = (previewOnly = false) => {
+    if (!expensasForm) {
+      return true;
+    }
+
+    let isValid = true;
+    const summary = expensasForm.querySelector("[data-expensas-summary]");
+
+    expensasForm.querySelectorAll("[data-expensas-required]").forEach((field) => {
+      const value = field.value.trim();
+
+      if (!value) {
+        setFieldError(field, "Campo requerido.");
+        isValid = false;
+      } else {
+        setFieldError(field, "");
+      }
+    });
+
+    const fechaEmision = expensasForm.querySelector("[name='FechaEmision']");
+    const fechaVencimiento = expensasForm.querySelector("[name='FechaVencimiento']");
+
+    if (fechaEmision?.value && fechaVencimiento?.value) {
+      const emision = new Date(`${fechaEmision.value}T00:00:00`);
+      const vencimiento = new Date(`${fechaVencimiento.value}T00:00:00`);
+
+      if (vencimiento <= emision) {
+        setFieldError(fechaVencimiento, "El vencimiento debe ser posterior a la emision.");
+        isValid = false;
+      }
+    }
+
+    if (summary) {
+      summary.textContent = isValid
+        ? (previewOnly
+          ? "Vista previa mock validada. No se generaron expensas."
+          : "Generacion mock validada. No se guardaron datos.")
+        : "Revisa los campos marcados antes de continuar.";
+      summary.classList.toggle("show", true);
+      summary.classList.toggle("success", isValid);
+    }
+
+    return isValid;
+  };
+
+  if (expensasForm) {
+    expensasForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      window.validarGeneracionExpensas(false);
+    });
+  }
 })();

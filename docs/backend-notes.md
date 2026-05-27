@@ -603,3 +603,55 @@ Nota: el repositorio ya contiene archivos previos de contexto/migraciones. En es
 6. Crear controladores.
 7. Crear autenticación.
 8. Reemplazar datos mock frontend.
+
+# Requerimientos Backend - Expensas Administrador
+
+## 1. Acciones esperadas
+
+- `GET /Expensas`
+- `GET /Expensas/Generar`
+- `POST /Expensas/Generar`
+
+Estas acciones deberan separar la consulta administrativa de expensas ya generadas de la generacion real de nuevas liquidaciones.
+
+## 2. ViewModels sugeridos
+
+- `ExpensasAdminIndexViewModel`
+- `GenerarExpensasViewModel`
+- `ExpensaAdminRowViewModel`
+- `GastoIncluidoViewModel`
+
+`ExpensasAdminIndexViewModel` deberia contener metricas, filtros y filas de expensas. `GenerarExpensasViewModel` deberia contener consorcios disponibles, periodo, fechas, criterio, gastos incluidos y resumen previo.
+
+## 3. Datos esperados
+
+- Lista de consorcios.
+- Periodo.
+- Gastos del periodo.
+- Unidades funcionales.
+- Total de gastos.
+- Monto por UF.
+- Estados de expensa.
+
+## 4. Validaciones backend
+
+- Consorcio obligatorio.
+- Periodo obligatorio.
+- Fecha vencimiento posterior a emision.
+- No generar expensas duplicadas.
+- El consorcio debe tener unidades funcionales.
+- El periodo debe tener gastos cargados.
+
+## 5. Reglas de negocio
+
+- Obtener gastos del consorcio y periodo.
+- Calcular total de gastos.
+- Distribuir monto segun criterio seleccionado.
+- Crear una expensa por unidad funcional.
+- Dejar expensas en estado `Pendiente`.
+
+## 6. Seguridad
+
+- Solo rol Administrador puede acceder.
+- Administrador solo puede generar expensas para sus consorcios.
+- Las acciones de generacion real deben validar permisos antes de persistir.
