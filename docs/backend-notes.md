@@ -704,3 +704,79 @@ Debe relacionarse con `Consorcio`.
 - Adjunto permitido: `pdf`, `jpg`, `jpeg`, `png`.
 - Validar tipo y tamaño del archivo en servidor.
 - Validar que el administrador pueda publicar para el consorcio seleccionado.
+# Requerimientos Backend - Modales y Adjuntos
+
+## 1. Confirmaciones reales
+
+Los modales actuales son solo frontend mock. Mas adelante backend debera implementar las acciones reales asociadas a confirmaciones, especialmente:
+
+- eliminar consorcios, gastos o comunicados cuando corresponda;
+- validar permisos por rol antes de ejecutar la accion;
+- devolver errores de validacion o autorizacion para mostrarlos en pantalla;
+- evitar eliminaciones fisicas si se decide usar baja logica.
+
+## 2. Adjuntos y comprobantes
+
+El modal de adjuntos muestra archivos mock. Backend debera proveer:
+
+- nombre real del archivo;
+- tipo de archivo;
+- tamano;
+- URL segura de visualizacion;
+- URL segura de descarga;
+- validacion de permisos del usuario autenticado.
+
+## 3. Recursos involucrados
+
+Los adjuntos se usaran principalmente en:
+
+- comprobantes de gastos;
+- comprobantes de pagos;
+- liquidaciones de expensas;
+- adjuntos de comunicados.
+
+## 4. Seguridad esperada
+
+- Administrador puede acceder a adjuntos de los consorcios que administra.
+- Propietario solo puede acceder a archivos vinculados a su consorcio, unidad funcional, expensas, pagos o comunicados permitidos.
+- Las URLs de descarga no deberian exponer archivos de otros usuarios.
+
+## 5. Pendiente
+
+- Definir estrategia de almacenamiento de archivos.
+- Definir endpoints de descarga/visualizacion.
+- Validar tipos y tamanos de archivo.
+- Registrar auditoria si se requiere trazabilidad.
+
+# Requerimientos Backend - Feedback de Formularios
+
+## 1. Objetivo
+
+El frontend muestra toasts y mensajes inline de forma mock. Cuando existan acciones POST reales, backend debera devolver resultados claros para que el frontend pueda mostrar feedback consistente.
+
+## 2. Respuestas esperadas
+
+Para formularios reales se recomienda devolver:
+
+- resultado exitoso;
+- mensaje principal para el usuario;
+- errores por campo;
+- errores generales del formulario;
+- estado de autorizacion cuando el usuario no tenga permisos;
+- informacion del recurso creado o actualizado si corresponde.
+
+## 3. Formularios involucrados
+
+- Login.
+- Crear Consorcio.
+- Registrar Gasto.
+- Generar Expensas.
+- Informar Pago.
+- Crear Comunicado.
+
+## 4. Pendiente
+
+- Definir ViewModels con validaciones.
+- Mapear errores de ModelState a mensajes visibles.
+- Mantener mensajes amigables para usuario final.
+- Diferenciar errores tecnicos internos de errores mostrables.

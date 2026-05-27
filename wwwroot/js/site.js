@@ -18,6 +18,36 @@
   });
 
   const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  const showMockToast = ({ title = "Accion mock", message = "La accion se ejecuto de forma visual.", variant = "success", kicker = "Frontend" } = {}) => {
+    const toastElement = document.getElementById("mockFeedbackToast");
+
+    if (!toastElement || !window.bootstrap?.Toast) {
+      return;
+    }
+
+    const titleElement = toastElement.querySelector("[data-toast-title]");
+    const messageElement = toastElement.querySelector("[data-toast-message]");
+    const kickerElement = toastElement.querySelector("[data-toast-kicker]");
+
+    toastElement.classList.remove("success", "warning", "danger", "info");
+    toastElement.classList.add(variant);
+
+    if (titleElement) {
+      titleElement.textContent = title;
+    }
+
+    if (messageElement) {
+      messageElement.textContent = message;
+    }
+
+    if (kickerElement) {
+      kickerElement.textContent = kicker;
+    }
+
+    window.bootstrap.Toast.getOrCreateInstance(toastElement, { delay: 4200 }).show();
+  };
+
+  window.mostrarFeedbackMock = showMockToast;
   const loginForm = document.querySelector("[data-login-form]");
 
   if (loginForm) {
@@ -69,8 +99,19 @@
       }
 
       if (!isValid) {
+        showMockToast({
+          title: "Revisa el login",
+          message: "Completa email, contrasena y rol para continuar.",
+          variant: "danger"
+        });
         return;
       }
+
+      showMockToast({
+        title: "Login mock validado",
+        message: "Redirigiendo al dashboard seleccionado.",
+        variant: "success"
+      });
 
       window.location.href = role === "Propietario"
         ? "/Home/PropietarioDashboard"
@@ -188,6 +229,14 @@
         summary.classList.toggle("show", true);
         summary.classList.toggle("success", isValid);
       }
+
+      showMockToast({
+        title: isValid ? "Consorcio validado" : "Revisa el formulario",
+        message: isValid
+          ? "La carga mock del consorcio esta lista. No se guardaron datos."
+          : "Hay campos obligatorios o unidades funcionales duplicadas.",
+        variant: isValid ? "success" : "danger"
+      });
     });
   }
 
@@ -283,6 +332,14 @@
       summary.classList.toggle("show", true);
       summary.classList.toggle("success", isValid);
     }
+
+    showMockToast({
+      title: isValid ? "Gasto validado" : "Revisa el gasto",
+      message: isValid
+        ? "El gasto mock esta listo para registrar cuando exista backend."
+        : "Completa los campos obligatorios y revisa el archivo adjunto.",
+      variant: isValid ? "success" : "danger"
+    });
 
     return isValid;
   };
@@ -394,6 +451,14 @@
       summary.classList.toggle("success", isValid);
     }
 
+    showMockToast({
+      title: isValid ? "Pago listo para revision" : "Revisa el pago",
+      message: isValid
+        ? "El pago mock quedaria pendiente de revision administrativa."
+        : "Completa los datos obligatorios y adjunta un comprobante valido.",
+      variant: isValid ? "success" : "danger"
+    });
+
     return isValid;
   };
 
@@ -471,6 +536,16 @@
       summary.classList.toggle("show", true);
       summary.classList.toggle("success", isValid);
     }
+
+    showMockToast({
+      title: isValid ? (previewOnly ? "Vista previa validada" : "Expensas validadas") : "Revisa la generacion",
+      message: isValid
+        ? (previewOnly
+          ? "La vista previa mock esta lista para revisar."
+          : "La generacion mock quedaria lista cuando exista backend.")
+        : "Completa los campos obligatorios y revisa las fechas.",
+      variant: isValid ? "success" : "danger"
+    });
 
     return isValid;
   };
@@ -569,6 +644,16 @@
       summary.classList.toggle("success", isValid);
     }
 
+    showMockToast({
+      title: isValid ? (draftOnly ? "Borrador validado" : "Comunicado validado") : "Revisa el comunicado",
+      message: isValid
+        ? (draftOnly
+          ? "El borrador mock esta listo. No se guardaron datos."
+          : "El comunicado mock quedaria listo para enviar.")
+        : "Completa consorcio, titulo, mensaje y revisa el adjunto.",
+      variant: isValid ? "success" : "danger"
+    });
+
     return isValid;
   };
 
@@ -578,4 +663,90 @@
       window.validarFormularioComunicado(false);
     });
   }
+
+  const showMockModal = (modalId) => {
+    const modalElement = document.getElementById(modalId);
+
+    if (!modalElement || !window.bootstrap?.Modal) {
+      return;
+    }
+
+    window.bootstrap.Modal.getOrCreateInstance(modalElement).show();
+  };
+
+  document.addEventListener("click", (event) => {
+    const confirmAction = event.target.closest("[data-confirm-action]");
+
+    if (confirmAction) {
+      showMockToast({
+        title: "Accion confirmada",
+        message: "La confirmacion se ejecuto solo de forma visual.",
+        variant: "success"
+      });
+      return;
+    }
+
+    const confirmTrigger = event.target.closest("[data-mock-confirm]");
+
+    if (confirmTrigger) {
+      event.preventDefault();
+
+      const title = document.querySelector("[data-confirm-title]");
+      const message = document.querySelector("[data-confirm-message]");
+      const action = document.querySelector("[data-confirm-action]");
+
+      if (title) {
+        title.textContent = confirmTrigger.dataset.confirmTitle || "Confirmar accion";
+      }
+
+      if (message) {
+        message.textContent = confirmTrigger.dataset.confirmMessage || "Esta accion es solo visual y no modifica datos.";
+      }
+
+      if (action) {
+        action.textContent = confirmTrigger.dataset.confirmAction || "Confirmar mock";
+      }
+
+      showMockModal("mockConfirmModal");
+      return;
+    }
+
+    const attachmentTrigger = event.target.closest("[data-mock-attachment]");
+
+    if (attachmentTrigger) {
+      event.preventDefault();
+
+      const title = document.querySelector("[data-attachment-title]");
+      const file = document.querySelector("[data-attachment-file]");
+      const description = document.querySelector("[data-attachment-description]");
+
+      if (title) {
+        title.textContent = attachmentTrigger.dataset.attachmentTitle || "Vista de adjunto";
+      }
+
+      if (file) {
+        file.textContent = attachmentTrigger.dataset.attachmentFile || "archivo-mock.pdf";
+      }
+
+      if (description) {
+        description.textContent = attachmentTrigger.dataset.attachmentDescription || "Vista previa disponible solo de forma visual.";
+      }
+
+      showMockModal("mockAttachmentModal");
+      return;
+    }
+
+    const toastTrigger = event.target.closest("[data-mock-toast]");
+
+    if (toastTrigger) {
+      event.preventDefault();
+
+      showMockToast({
+        title: toastTrigger.dataset.toastTitle || "Accion mock",
+        message: toastTrigger.dataset.toastMessage || "La accion se ejecuto de forma visual.",
+        variant: toastTrigger.dataset.toastVariant || "success",
+        kicker: toastTrigger.dataset.toastKicker || "Frontend"
+      });
+    }
+  });
 })();

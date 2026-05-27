@@ -6,29 +6,29 @@
 
     var adminItems = new[]
     {
-        new { Text = "Inicio", Url = Url.Action("AdminDashboard", "Home") ?? "/Home/AdminDashboard", Key = "/Home/AdminDashboard" },
-        new { Text = "Consorcios", Url = "/Consorcios", Key = "/Consorcios" },
-        new { Text = "Gastos", Url = "/Gastos", Key = "/Gastos" },
-        new { Text = "Expensas", Url = "/Expensas", Key = "/Expensas" },
-        new { Text = "Comunicados", Url = "/Comunicados", Key = "/Comunicados" },
-        new { Text = "Reclamos", Url = "/Reclamos", Key = "/Reclamos" },
-        new { Text = "Reservas", Url = "/Reservas", Key = "/Reservas" },
-        new { Text = "Configuracion", Url = "/Configuracion", Key = "/Configuracion" }
+        new { Text = "Inicio", Url = Url.Action("AdminDashboard", "Home") ?? "/Home/AdminDashboard", Key = "/Home/AdminDashboard", Icon = "home" },
+        new { Text = "Consorcios", Url = "/Consorcios", Key = "/Consorcios", Icon = "building" },
+        new { Text = "Gastos", Url = "/Gastos", Key = "/Gastos", Icon = "receipt" },
+        new { Text = "Expensas", Url = "/Expensas", Key = "/Expensas", Icon = "wallet" },
+        new { Text = "Comunicados", Url = "/Comunicados", Key = "/Comunicados", Icon = "message" },
+        new { Text = "Reclamos", Url = "/Reclamos", Key = "/Reclamos", Icon = "alert" },
+        new { Text = "Reservas", Url = "/Reservas", Key = "/Reservas", Icon = "calendar" }
     };
 
     var propietarioItems = new[]
     {
-        new { Text = "Inicio", Url = Url.Action("PropietarioDashboard", "Home") ?? "/Home/PropietarioDashboard", Key = "/Home/PropietarioDashboard" },
-        new { Text = "Expensas", Url = "/Expensas/MisExpensas", Key = "/Expensas/MisExpensas" },
-        new { Text = "Pagos", Url = "/Pagos/MisPagos", Key = "/Pagos/MisPagos" },
-        new { Text = "Informar pago", Url = "/Pagos/InformarPago", Key = "/Pagos/InformarPago" },
-        new { Text = "Gastos", Url = "/Gastos/MisGastos", Key = "/Gastos/MisGastos" },
-        new { Text = "Comunicados", Url = "/Comunicados/MisComunicados", Key = "/Comunicados/MisComunicados" },
-        new { Text = "Reclamos", Url = "/Reclamos", Key = "/Reclamos" },
-        new { Text = "Reservas", Url = "/Reservas", Key = "/Reservas" }
+        new { Text = "Inicio", Url = Url.Action("PropietarioDashboard", "Home") ?? "/Home/PropietarioDashboard", Key = "/Home/PropietarioDashboard", Icon = "home" },
+        new { Text = "Expensas", Url = "/Expensas/MisExpensas", Key = "/Expensas/MisExpensas", Icon = "wallet" },
+        new { Text = "Pagos", Url = "/Pagos/MisPagos", Key = "/Pagos/MisPagos", Icon = "card" },
+        new { Text = "Informar pago", Url = "/Pagos/InformarPago", Key = "/Pagos/InformarPago", Icon = "upload" },
+        new { Text = "Gastos", Url = "/Gastos/MisGastos", Key = "/Gastos/MisGastos", Icon = "receipt" },
+        new { Text = "Comunicados", Url = "/Comunicados/MisComunicados", Key = "/Comunicados/MisComunicados", Icon = "message" },
+        new { Text = "Reclamos", Url = "/Reclamos", Key = "/Reclamos", Icon = "alert" },
+        new { Text = "Reservas", Url = "/Reservas", Key = "/Reservas", Icon = "calendar" }
     };
 
     var menuItems = currentRole.Equals("Propietario", StringComparison.OrdinalIgnoreCase) ? propietarioItems : adminItems;
+    var roleClass = currentRole.Equals("Propietario", StringComparison.OrdinalIgnoreCase) ? "role-owner" : "role-admin";
 }
 
 <aside class="app-sidebar" data-sidebar>
@@ -43,15 +43,15 @@
     </div>
 
     <div class="sidebar-section">
-        <span class="sidebar-label">Menu @currentRole</span>
+        <span class="sidebar-label">Menu principal</span>
         <nav class="sidebar-nav" aria-label="Menu principal">
             @foreach (var item in menuItems)
             {
                 var isHome = item.Key == "/" && (currentPath == "/" || currentPath.StartsWith("/Home", StringComparison.OrdinalIgnoreCase));
                 var isActive = isHome || (item.Key != "/" && currentPath.StartsWith(item.Key, StringComparison.OrdinalIgnoreCase));
 
-                <a class="sidebar-link @(isActive ? "active" : "")" href="@item.Url">
-                    <span class="sidebar-link-icon">@item.Text.Substring(0, 1)</span>
+                <a class="sidebar-link @(isActive ? "active" : "")" href="@item.Url" aria-current="@(isActive ? "page" : null)">
+                    <span class="sidebar-link-icon" aria-hidden="true">@SidebarIcon(item.Icon)</span>
                     <span>@item.Text</span>
                 </a>
             }
@@ -59,13 +59,40 @@
     </div>
 
     <div class="sidebar-footer">
-        <span class="sidebar-label">Estado</span>
-        <div class="role-card">
+        <span class="sidebar-label">Perfil actual</span>
+        <div class="role-card @roleClass">
             <span class="status-dot"></span>
             <div>
-                <strong>Rol mock</strong>
-                <small>@currentRole</small>
+                <strong>@currentRole</strong>
+                <small>Sesion mock</small>
             </div>
         </div>
+        <a class="sidebar-logout" asp-controller="Auth" asp-action="Login">
+            <span class="sidebar-link-icon" aria-hidden="true">@SidebarIcon("logout")</span>
+            <span>Log out</span>
+        </a>
     </div>
 </aside>
+
+@functions {
+    private static Microsoft.AspNetCore.Html.IHtmlContent SidebarIcon(string icon)
+    {
+        var path = icon switch
+        {
+            "home" => "<path d=\"M3 10.5 12 3l9 7.5\"/><path d=\"M5 9.5V21h5v-6h4v6h5V9.5\"/>",
+            "building" => "<path d=\"M4 21V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v16\"/><path d=\"M9 21v-5h3v5\"/><path d=\"M8 7h1\"/><path d=\"M12 7h1\"/><path d=\"M8 11h1\"/><path d=\"M12 11h1\"/><path d=\"M17 9h1a2 2 0 0 1 2 2v10\"/>",
+            "receipt" => "<path d=\"M6 3h12v18l-2-1-2 1-2-1-2 1-2-1-2 1V3Z\"/><path d=\"M9 8h6\"/><path d=\"M9 12h6\"/><path d=\"M9 16h4\"/>",
+            "wallet" => "<path d=\"M4 7h16a1 1 0 0 1 1 1v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13\"/><path d=\"M16 13h5v4h-5a2 2 0 0 1 0-4Z\"/>",
+            "message" => "<path d=\"M4 5h16v12H8l-4 4V5Z\"/><path d=\"M8 9h8\"/><path d=\"M8 13h5\"/>",
+            "alert" => "<path d=\"M12 3 2.5 20h19L12 3Z\"/><path d=\"M12 9v5\"/><path d=\"M12 17h.01\"/>",
+            "calendar" => "<path d=\"M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2Z\"/><path d=\"M16 2v4\"/><path d=\"M8 2v4\"/><path d=\"M3 10h18\"/>",
+            "settings" => "<path d=\"M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z\"/><path d=\"M4 12h2\"/><path d=\"M18 12h2\"/><path d=\"M12 4v2\"/><path d=\"M12 18v2\"/><path d=\"M6.5 6.5 8 8\"/><path d=\"M16 16l1.5 1.5\"/><path d=\"M17.5 6.5 16 8\"/><path d=\"M8 16l-1.5 1.5\"/>",
+            "card" => "<path d=\"M3 6h18v12H3V6Z\"/><path d=\"M3 10h18\"/><path d=\"M7 15h4\"/>",
+            "upload" => "<path d=\"M12 16V4\"/><path d=\"m7 9 5-5 5 5\"/><path d=\"M5 20h14\"/>",
+            "logout" => "<path d=\"M10 17 15 12l-5-5\"/><path d=\"M15 12H3\"/><path d=\"M21 3v18\"/>",
+            _ => "<path d=\"M5 12h14\"/>"
+        };
+
+        return new Microsoft.AspNetCore.Html.HtmlString($"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">{path}</svg>");
+    }
+}

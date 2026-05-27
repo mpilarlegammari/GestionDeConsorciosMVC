@@ -1,0 +1,26 @@
+@{
+    var title = ViewData["EmptyTitle"] as string ?? "Sin resultados";
+    var message = ViewData["EmptyMessage"] as string ?? "No hay registros para mostrar con los filtros actuales.";
+    var actionText = ViewData["EmptyActionText"] as string;
+    var actionUrl = ViewData["EmptyActionUrl"] as string;
+    var variant = ViewData["EmptyVariant"] as string ?? "default";
+}
+
+@* TODO backend: mostrar este componente cuando el listado real no tenga resultados. *@
+<div class="empty-state empty-state-@variant" role="status">
+    <div class="empty-state-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16" />
+            <path d="M4 12h16" />
+            <path d="M4 18h10" />
+        </svg>
+    </div>
+    <div class="empty-state-content">
+        <h3>@title</h3>
+        <p>@message</p>
+        @if (!string.IsNullOrWhiteSpace(actionText) && !string.IsNullOrWhiteSpace(actionUrl))
+        {
+            <a class="btn btn-outline-primary" href="@actionUrl">@actionText</a>
+        }
+    </div>
+</div>

@@ -528,3 +528,176 @@ Tambien se creo `ComunicadosController` con acciones GET mock:
 - Permitir que Propietario vea solo comunicados de su consorcio.
 - Guardar adjuntos en servidor.
 - Validar permisos por rol y pertenencia al consorcio.
+
+# Frontend - Estados Vacíos
+
+## 1. Componente reutilizable
+
+Se creo el partial:
+
+- `Views/Shared/_EmptyState.cshtml`
+
+Sirve para mostrar un estado visual cuando un listado no tiene registros o cuando los filtros no devuelven resultados.
+
+## 2. Estilos disponibles
+
+Se agregaron estilos globales en `wwwroot/css/site.css`:
+
+- `.empty-state`
+- `.empty-state-icon`
+- `.empty-state-content`
+- `.empty-state-compact`
+
+El componente mantiene la estetica administrativa del sistema: fondo suave, borde punteado, icono circular y accion opcional.
+
+## 3. Uso sugerido en vistas
+
+Cuando backend reemplace los datos mock por ViewModels reales, se puede renderizar el componente si la coleccion esta vacia.
+
+Ejemplo:
+
+```cshtml
+@{
+    ViewData["EmptyTitle"] = "Sin pagos informados";
+    ViewData["EmptyMessage"] = "Todavia no hay pagos cargados para el periodo seleccionado.";
+    ViewData["EmptyActionText"] = "Informar pago";
+    ViewData["EmptyActionUrl"] = "/Pagos/InformarPago";
+}
+
+@await Html.PartialAsync("_EmptyState")
+```
+
+## 4. Pendiente para backend
+
+- Usar el componente cuando las listas reales lleguen vacias.
+- Diferenciar mensajes segun filtros aplicados o falta total de datos.
+- Definir acciones opcionales segun rol y permiso.
+
+# Frontend - Modales Mock Reutilizables
+
+## 1. Componente creado
+
+Se creo el partial compartido:
+
+- `Views/Shared/_MockModals.cshtml`
+
+El layout general lo renderiza una sola vez, por lo que cualquier vista puede abrir los modales usando atributos `data-*` sin duplicar markup.
+
+## 2. Modales disponibles
+
+- Modal de confirmacion mock para acciones como eliminar registros.
+- Modal de adjunto/comprobante mock para visualizar o descargar facturas, comprobantes, liquidaciones y adjuntos.
+
+## 3. Disparadores frontend
+
+En `wwwroot/js/site.js` se agrego escucha por delegacion de eventos para:
+
+- `data-mock-confirm`
+- `data-confirm-title`
+- `data-confirm-message`
+- `data-confirm-action`
+- `data-mock-attachment`
+- `data-attachment-title`
+- `data-attachment-file`
+- `data-attachment-description`
+
+Esto permite reutilizar los modales en nuevas pantallas sin crear JavaScript especifico por modulo.
+
+## 4. Vistas conectadas
+
+Se conectaron acciones mock en pantallas existentes de:
+
+- Consorcios.
+- Gastos.
+- Expensas.
+- Pagos.
+- Comunicados.
+
+## 5. Pendiente para backend
+
+- Reemplazar confirmaciones mock por operaciones reales segun permisos.
+- Usar URLs seguras para ver o descargar adjuntos.
+- Validar que el usuario autenticado tenga acceso al recurso.
+- Registrar acciones reales solo cuando existan controladores, servicios y persistencia.
+
+# Frontend - Feedback Visual Mock
+
+## 1. Componente creado
+
+Se creo el partial compartido:
+
+- `Views/Shared/_MockFeedback.cshtml`
+
+El layout lo renderiza de forma global para que cualquier vista pueda mostrar mensajes sin duplicar HTML.
+
+## 2. Feedback disponible
+
+Se agregaron toasts mock para:
+
+- validacion correcta de formularios;
+- errores visuales de campos obligatorios;
+- acciones de borrador mock;
+- confirmaciones mock desde modales;
+- login mock antes de redireccionar.
+
+## 3. Integracion JavaScript
+
+En `wwwroot/js/site.js` se agrego la funcion global:
+
+- `mostrarFeedbackMock({ title, message, variant, kicker })`
+
+Tambien se agrego soporte declarativo con:
+
+- `data-mock-toast`
+- `data-toast-title`
+- `data-toast-message`
+- `data-toast-variant`
+- `data-toast-kicker`
+
+Las validaciones existentes de Consorcios, Gastos, Pagos, Expensas y Comunicados ahora muestran un toast de exito o error ademas del mensaje inline dentro del formulario.
+
+## 4. Pendiente para backend
+
+- Reemplazar mensajes mock por respuestas reales de POST.
+- Mostrar errores de validacion devueltos por backend.
+- Diferenciar errores de permisos, validacion, archivo y servidor.
+- Mantener los toasts como feedback de UX cuando se conecten acciones reales.
+
+# Frontend - Responsive Mobile
+
+## 1. Ajustes realizados
+
+Se pulio la capa responsive global en `wwwroot/css/site.css` para que las pantallas existentes funcionen mejor en celulares y tablets chicas.
+
+## 2. Componentes ajustados
+
+- Header mobile con titulo truncado y boton de menu consistente.
+- Sidebar mobile con ancho relativo al viewport.
+- Contenido principal con menor padding.
+- Encabezados de pagina en columna.
+- Cards con padding reducido.
+- Grids de metricas, contenido y formularios en una columna.
+- Botones principales y grupos de acciones full-width cuando corresponde.
+- Tablas con scroll horizontal tactil y texto de ayuda.
+- Acciones de tabla apiladas en mobile.
+- Cards de expensas y resumen en columna.
+- Estados vacios, listas simples, actividad y detail lists mas compactas.
+- Carga de archivos, previews, modales y toasts adaptados a pantallas chicas.
+- Login ajustado para mobile.
+
+## 3. Alcance
+
+No se cambiaron funcionalidades, rutas, controladores ni datos mock. La mejora es solo visual y reutilizable para las vistas existentes.
+
+## 4. Pendiente
+
+- Probar visualmente en navegador con anchos aproximados de 375px, 414px, 768px y desktop.
+- Ajustar casos puntuales si aparecen columnas con textos reales mas largos cuando backend reemplace los datos mock.
+
+# Guia Visual Interna
+
+Se creo el documento:
+
+- `docs/frontend-style-guide.md`
+
+La guia concentra patrones reutilizables y criterios de diseno para nuevas pantallas: layout, sidebar, header, cards, grillas, tablas, formularios, badges, modales, toasts, estados vacios, responsive y checklist de cierre.
