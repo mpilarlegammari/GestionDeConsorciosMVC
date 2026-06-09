@@ -1,9 +1,7 @@
-@model Expensa
+@model ExpensaDetailsViewModel
 @{
     ViewData["Title"] = "Detalle de Expensa";
-    ViewData["Role"] = ViewBag.DetailRole as string ?? "Propietario";
-    var gastos = ViewBag.Gastos as IEnumerable<Gasto> ?? Enumerable.Empty<Gasto>();
-    var returnUrl = ViewBag.ReturnUrl as string ?? Url.Action("MisExpensas", "Expensas") ?? "/Expensas/MisExpensas";
+    ViewData["Role"] = Model.DetailRole;
 }
 
 @functions {
@@ -63,11 +61,19 @@
         <dl class="detail-list">
             <div>
                 <dt>Consorcio</dt>
-                <dd>@Model.UnidadFuncional.Consorcio.Nombre</dd>
+                <dd>@Model.ConsorcioNombre</dd>
             </div>
             <div>
                 <dt>Unidad funcional</dt>
-                <dd>@Model.UnidadFuncional.NumeroUF</dd>
+                <dd>@Model.UnidadFuncionalNumero</dd>
+            </div>
+            <div>
+                <dt>Propietario</dt>
+                <dd>@Model.PropietarioNombre</dd>
+            </div>
+            <div>
+                <dt>Email propietario</dt>
+                <dd>@Model.PropietarioMail</dd>
             </div>
             <div>
                 <dt>Periodo</dt>
@@ -99,11 +105,11 @@
         <ul class="simple-list">
             <li>
                 <span>Total pagado</span>
-                <strong>@Model.Pagos.Where(p => p.Estado == EstadoPago.Aprobado).Sum(p => p.MontoPagado).ToString("C")</strong>
+                <strong>@Model.TotalPagadoAprobado.ToString("C")</strong>
             </li>
             <li>
                 <span>Pagos pendientes</span>
-                <strong>@Model.Pagos.Count(p => p.Estado == EstadoPago.PendienteRevision)</strong>
+                <strong>@Model.PagosPendientes</strong>
             </li>
             <li>
                 <span>Observaciones</span>
@@ -122,23 +128,25 @@
         <table class="table table-clean">
             <thead>
                 <tr>
+                    <th>Fecha</th>
                     <th>Concepto</th>
                     <th>Categoria</th>
                     <th>Monto</th>
                 </tr>
             </thead>
             <tbody>
-                @if (!gastos.Any())
+                @if (!Model.Gastos.Any())
                 {
                     <tr>
-                        <td colspan="3">No se encontraron gastos para este periodo.</td>
+                        <td colspan="4">No se encontraron gastos para este periodo.</td>
                     </tr>
                 }
                 else
                 {
-                    @foreach (var gasto in gastos)
+                    @foreach (var gasto in Model.Gastos)
                     {
                         <tr>
+                            <td>@gasto.Fecha.ToString("dd/MM/yyyy")</td>
                             <td>@gasto.Concepto</td>
                             <td><span class="status-badge @CategoriaClass(gasto.Categoria)">@gasto.Categoria</span></td>
                             <td>@gasto.Monto.ToString("C")</td>
@@ -148,8 +156,8 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <th colspan="2">Total general</th>
-                    <th>@gastos.Sum(g => g.Monto).ToString("C")</th>
+                    <th colspan="3">Total general</th>
+                    <th>@Model.TotalGeneralGastos.ToString("C")</th>
                 </tr>
             </tfoot>
         </table>
@@ -158,7 +166,7 @@
 
 <section class="app-card section-card">
     <div class="button-group">
-        <a class="btn btn-outline-secondary" href="@returnUrl">Volver</a>
+        <a class="btn btn-outline-secondary" href="@Model.ReturnUrl">Volver</a>
         <a class="btn btn-primary" href="/Pagos/InformarPago">Informar pago</a>
     </div>
 </section>

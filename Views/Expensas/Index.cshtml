@@ -1,8 +1,7 @@
-@model IEnumerable<Expensa>
+@model ExpensasIndexViewModel
 @{
     ViewData["Title"] = "Expensas";
     ViewData["Role"] = "Administrador";
-    var consorcios = ViewBag.Consorcios as IEnumerable<Consorcio> ?? Enumerable.Empty<Consorcio>();
 }
 
 @functions {
@@ -25,48 +24,76 @@
         <h2>Expensas</h2>
         <p>Gestion de liquidaciones por consorcio y periodo.</p>
     </div>
-    <a class="btn btn-primary" asp-controller="Expensas" asp-action="Generar">Generar expensas</a>
+    <a class="btn btn-primary" asp-controller="Expensas" asp-action="Generar" asp-route-consorcioId="@Model.ConsorcioId" asp-route-periodo="@Model.Periodo">Generar expensas</a>
+</section>
+
+<section class="dashboard-grid" aria-label="Resumen de expensas">
+    <article class="app-card metric-card">
+        <span>Liquidaciones</span>
+        <strong>@Model.CantidadExpensas</strong>
+        <small>Registros filtrados</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Total emitido</span>
+        <strong>@Model.TotalEmitido.ToString("C")</strong>
+        <small>Monto liquidado</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Total pagado</span>
+        <strong>@Model.TotalPagado.ToString("C")</strong>
+        <small>Pagos aprobados</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Pendientes</span>
+        <strong>@Model.Pendientes</strong>
+        <small>Expensas por cobrar</small>
+    </article>
 </section>
 
 <section class="app-card filter-card" aria-label="Filtros de expensas">
     <form method="get" asp-action="Index">
         <div class="form-grid">
             <div>
-                <label class="form-label" for="consorcio">Consorcio</label>
-                <select class="form-select" id="consorcio" name="consorcio">
+                <label class="form-label" for="consorcioId">Consorcio</label>
+                <select class="form-select" id="consorcioId" name="consorcioId">
                     <option value="">Todos</option>
-                    @foreach (var consorcio in consorcios)
+                    @foreach (var consorcio in Model.Consorcios)
                     {
-                        <option value="@consorcio.Id">@consorcio.Nombre</option>
+                        if (Model.ConsorcioId == consorcio.Id)
+                        {
+                            <option value="@consorcio.Id" selected>@consorcio.Nombre</option>
+                        }
+                        else
+                        {
+                            <option value="@consorcio.Id">@consorcio.Nombre</option>
+                        }
                     }
                 </select>
             </div>
             <div>
-                <label class="form-label" for="mes">Mes</label>
-                <select class="form-select" id="mes" name="mes">
-                    <option value="5">Mayo</option>
-                    <option value="4">Abril</option>
-                    <option value="3">Marzo</option>
-                </select>
-            </div>
-            <div>
-                <label class="form-label" for="anio">Anio</label>
-                <select class="form-select" id="anio" name="anio">
-                    <option>2026</option>
-                    <option>2025</option>
-                </select>
+                <label class="form-label" for="periodo">Periodo</label>
+                <input class="form-control" id="periodo" name="periodo" type="month" value="@Model.Periodo" />
             </div>
             <div>
                 <label class="form-label" for="estado">Estado</label>
                 <select class="form-select" id="estado" name="estado">
                     <option value="">Todos</option>
-                    <option>Pendiente</option>
-                    <option>Pagada</option>
-                    <option>Vencida</option>
+                    @foreach (var estado in Enum.GetValues<EstadoExpensa>())
+                    {
+                        if (Model.Estado == estado)
+                        {
+                            <option value="@estado" selected>@estado</option>
+                        }
+                        else
+                        {
+                            <option value="@estado">@estado</option>
+                        }
+                    }
                 </select>
             </div>
             <div class="filter-actions">
                 <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-outline-secondary" asp-controller="Expensas" asp-action="Index">Limpiar</a>
             </div>
         </div>
     </form>
@@ -75,7 +102,7 @@
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Liquidaciones generadas</h3>
-        <span class="status-badge">@Model.Count() registradas</span>
+        <span class="status-badge">@Model.CantidadExpensas registradas</span>
     </div>
     <div class="table-responsive">
         <table class="table table-clean">
@@ -92,15 +119,15 @@
                 </tr>
             </thead>
             <tbody>
-                @if (!Model.Any())
+                @if (!Model.Expensas.Any())
                 {
                     <tr>
-                        <td colspan="8">Todavia no hay expensas generadas.</td>
+                        <td colspan="8">No hay expensas que coincidan con los filtros seleccionados.</td>
                     </tr>
                 }
                 else
                 {
-                    @foreach (var expensa in Model)
+                    @foreach (var expensa in Model.Expensas)
                     {
                         <tr>
                             <td>@expensa.Periodo</td>
@@ -113,7 +140,6 @@
                             <td>
                                 <div class="table-actions">
                                     <a asp-controller="Expensas" asp-action="Details" asp-route-id="@expensa.Id" asp-route-returnUrl="@Url.Action("Index", "Expensas")">Ver detalle</a>
-                                    <a href="/Pagos/MisPagos">Ver pagos</a>
                                 </div>
                             </td>
                         </tr>

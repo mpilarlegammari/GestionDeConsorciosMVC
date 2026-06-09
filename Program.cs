@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 builder.Services.AddScoped<IGastoService, GastoService>();
+builder.Services.AddScoped<IExpensasService, ExpensasService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddDbContext<GestionDeConsorciosContext>(options =>
     options.UseSqlServer(

@@ -1,9 +1,7 @@
+@model GenerarExpensasViewModel
 @{
     ViewData["Title"] = "Generar expensas";
     ViewData["Role"] = "Administrador";
-    var consorcios = ViewBag.Consorcios as IEnumerable<Consorcio> ?? Enumerable.Empty<Consorcio>();
-    var gastos = ViewBag.Gastos as IEnumerable<Gasto> ?? Enumerable.Empty<Gasto>();
-    var totalGastos = gastos.Sum(g => g.Monto);
 }
 
 @functions {
@@ -39,42 +37,56 @@
 
         <div class="form-grid">
             <div>
-                <label class="form-label" for="ConsorcioId">Consorcio</label>
-                <select class="form-select" id="ConsorcioId" name="ConsorcioId" data-expensas-required>
+                <label class="form-label" asp-for="ConsorcioId">Consorcio</label>
+                <select class="form-select" asp-for="ConsorcioId" data-expensas-required>
                     <option value="">Seleccionar consorcio</option>
-                    @foreach (var consorcio in consorcios)
+                    @foreach (var consorcio in Model.Consorcios)
                     {
-                        <option value="@consorcio.Id">@consorcio.Nombre (@consorcio.UnidadesFuncionales.Count UF)</option>
+                        if (Model.ConsorcioId == consorcio.Id)
+                        {
+                            <option value="@consorcio.Id" selected>@consorcio.Nombre (@consorcio.UnidadesFuncionales.Count UF)</option>
+                        }
+                        else
+                        {
+                            <option value="@consorcio.Id">@consorcio.Nombre (@consorcio.UnidadesFuncionales.Count UF)</option>
+                        }
                     }
                 </select>
-                <span class="field-validation" data-error-for="ConsorcioId"></span>
+                <span class="field-validation" asp-validation-for="ConsorcioId" data-error-for="ConsorcioId"></span>
             </div>
             <div>
-                <label class="form-label" for="Periodo">Periodo</label>
-                <input class="form-control" id="Periodo" name="Periodo" type="month" value="@DateTime.Today.ToString("yyyy-MM")" data-expensas-required />
-                <span class="field-validation" data-error-for="Periodo"></span>
+                <label class="form-label" asp-for="Periodo"></label>
+                <input class="form-control" asp-for="Periodo" type="month" data-expensas-required />
+                <span class="field-validation" asp-validation-for="Periodo" data-error-for="Periodo"></span>
             </div>
             <div>
-                <label class="form-label" for="FechaEmision">Fecha de emision</label>
-                <input class="form-control" id="FechaEmision" name="FechaEmision" type="date" value="@DateTime.Today.ToString("yyyy-MM-dd")" data-expensas-required />
-                <span class="field-validation" data-error-for="FechaEmision"></span>
+                <label class="form-label" asp-for="FechaEmision">Fecha de emision</label>
+                <input class="form-control" asp-for="FechaEmision" type="date" data-expensas-required />
+                <span class="field-validation" asp-validation-for="FechaEmision" data-error-for="FechaEmision"></span>
             </div>
             <div>
-                <label class="form-label" for="FechaVencimiento">Fecha de vencimiento</label>
-                <input class="form-control" id="FechaVencimiento" name="FechaVencimiento" type="date" value="@DateTime.Today.AddDays(10).ToString("yyyy-MM-dd")" data-expensas-required />
-                <span class="field-validation" data-error-for="FechaVencimiento"></span>
+                <label class="form-label" asp-for="FechaVencimiento">Fecha de vencimiento</label>
+                <input class="form-control" asp-for="FechaVencimiento" type="date" data-expensas-required />
+                <span class="field-validation" asp-validation-for="FechaVencimiento" data-error-for="FechaVencimiento"></span>
             </div>
             <div>
-                <label class="form-label" for="CriterioDistribucion">Criterio de distribucion</label>
-                <select class="form-select" id="CriterioDistribucion" name="CriterioDistribucion" data-expensas-required>
+                <label class="form-label" asp-for="CriterioDistribucion">Criterio de distribucion</label>
+                <select class="form-select" asp-for="CriterioDistribucion" data-expensas-required>
                     <option value="">Seleccionar criterio</option>
-                    <option selected>Partes iguales por UF</option>
+                    @if (Model.CriterioDistribucion == "Partes iguales por UF")
+                    {
+                        <option value="Partes iguales por UF" selected>Partes iguales por UF</option>
+                    }
+                    else
+                    {
+                        <option value="Partes iguales por UF">Partes iguales por UF</option>
+                    }
                 </select>
-                <span class="field-validation" data-error-for="CriterioDistribucion"></span>
+                <span class="field-validation" asp-validation-for="CriterioDistribucion" data-error-for="CriterioDistribucion"></span>
             </div>
             <div class="form-span-2">
-                <label class="form-label" for="Observaciones">Observaciones</label>
-                <textarea class="form-control" id="Observaciones" name="Observaciones" rows="4" placeholder="Notas internas para la liquidacion."></textarea>
+                <label class="form-label" asp-for="Observaciones"></label>
+                <textarea class="form-control" asp-for="Observaciones" rows="4" placeholder="Notas internas para la liquidacion."></textarea>
             </div>
         </div>
 
@@ -82,10 +94,33 @@
         <div class="form-summary" data-expensas-summary></div>
     </section>
 
+    <section class="dashboard-grid" aria-label="Resumen de generacion">
+        <article class="app-card metric-card">
+            <span>Gastos incluidos</span>
+            <strong>@Model.Gastos.Count</strong>
+            <small>Del periodo seleccionado</small>
+        </article>
+        <article class="app-card metric-card">
+            <span>Total gastos</span>
+            <strong>@Model.TotalGastos.ToString("C")</strong>
+            <small>Base de calculo</small>
+        </article>
+        <article class="app-card metric-card">
+            <span>Unidades</span>
+            <strong>@Model.CantidadUnidades</strong>
+            <small>UF del consorcio</small>
+        </article>
+        <article class="app-card metric-card">
+            <span>Monto por UF</span>
+            <strong>@Model.MontoPorUnidad.ToString("C")</strong>
+            <small>Distribucion simple</small>
+        </article>
+    </section>
+
     <section class="app-card section-card">
         <div class="app-card-title">
             <h3>Gastos incluidos en la liquidacion</h3>
-            <span class="status-badge">@totalGastos.ToString("C")</span>
+            <span class="status-badge">@Model.TotalGastos.ToString("C")</span>
         </div>
         <div class="table-responsive">
             <table class="table table-clean">
@@ -98,7 +133,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (!gastos.Any())
+                    @if (!Model.Gastos.Any())
                     {
                         <tr>
                             <td colspan="4">Selecciona un consorcio y periodo con gastos cargados para generar expensas.</td>
@@ -106,7 +141,7 @@
                     }
                     else
                     {
-                        @foreach (var gasto in gastos)
+                        @foreach (var gasto in Model.Gastos)
                         {
                             <tr>
                                 <td>@gasto.Fecha.ToString("dd/MM/yyyy")</td>

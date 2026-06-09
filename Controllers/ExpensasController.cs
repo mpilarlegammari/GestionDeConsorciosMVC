@@ -1,38 +1,44 @@
 using GestionDeConsorciosMVC.Context;
-using Microsoft.EntityFrameworkCore;
+using GestionDeConsorciosMVC.Services;
+using GestionDeConsorciosMVC.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace GestionDeConsorciosMVC.Controllers
 {
     public class ExpensasController : Controller
     {
         private readonly GestionDeConsorciosContext _context;
+        private readonly IExpensasService _expensasService;
 
-        public ExpensasController(GestionDeConsorciosContext context)
+        public ExpensasController(GestionDeConsorciosContext context, IExpensasService expensasService)
         {
             _context = context;
+            _expensasService = expensasService;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            int? consorcioId,
+            string? periodo,
+            int? mes,
+            int? anio,
+            EstadoExpensa? estado)
         {
-            var expensas = await _context.Expensas
-                .Include(e => e.UnidadFuncional)
-                    .ThenInclude(u => u.Consorcio)
-                .Include(e => e.Pagos)
-                .OrderByDescending(e => e.FechaEmision)
-                .ThenBy(e => e.UnidadFuncional.NumeroUF)
-                .ToListAsync();
-
-            ViewBag.Consorcios = await _context.Consorcios.OrderBy(c => c.Nombre).ToListAsync();
-            return View(expensas);
+            var model = await _expensasService.GetIndexAsync(consorcioId, periodo, mes, anio, estado);
+            return View(model);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Generar()
+        public async Task<IActionResult> Generar(int? consorcioId, string? periodo)
         {
-            await LoadGenerarDataAsync();
-            return View();
+            var model = new GenerarExpensasViewModel
+            {
+                ConsorcioId = consorcioId ?? 0,
+                Periodo = string.IsNullOrWhiteSpace(periodo) ? DateTime.Today.ToString("yyyy-MM") : periodo
+            };
+
+            return View(await _expensasService.BuildGenerarViewModelAsync(model));
         }
 
         [HttpGet]
@@ -61,149 +67,101 @@ namespace GestionDeConsorciosMVC.Controllers
         {
             var role = HttpContext.Session.GetString("UserRole");
             var email = HttpContext.Session.GetString("UserEmail");
-            var expensa = await _context.Expensas
-                .Include(e => e.UnidadFuncional)
-                    .ThenInclude(u => u.Consorcio)
-                .Include(e => e.Pagos)
-                .FirstOrDefaultAsync(e => e.Id == id);
+            var model = await _expensasService.GetDetailsAsync(id);
 
-            if (expensa is null)
+            if (model is null)
             {
                 return NotFound();
             }
 
             if (role?.Equals("Propietario", StringComparison.OrdinalIgnoreCase) == true
-                && !string.Equals(expensa.UnidadFuncional.MailPropietario, email, StringComparison.OrdinalIgnoreCase))
+                && !string.Equals(model.PropietarioMail, email, StringComparison.OrdinalIgnoreCase))
             {
                 return Forbid();
             }
 
-            ViewBag.Gastos = await GetGastosPeriodoAsync(expensa.UnidadFuncional.ConsorcioId, expensa.Periodo);
-            ViewBag.ReturnUrl = GetSafeReturnUrl(returnUrl);
-            ViewBag.DetailRole = ViewBag.ReturnUrl == Url.Action(nameof(MisExpensas), "Expensas")
+            model.ReturnUrl = GetSafeReturnUrl(returnUrl);
+            model.DetailRole = model.ReturnUrl == Url.Action(nameof(MisExpensas), "Expensas")
                 ? "Propietario"
                 : "Administrador";
-            return View(expensa);
+
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Generar(
-            int ConsorcioId,
-            string Periodo,
-            DateTime FechaEmision,
-            DateTime FechaVencimiento,
-            string CriterioDistribucion,
-            string? Observaciones)
+        public async Task<IActionResult> Generar(GenerarExpensasViewModel model)
         {
-            Periodo = Periodo?.Trim() ?? string.Empty;
-            CriterioDistribucion = CriterioDistribucion?.Trim() ?? string.Empty;
-            Observaciones = Observaciones?.Trim();
+            await ValidateGeneracionAsync(model);
 
-            var consorcio = await _context.Consorcios
-                .Include(c => c.UnidadesFuncionales)
-                .FirstOrDefaultAsync(c => c.Id == ConsorcioId);
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = string.Join(" ", ModelState.Values
+                    .SelectMany(value => value.Errors)
+                    .Select(error => error.ErrorMessage));
 
-            if (consorcio is null)
-            {
-                ModelState.AddModelError(nameof(ConsorcioId), "Debe seleccionar un consorcio valido.");
-            }
-            else if (consorcio.UnidadesFuncionales.Count == 0)
-            {
-                ModelState.AddModelError(nameof(ConsorcioId), "El consorcio debe tener unidades funcionales cargadas.");
+                return View(await _expensasService.BuildGenerarViewModelAsync(model));
             }
 
-            if (string.IsNullOrWhiteSpace(Periodo))
-            {
-                ModelState.AddModelError(nameof(Periodo), "El periodo es obligatorio.");
-            }
+            var generadas = await _expensasService.GenerarAsync(model);
 
-            if (FechaEmision == default)
-            {
-                ModelState.AddModelError(nameof(FechaEmision), "La fecha de emision es obligatoria.");
-            }
-
-            if (FechaVencimiento <= FechaEmision)
-            {
-                ModelState.AddModelError(nameof(FechaVencimiento), "El vencimiento debe ser posterior a la emision.");
-            }
-
-            if (string.IsNullOrWhiteSpace(CriterioDistribucion))
-            {
-                ModelState.AddModelError(nameof(CriterioDistribucion), "Debe seleccionar un criterio de distribucion.");
-            }
-
-            var yaGeneradas = consorcio is not null && await _context.Expensas
-                .AnyAsync(e => e.Periodo == Periodo && e.UnidadFuncional.ConsorcioId == ConsorcioId);
-
-            if (yaGeneradas)
-            {
-                ModelState.AddModelError(nameof(Periodo), "Ya existen expensas generadas para ese consorcio y periodo.");
-            }
-
-            var gastos = consorcio is null
-                ? []
-                : await GetGastosPeriodoAsync(ConsorcioId, Periodo);
-
-            if (gastos.Count == 0)
-            {
-                ModelState.AddModelError(nameof(Periodo), "No hay gastos cargados para ese consorcio y periodo.");
-            }
-
-            if (!ModelState.IsValid || consorcio is null)
-            {
-                TempData["Error"] = string.Join(" ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                await LoadGenerarDataAsync(ConsorcioId, Periodo);
-                return View();
-            }
-
-            var total = gastos.Sum(g => g.Monto);
-            var montoPorUnidad = Math.Round(total / consorcio.UnidadesFuncionales.Count, 2);
-
-            foreach (var unidad in consorcio.UnidadesFuncionales)
-            {
-                _context.Expensas.Add(new Expensa
-                {
-                    UnidadFuncionalId = unidad.Id,
-                    Periodo = Periodo,
-                    FechaEmision = FechaEmision,
-                    FechaVencimiento = FechaVencimiento,
-                    MontoTotal = montoPorUnidad,
-                    Estado = EstadoExpensa.Pendiente,
-                    Observaciones = string.IsNullOrWhiteSpace(Observaciones) ? null : Observaciones
-                });
-            }
-
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = $"Se generaron {consorcio.UnidadesFuncionales.Count} expensas para {consorcio.Nombre}.";
+            TempData["Success"] = $"Se generaron {generadas} expensas para el periodo {model.Periodo}.";
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task LoadGenerarDataAsync(int? consorcioId = null, string? periodo = null)
+        private async Task ValidateGeneracionAsync(GenerarExpensasViewModel model)
         {
-            ViewBag.Consorcios = await _context.Consorcios
-                .Include(c => c.UnidadesFuncionales)
-                .OrderBy(c => c.Nombre)
-                .ToListAsync();
+            model.Periodo = model.Periodo?.Trim() ?? string.Empty;
+            model.CriterioDistribucion = model.CriterioDistribucion?.Trim() ?? string.Empty;
+            model.Observaciones = string.IsNullOrWhiteSpace(model.Observaciones) ? null : model.Observaciones.Trim();
 
-            ViewBag.Gastos = consorcioId is null || string.IsNullOrWhiteSpace(periodo)
-                ? new List<Gasto>()
-                : await GetGastosPeriodoAsync(consorcioId.Value, periodo);
-        }
+            var consorcio = await _expensasService.GetConsorcioConUnidadesAsync(model.ConsorcioId);
 
-        private async Task<List<Gasto>> GetGastosPeriodoAsync(int consorcioId, string periodo)
-        {
-            if (!DateTime.TryParse($"{periodo}-01", out var inicio))
+            if (consorcio is null)
             {
-                return [];
+                ModelState.AddModelError(nameof(model.ConsorcioId), "Debe seleccionar un consorcio valido.");
+            }
+            else if (consorcio.UnidadesFuncionales.Count == 0)
+            {
+                ModelState.AddModelError(nameof(model.ConsorcioId), "El consorcio debe tener unidades funcionales cargadas.");
             }
 
-            var fin = inicio.AddMonths(1);
-            return await _context.Gastos
-                .Where(g => g.ConsorcioId == consorcioId && g.Fecha >= inicio && g.Fecha < fin)
-                .OrderBy(g => g.Fecha)
-                .ToListAsync();
+            if (string.IsNullOrWhiteSpace(model.Periodo))
+            {
+                ModelState.AddModelError(nameof(model.Periodo), "El periodo es obligatorio.");
+            }
+
+            if (model.FechaEmision == default)
+            {
+                ModelState.AddModelError(nameof(model.FechaEmision), "La fecha de emision es obligatoria.");
+            }
+
+            if (model.FechaVencimiento <= model.FechaEmision)
+            {
+                ModelState.AddModelError(nameof(model.FechaVencimiento), "El vencimiento debe ser posterior a la emision.");
+            }
+
+            if (string.IsNullOrWhiteSpace(model.CriterioDistribucion))
+            {
+                ModelState.AddModelError(nameof(model.CriterioDistribucion), "Debe seleccionar un criterio de distribucion.");
+            }
+
+            if (consorcio is not null && !string.IsNullOrWhiteSpace(model.Periodo))
+            {
+                var yaGeneradas = await _expensasService.ExistsPeriodoGeneradoAsync(model.ConsorcioId, model.Periodo);
+
+                if (yaGeneradas)
+                {
+                    ModelState.AddModelError(nameof(model.Periodo), "Ya existen expensas generadas para ese consorcio y periodo.");
+                }
+
+                var gastos = await _expensasService.GetGastosPeriodoAsync(model.ConsorcioId, model.Periodo);
+
+                if (gastos.Count == 0)
+                {
+                    ModelState.AddModelError(nameof(model.Periodo), "No hay gastos cargados para ese consorcio y periodo.");
+                }
+            }
         }
 
         private string GetSafeReturnUrl(string? returnUrl)

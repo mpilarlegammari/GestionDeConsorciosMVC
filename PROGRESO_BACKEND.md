@@ -12,7 +12,7 @@ Este archivo resume el estado actual del backend tomando como guía:
 - La base local `GestionConsorciosDataBase` existe en `localhost\SQLEXPRESS01` y está `ONLINE`.
 - La migración aplicada en SQL Server es `20260606022518_InicialGestionConsorcios`.
 - El `DbContext` activo está en `Context/GestionDeConsorciosContext.cs`.
-- Hay backend real para Consorcios + Unidades Funcionales, backend administrativo reforzado para gastos, y backend parcial para expensas y pagos.
+- Hay backend real para Consorcios + Unidades Funcionales, backend administrativo reforzado para gastos y expensas, y backend parcial para pagos.
 - Hay servicios y ViewModel creados para gastos, y `IGastoService`/`IFileStorageService` ya están registrados en el `Program.cs` real.
 - `dotnet ef migrations list --context GestionDeConsorciosContext` funciona usando `GESTION_CONSORCIOS_CONNECTION_STRING` como variable de entorno temporal.
 - La solución `.sln` y `GestionDeConsorciosMVC.slnLaunch` existen para Visual Studio. En el árbol actual no aparece `Properties/launchSettings.json`, por lo que conviene verificar los perfiles `http`/`https` antes de dar por cerrada la ejecución desde el botón verde.
@@ -28,7 +28,7 @@ Este archivo resume el estado actual del backend tomando como guía:
 | 4 | Consorcios | Prioridad 1 | Hecho | `Controllers/ConsorciosController.cs` lista, muestra detalle con `ConsorcioDetailsViewModel`, crea con `ConsorcioViewModel` y edita datos generales; vistas `Index`, `Create`, `Details` y `Edit`; build en `0 errores`. | Queda para una etapa posterior proteger por rol/autenticación real y decidir baja lógica. | Usar el módulo como base para probar gastos y expensas por consorcio. |
 | 5 | Unidades funcionales | Prioridad 1 | Hecho | `UnidadFuncionalViewModel`; alta de UFs dentro de `POST Consorcios/Create`; edición de UFs existentes desde `POST Consorcios/Edit`; validaciones de UF requerida, DNI requerido, email válido y duplicados por consorcio. | Queda para una etapa posterior asociar UF con `Usuario` propietario real y evaluar un índice único compuesto si se decide tocar migraciones. | Continuar con módulos dependientes: gastos, expensas y pagos vinculados a consorcios/UF. |
 | 6 | Gastos | Prioridad 2 | Parcial | Admin reforzado: `GastosIndexViewModel`, filtros reales por consorcio/mes/año/categoría/búsqueda, alta con factura, edición, eliminación, detalle completo, `GastoService`, `FileStorageService`, índice único `NumeroFactura`; build en `0 errores`. | Falta trabajar `MisGastos` propietario con datos reales y definir autorización por rol; delete sigue siendo físico porque no se tocaron migraciones para baja lógica. | Próxima tanda: cerrar `MisGastos` propietario o avanzar a Expensas según prioridad del TP. |
-| 7 | Expensas | Prioridad 3 y 5 | Parcial | `Controllers/ExpensasController.cs` tiene `Index`, `MisExpensas`, `Details`, `Generar` GET/POST; genera expensas desde gastos y evita duplicados por período. | Falta servicio dedicado; criterios de distribución más realistas; PDF/liquidación; autorización real; pruebas de generación. | Extraer la lógica de generación a un servicio y cubrir validaciones críticas. |
+| 7 | Expensas | Prioridad 3 y 5 | Parcial | Admin reforzado: `IExpensasService`, `ExpensasService`, `ExpensasIndexViewModel`, `GenerarExpensasViewModel`, `ExpensaDetailsViewModel`; `Index` con filtros reales; generación desde gastos del período; validación de duplicados por consorcio/período; detalle sin `ViewBag`; build en `0 errores`. | Falta reforzar `MisExpensas` propietario, PDF/liquidación, autorización real y criterios de distribución más avanzados. | Próxima tanda posible: cerrar `MisExpensas` propietario o avanzar a Pagos admin. |
 | 8 | Pagos | Prioridad 4 | Parcial | `Controllers/PagosController.cs` tiene `InformarPago`, `MisPagos` y `Details`; guarda comprobantes en `wwwroot/uploads/pagos`; `Models/Pago.cs` contempla estado y revisión. | Falta revisión administrativa aprobar/rechazar; actualizar estado de expensa al aprobar; ViewModels dedicados; autorización por rol. | Implementar flujo admin de revisión de pagos. |
 | 9 | Comunicados | Prioridad 7 y 8 | Parcial | `Models/Comunicado.cs`, `DbSet<Comunicado>`, vistas y `Controllers/ComunicadosController.cs`. | El controlador todavía es principalmente visual/mock; falta POST real, persistencia, adjuntos y filtros por consorcio/propietario. | Convertir `ComunicadosController` a datos reales con ViewModels. |
 | 10 | Reclamos | Prioridad 9 | Pendiente | `Models/Reclamo.cs`, `DbSet<Reclamo>` y tabla prevista en migración inicial. | Faltan controlador, vistas, carga de reclamos, seguimiento y gestión administrativa. | Crear `ReclamosController` con flujos propietario/admin. |
@@ -44,6 +44,7 @@ Este archivo resume el estado actual del backend tomando como guía:
 - DbContext: `GestionDeConsorciosContext` existe y está conectado al modelo actual.
 - Consorcios + Unidades Funcionales: Prioridad 1 cerrada con ViewModels, alta, detalle, edición y validaciones backend.
 - Backend de gastos: lado administrador reforzado con filtros reales, resumen, alta, detalle, edición, eliminación, almacenamiento de archivos y registro DI en `Program.cs`.
+- Backend de expensas: lado administrador reforzado con servicio, ViewModels, filtros reales, generación por partes iguales y detalle tipado.
 - Servicios y ViewModels: existen y están registrados para gastos (`GastoVM`, `IGastoService`, `GastoService`, `IFileStorageService`, `FileStorageService`).
 - Visual Studio con `.sln`: `GestionDeConsorciosMVC.sln` y `GestionDeConsorciosMVC.slnLaunch` existen; falta revisar/restaurar `launchSettings.json` si los perfiles no aparecen.
 
@@ -60,4 +61,4 @@ Este archivo resume el estado actual del backend tomando como guía:
 
 Consorcios + Unidades Funcionales quedó cerrado como Prioridad 1 del backend: alta, detalle, edición, ViewModels y validaciones principales.
 
-El próximo foco lógico es completar `MisGastos` para propietario o avanzar sobre `Expensas`, dejando autorización real para una etapa posterior.
+El próximo foco lógico es completar una vista de propietario pendiente (`MisGastos` o `MisExpensas`) o avanzar sobre `Pagos` del lado administrador, dejando autorización real para una etapa posterior.
