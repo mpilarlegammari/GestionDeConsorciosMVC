@@ -13,7 +13,12 @@ namespace GestionDeConsorciosMVC.Services
 			_context = context;
 		}
 
-		public async Task<List<Gasto>> GetAllAsync(int? consorcioId = null)
+		public async Task<List<Gasto>> GetAllAsync(
+			int? consorcioId = null,
+			int? mes = null,
+			int? anio = null,
+			string? categoria = null,
+			string? busqueda = null)
 		{
 			var query = _context.Gastos
 				.Include(gasto => gasto.Consorcio)
@@ -22,6 +27,32 @@ namespace GestionDeConsorciosMVC.Services
 			if (consorcioId.HasValue)
 			{
 				query = query.Where(gasto => gasto.ConsorcioId == consorcioId.Value);
+			}
+
+			if (mes is >= 1 and <= 12)
+			{
+				query = query.Where(gasto => gasto.Fecha.Month == mes.Value);
+			}
+
+			if (anio.HasValue && anio.Value > 0)
+			{
+				query = query.Where(gasto => gasto.Fecha.Year == anio.Value);
+			}
+
+			var normalizedCategoria = Normalize(categoria);
+
+			if (!string.IsNullOrWhiteSpace(normalizedCategoria))
+			{
+				query = query.Where(gasto => gasto.Categoria == normalizedCategoria);
+			}
+
+			var normalizedBusqueda = Normalize(busqueda);
+
+			if (!string.IsNullOrWhiteSpace(normalizedBusqueda))
+			{
+				query = query.Where(gasto =>
+					EF.Functions.Like(gasto.NumeroFactura, $"%{normalizedBusqueda}%") ||
+					EF.Functions.Like(gasto.Concepto, $"%{normalizedBusqueda}%"));
 			}
 
 			return await query
@@ -58,6 +89,7 @@ namespace GestionDeConsorciosMVC.Services
 				Monto = gasto.Monto,
 				Concepto = gasto.Concepto,
 				Categoria = gasto.Categoria,
+				Descripcion = gasto.Descripcion,
 				ArchivoFacturaPath = gasto.ArchivoFacturaPath
 			};
 		}
@@ -89,7 +121,8 @@ namespace GestionDeConsorciosMVC.Services
 				Monto = model.Monto,
 				Concepto = Normalize(model.Concepto),
 				Categoria = Normalize(model.Categoria),
-				ArchivoFacturaPath = archivoFacturaPath
+				ArchivoFacturaPath = archivoFacturaPath,
+				Descripcion = NormalizeOptional(model.Descripcion)
 			};
 
 			_context.Gastos.Add(gasto);
@@ -113,6 +146,7 @@ namespace GestionDeConsorciosMVC.Services
 			gasto.Monto = model.Monto;
 			gasto.Concepto = Normalize(model.Concepto);
 			gasto.Categoria = Normalize(model.Categoria);
+			gasto.Descripcion = NormalizeOptional(model.Descripcion);
 
 			if (!string.IsNullOrWhiteSpace(archivoFacturaPath))
 			{
@@ -140,6 +174,12 @@ namespace GestionDeConsorciosMVC.Services
 		private static string Normalize(string? value)
 		{
 			return (value ?? string.Empty).Trim();
+		}
+
+		private static string? NormalizeOptional(string? value)
+		{
+			var normalized = Normalize(value);
+			return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
 		}
 	}
 }

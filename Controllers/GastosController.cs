@@ -19,13 +19,21 @@ namespace GestionDeConsorciosMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(int? consorcioId)
+        public async Task<IActionResult> Index(int? consorcioId, int? mes, int? anio, string? categoria, string? busqueda)
         {
-            var gastos = await _gastoService.GetAllAsync(consorcioId);
-            ViewBag.Consorcios = await _gastoService.GetConsorciosAsync();
-            ViewData["ConsorcioId"] = consorcioId;
+            var model = new GastosIndexViewModel
+            {
+                Gastos = await _gastoService.GetAllAsync(consorcioId, mes, anio, categoria, busqueda),
+                Consorcios = await _gastoService.GetConsorciosAsync(),
+                Categorias = GetCategorias().ToList(),
+                ConsorcioId = consorcioId,
+                Mes = mes,
+                Anio = anio,
+                Categoria = string.IsNullOrWhiteSpace(categoria) ? null : categoria.Trim(),
+                Busqueda = string.IsNullOrWhiteSpace(busqueda) ? null : busqueda.Trim()
+            };
 
-            return View(gastos);
+            return View(model);
         }
 
         [HttpGet]
@@ -172,7 +180,7 @@ namespace GestionDeConsorciosMVC.Controllers
             {
                 if (required)
                 {
-                    ModelState.AddModelError(nameof(factura), "Debe adjuntar la factura del gasto.");
+                    ModelState.AddModelError("ArchivoFactura", "Debe adjuntar la factura del gasto.");
                 }
 
                 return;
@@ -180,14 +188,14 @@ namespace GestionDeConsorciosMVC.Controllers
 
             if (factura.Length > MaxFacturaBytes)
             {
-                ModelState.AddModelError(nameof(factura), "La factura no puede superar los 5 MB.");
+                ModelState.AddModelError("ArchivoFactura", "La factura no puede superar los 5 MB.");
             }
 
             var extension = Path.GetExtension(factura.FileName).ToLowerInvariant();
 
             if (!AllowedFacturaExtensions.Contains(extension))
             {
-                ModelState.AddModelError(nameof(factura), "La factura debe ser PDF, JPG o PNG.");
+                ModelState.AddModelError("ArchivoFactura", "La factura debe ser PDF, JPG o PNG.");
             }
         }
 

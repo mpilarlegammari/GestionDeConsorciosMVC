@@ -1,0 +1,66 @@
+@model Gasto
+@{
+    ViewData["Title"] = "Eliminar Gasto";
+    ViewData["Role"] = "Administrador";
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Eliminar Gasto</h2>
+        <p>Confirmacion de eliminacion del gasto registrado.</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-controller="Gastos" asp-action="Details" asp-route-id="@Model.Id">Cancelar</a>
+</section>
+
+<section class="form-alert show" role="alert">
+    Esta accion eliminara el gasto de forma permanente. No modifica migraciones ni agrega baja logica.
+</section>
+
+<section class="content-grid">
+    <article class="app-card">
+        <div class="app-card-title">
+            <h3>Datos del gasto</h3>
+            <span class="status-badge danger">Eliminar</span>
+        </div>
+        <dl class="detail-list">
+            <div>
+                <dt>Consorcio</dt>
+                <dd>@Model.Consorcio.Nombre</dd>
+            </div>
+            <div>
+                <dt>Numero de factura</dt>
+                <dd>@Model.NumeroFactura</dd>
+            </div>
+            <div>
+                <dt>Fecha</dt>
+                <dd>@Model.Fecha.ToString("dd/MM/yyyy")</dd>
+            </div>
+            <div>
+                <dt>Monto</dt>
+                <dd>@Model.Monto.ToString("C")</dd>
+            </div>
+            <div>
+                <dt>Categoria</dt>
+                <dd>@Model.Categoria</dd>
+            </div>
+            <div class="detail-span-2">
+                <dt>Concepto</dt>
+                <dd>@Model.Concepto</dd>
+            </div>
+        </dl>
+    </article>
+
+    <aside class="app-card">
+        <div class="app-card-title">
+            <h3>Confirmacion</h3>
+        </div>
+        <p class="card-description">Revisa los datos antes de confirmar la eliminacion.</p>
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div class="form-actions">
+                <a class="btn btn-outline-secondary" asp-controller="Gastos" asp-action="Details" asp-route-id="@Model.Id">Cancelar</a>
+                <button class="btn btn-danger" type="submit">Eliminar gasto</button>
+            </div>
+        </form>
+    </aside>
+</section>

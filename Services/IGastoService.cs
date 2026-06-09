@@ -4,7 +4,12 @@ namespace GestionDeConsorciosMVC.Services
 {
     public interface IGastoService
     {
-        Task<List<Gasto>> GetAllAsync(int? consorcioId = null);
+        Task<List<Gasto>> GetAllAsync(
+            int? consorcioId = null,
+            int? mes = null,
+            int? anio = null,
+            string? categoria = null,
+            string? busqueda = null);
         Task<Gasto?> GetByIdAsync(int id);
         Task<GastoVM?> GetForEditAsync(int id);
         Task<List<Consorcio>> GetConsorciosAsync();

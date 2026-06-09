@@ -6,7 +6,7 @@ namespace GestionDeConsorciosMVC.ViewModels
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Debe seleccionar un consorcio.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un consorcio.")]
         public int ConsorcioId { get; set; }
 
         [Required(ErrorMessage = "Debe ingresar el numero de factura.")]
@@ -27,6 +27,7 @@ namespace GestionDeConsorciosMVC.ViewModels
         [StringLength(100, ErrorMessage = "La categoria no puede superar los 100 caracteres.")]
         public string Categoria { get; set; } = string.Empty;
 
+        [StringLength(1000, ErrorMessage = "La descripcion no puede superar los 1000 caracteres.")]
         public string? Descripcion { get; set; }
         public string? ArchivoFacturaPath { get; set; }
     }

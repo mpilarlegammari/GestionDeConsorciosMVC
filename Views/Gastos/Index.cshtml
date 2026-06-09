@@ -1,8 +1,22 @@
-@model IEnumerable<Gasto>
+@model GastosIndexViewModel
 @{
     ViewData["Title"] = "Gastos";
     ViewData["Role"] = "Administrador";
-    var consorcios = ViewBag.Consorcios as IEnumerable<Consorcio> ?? Enumerable.Empty<Consorcio>();
+    var meses = new Dictionary<int, string>
+    {
+        [1] = "Enero",
+        [2] = "Febrero",
+        [3] = "Marzo",
+        [4] = "Abril",
+        [5] = "Mayo",
+        [6] = "Junio",
+        [7] = "Julio",
+        [8] = "Agosto",
+        [9] = "Septiembre",
+        [10] = "Octubre",
+        [11] = "Noviembre",
+        [12] = "Diciembre"
+    };
 }
 
 @functions {
@@ -15,64 +29,116 @@
     };
 }
 
+@if (TempData["Success"] is string successMessage)
+{
+    <section class="form-alert show success" role="status">@successMessage</section>
+}
+
 <section class="page-intro">
     <div>
         <h2>Gastos</h2>
         <p>Registro y consulta de gastos del consorcio.</p>
     </div>
-    <a class="btn btn-primary" href="/Gastos/Create">Registrar gasto</a>
+    <a class="btn btn-primary" asp-controller="Gastos" asp-action="Create" asp-route-consorcioId="@Model.ConsorcioId">Registrar gasto</a>
+</section>
+
+<section class="dashboard-grid" aria-label="Resumen de gastos">
+    <article class="app-card metric-card">
+        <span>Gastos filtrados</span>
+        <strong>@Model.CantidadGastos</strong>
+        <small>Registros encontrados</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Total</span>
+        <strong>@Model.TotalGastos.ToString("C")</strong>
+        <small>Monto acumulado</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Promedio</span>
+        <strong>@Model.PromedioGastos.ToString("C")</strong>
+        <small>Por gasto</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Consorcios</span>
+        <strong>@Model.Consorcios.Count</strong>
+        <small>Disponibles</small>
+    </article>
 </section>
 
 <section class="app-card filter-card" aria-label="Filtros de gastos">
-    <div class="form-grid">
-        <div>
-            <label class="form-label" for="filtroConsorcio">Consorcio</label>
-            <select class="form-select" id="filtroConsorcio">
-                <option value="">Todos</option>
-                @foreach (var consorcio in consorcios)
-                {
-                    <option value="@consorcio.Id">@consorcio.Nombre</option>
-                }
-            </select>
+    <form method="get" asp-controller="Gastos" asp-action="Index">
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="consorcioId">Consorcio</label>
+                <select class="form-select" id="consorcioId" name="consorcioId">
+                    <option value="">Todos</option>
+                    @foreach (var consorcio in Model.Consorcios)
+                    {
+                        if (Model.ConsorcioId == consorcio.Id)
+                        {
+                            <option value="@consorcio.Id" selected>@consorcio.Nombre</option>
+                        }
+                        else
+                        {
+                            <option value="@consorcio.Id">@consorcio.Nombre</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="mes">Mes</label>
+                <select class="form-select" id="mes" name="mes">
+                    <option value="">Todos</option>
+                    @foreach (var mes in meses)
+                    {
+                        if (Model.Mes == mes.Key)
+                        {
+                            <option value="@mes.Key" selected>@mes.Value</option>
+                        }
+                        else
+                        {
+                            <option value="@mes.Key">@mes.Value</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="anio">Anio</label>
+                <input class="form-control" id="anio" name="anio" type="number" min="2000" max="2100" value="@Model.Anio" placeholder="@DateTime.Today.Year" />
+            </div>
+            <div>
+                <label class="form-label" for="categoria">Categoria</label>
+                <select class="form-select" id="categoria" name="categoria">
+                    <option value="">Todas</option>
+                    @foreach (var categoria in Model.Categorias)
+                    {
+                        if (string.Equals(Model.Categoria, categoria, StringComparison.OrdinalIgnoreCase))
+                        {
+                            <option value="@categoria" selected>@categoria</option>
+                        }
+                        else
+                        {
+                            <option value="@categoria">@categoria</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="busqueda">Buscar por factura o concepto</label>
+                <input class="form-control" id="busqueda" name="busqueda" type="search" value="@Model.Busqueda" placeholder="Ej: FAC-001 o ascensor" />
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-outline-secondary" asp-controller="Gastos" asp-action="Index">Limpiar</a>
+            </div>
         </div>
-        <div>
-            <label class="form-label" for="filtroMes">Mes</label>
-            <select class="form-select" id="filtroMes">
-                <option>Mayo</option>
-                <option>Abril</option>
-                <option>Marzo</option>
-            </select>
-        </div>
-        <div>
-            <label class="form-label" for="filtroAnio">Año</label>
-            <select class="form-select" id="filtroAnio">
-                <option>2026</option>
-                <option>2025</option>
-            </select>
-        </div>
-        <div>
-            <label class="form-label" for="filtroCategoria">Categoria</label>
-            <select class="form-select" id="filtroCategoria">
-                <option value="">Todas</option>
-                <option>Limpieza</option>
-                <option>Mantenimiento</option>
-                <option>Servicios</option>
-                <option>Seguridad</option>
-                <option>Administracion</option>
-                <option>Otros</option>
-            </select>
-        </div>
-        <div class="form-span-2">
-            <label class="form-label" for="buscarGasto">Buscar por factura o concepto</label>
-            <input class="form-control" id="buscarGasto" type="search" placeholder="Ej: FAC-001 o ascensor" />
-        </div>
-    </div>
+    </form>
 </section>
 
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Listado de gastos</h3>
-        <span class="status-badge">@Model.Count() registrados</span>
+        <span class="status-badge">@Model.CantidadGastos registrados</span>
     </div>
     <div class="table-responsive">
         <table class="table table-clean">
@@ -80,7 +146,7 @@
                 <tr>
                     <th>Fecha</th>
                     <th>Consorcio</th>
-                    <th>N° Factura</th>
+                    <th>Nro. Factura</th>
                     <th>Concepto</th>
                     <th>Categoria</th>
                     <th>Monto</th>
@@ -88,15 +154,15 @@
                 </tr>
             </thead>
             <tbody>
-                @if (!Model.Any())
+                @if (!Model.Gastos.Any())
                 {
                     <tr>
-                        <td colspan="7">Todavia no hay gastos cargados.</td>
+                        <td colspan="7">No hay gastos que coincidan con los filtros seleccionados.</td>
                     </tr>
                 }
                 else
                 {
-                    @foreach (var gasto in Model)
+                    @foreach (var gasto in Model.Gastos)
                     {
                         <tr>
                             <td>@gasto.Fecha.ToString("dd/MM/yyyy")</td>
@@ -108,6 +174,8 @@
                             <td>
                                 <div class="table-actions">
                                     <a asp-controller="Gastos" asp-action="Details" asp-route-id="@gasto.Id">Ver detalle</a>
+                                    <a asp-controller="Gastos" asp-action="Edit" asp-route-id="@gasto.Id">Editar</a>
+                                    <a asp-controller="Gastos" asp-action="Delete" asp-route-id="@gasto.Id">Eliminar</a>
                                 </div>
                             </td>
                         </tr>

@@ -28,6 +28,7 @@
     <div class="button-group">
         <a class="btn btn-outline-secondary" href="/Gastos">Volver</a>
         <a class="btn btn-outline-primary" asp-controller="Gastos" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
+        <a class="btn btn-outline-danger" asp-controller="Gastos" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a>
         @if (!string.IsNullOrWhiteSpace(Model.ArchivoFacturaPath))
         {
             <a class="btn btn-primary" href="@Model.ArchivoFacturaPath" target="_blank" rel="noopener">Ver comprobante</a>
@@ -66,6 +67,10 @@
         </div>
         <dl class="detail-list">
             <div>
+                <dt>ID interno</dt>
+                <dd>@Model.Id</dd>
+            </div>
+            <div>
                 <dt>Consorcio</dt>
                 <dd>@Model.Consorcio.Nombre</dd>
             </div>
@@ -76,6 +81,10 @@
             <div>
                 <dt>Fecha</dt>
                 <dd>@Model.Fecha.ToString("dd/MM/yyyy")</dd>
+            </div>
+            <div>
+                <dt>Monto</dt>
+                <dd>@Model.Monto.ToString("C")</dd>
             </div>
             <div>
                 <dt>Concepto</dt>
@@ -101,6 +110,10 @@
             <div class="detail-span-2">
                 <dt>Descripcion</dt>
                 <dd>@(string.IsNullOrWhiteSpace(Model.Descripcion) ? "Sin descripcion adicional." : Model.Descripcion)</dd>
+            </div>
+            <div>
+                <dt>Fecha de carga</dt>
+                <dd>@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</dd>
             </div>
         </dl>
     </article>
