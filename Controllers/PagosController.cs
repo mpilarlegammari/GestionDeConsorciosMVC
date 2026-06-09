@@ -1,4 +1,6 @@
 using GestionDeConsorciosMVC.Context;
+using GestionDeConsorciosMVC.Services;
+using GestionDeConsorciosMVC.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,11 +11,20 @@ namespace GestionDeConsorciosMVC.Controllers
         private static readonly string[] AllowedExtensions = [".pdf", ".jpg", ".jpeg", ".png"];
         private readonly GestionDeConsorciosContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly IPagosService _pagosService;
 
-        public PagosController(GestionDeConsorciosContext context, IWebHostEnvironment environment)
+        public PagosController(GestionDeConsorciosContext context, IWebHostEnvironment environment, IPagosService pagosService)
         {
             _context = context;
             _environment = environment;
+            _pagosService = pagosService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index(EstadoPago? estado, int? consorcioId, string? periodo)
+        {
+            var model = await _pagosService.GetAdminIndexAsync(estado, consorcioId, periodo);
+            return View(model);
         }
 
         [HttpGet]
@@ -54,24 +65,73 @@ namespace GestionDeConsorciosMVC.Controllers
         {
             var role = HttpContext.Session.GetString("UserRole");
             var email = HttpContext.Session.GetString("UserEmail");
-            var pago = await _context.Pagos
-                .Include(p => p.Expensa)
-                    .ThenInclude(e => e.UnidadFuncional)
-                        .ThenInclude(u => u.Consorcio)
-                .FirstOrDefaultAsync(p => p.Id == id);
+            var model = await _pagosService.GetDetailsAsync(id);
 
-            if (pago is null)
+            if (model is null)
             {
                 return NotFound();
             }
 
             if (role?.Equals("Propietario", StringComparison.OrdinalIgnoreCase) == true
-                && !string.Equals(pago.Expensa.UnidadFuncional.MailPropietario, email, StringComparison.OrdinalIgnoreCase))
+                && !string.Equals(model.PropietarioMail, email, StringComparison.OrdinalIgnoreCase))
             {
                 return Forbid();
             }
 
-            return View(pago);
+            model.DetailRole = role?.Equals("Propietario", StringComparison.OrdinalIgnoreCase) == true
+                ? "Propietario"
+                : "Administrador";
+            model.ReturnUrl = model.DetailRole == "Propietario"
+                ? Url.Action(nameof(MisPagos), "Pagos") ?? "/Pagos/MisPagos"
+                : Url.Action(nameof(Index), "Pagos") ?? "/Pagos";
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Aprobar(RevisarPagoViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = string.Join(" ", ModelState.Values
+                    .SelectMany(value => value.Errors)
+                    .Select(error => error.ErrorMessage));
+                return RedirectToAction(nameof(Details), new { id = model.PagoId });
+            }
+
+            var updated = await _pagosService.AprobarAsync(model);
+
+            if (!updated)
+            {
+                return NotFound();
+            }
+
+            TempData["Success"] = "Pago aprobado correctamente. La expensa asociada quedo marcada como pagada.";
+            return RedirectToLocalOrDetails(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Rechazar(RevisarPagoViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = string.Join(" ", ModelState.Values
+                    .SelectMany(value => value.Errors)
+                    .Select(error => error.ErrorMessage));
+                return RedirectToAction(nameof(Details), new { id = model.PagoId });
+            }
+
+            var updated = await _pagosService.RechazarAsync(model);
+
+            if (!updated)
+            {
+                return NotFound();
+            }
+
+            TempData["Success"] = "Pago rechazado correctamente.";
+            return RedirectToLocalOrDetails(model);
         }
 
         [HttpPost]
@@ -198,6 +258,16 @@ namespace GestionDeConsorciosMVC.Controllers
             await comprobante.CopyToAsync(stream);
 
             return $"/uploads/pagos/{fileName}";
+        }
+
+        private IActionResult RedirectToLocalOrDetails(RevisarPagoViewModel model)
+        {
+            if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+            {
+                return Redirect(model.ReturnUrl);
+            }
+
+            return RedirectToAction(nameof(Details), new { id = model.PagoId });
         }
     }
 }

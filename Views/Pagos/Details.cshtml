@@ -1,7 +1,8 @@
-@model Pago
+@model PagoDetailsViewModel
 @{
     ViewData["Title"] = "Detalle del Pago";
-    ViewData["Role"] = "Propietario";
+    ViewData["Role"] = Model.DetailRole;
+    var puedeRevisar = Model.DetailRole == "Administrador" && Model.Estado == EstadoPago.PendienteRevision;
 }
 
 @functions {
@@ -12,6 +13,14 @@
         EstadoPago.Rechazado => "danger",
         _ => "neutral"
     };
+
+    private static string EstadoExpensaClass(EstadoExpensa estado) => estado switch
+    {
+        EstadoExpensa.Pagada => "success",
+        EstadoExpensa.Pendiente => "warning",
+        EstadoExpensa.Vencida => "danger",
+        _ => "neutral"
+    };
 }
 
 @if (TempData["Success"] is string successMessage)
@@ -19,10 +28,15 @@
     <section class="form-alert show success" role="status">@successMessage</section>
 }
 
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
 <section class="page-intro">
     <div>
         <h2>Detalle del Pago</h2>
-        <p>Pago informado para la expensa @Model.Expensa.Periodo.</p>
+        <p>Pago informado para la expensa @Model.Periodo.</p>
     </div>
     <span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span>
 </section>
@@ -58,22 +72,38 @@
         <dl class="detail-list">
             <div>
                 <dt>Consorcio</dt>
-                <dd>@Model.Expensa.UnidadFuncional.Consorcio.Nombre</dd>
+                <dd>@Model.ConsorcioNombre</dd>
             </div>
             <div>
                 <dt>Unidad funcional</dt>
-                <dd>@Model.Expensa.UnidadFuncional.NumeroUF</dd>
+                <dd>@Model.UnidadFuncionalNumero</dd>
+            </div>
+            <div>
+                <dt>Propietario</dt>
+                <dd>@Model.PropietarioNombre</dd>
+            </div>
+            <div>
+                <dt>Email propietario</dt>
+                <dd>@Model.PropietarioMail</dd>
             </div>
             <div>
                 <dt>Periodo</dt>
-                <dd>@Model.Expensa.Periodo</dd>
+                <dd>@Model.Periodo</dd>
+            </div>
+            <div>
+                <dt>Monto expensa</dt>
+                <dd>@Model.MontoExpensa.ToString("C")</dd>
+            </div>
+            <div>
+                <dt>Estado expensa</dt>
+                <dd><span class="status-badge @EstadoExpensaClass(Model.EstadoExpensa)">@Model.EstadoExpensa</span></dd>
             </div>
             <div>
                 <dt>Fecha de pago</dt>
                 <dd>@Model.FechaPago.ToString("dd/MM/yyyy")</dd>
             </div>
             <div>
-                <dt>Monto</dt>
+                <dt>Monto pagado</dt>
                 <dd>@Model.MontoPagado.ToString("C")</dd>
             </div>
             <div>
@@ -106,7 +136,7 @@
             </li>
             <li>
                 <span>Fecha de revision</span>
-                <strong>@(Model.FechaRevision.HasValue ? Model.FechaRevision.Value.ToString("dd/MM/yyyy") : "Sin revisar")</strong>
+                <strong>@(Model.FechaRevision.HasValue ? Model.FechaRevision.Value.ToString("dd/MM/yyyy HH:mm") : "Sin revisar")</strong>
             </li>
             <li>
                 <span>Observacion administracion</span>
@@ -145,9 +175,36 @@
     </div>
 </section>
 
+@if (puedeRevisar)
+{
+    <section class="app-card section-card">
+        <div class="app-card-title">
+            <h3>Revision administrativa</h3>
+            <span class="status-badge warning">Pendiente</span>
+        </div>
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="PagoId" value="@Model.Id" />
+            <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+
+            <div class="form-grid">
+                <div class="form-span-2">
+                    <label class="form-label" for="ObservacionAdministracion">Observacion administrativa</label>
+                    <textarea class="form-control" id="ObservacionAdministracion" name="ObservacionAdministracion" rows="4" placeholder="Detalle opcional para propietario o registro interno"></textarea>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit" formaction="@Url.Action("Aprobar", "Pagos")">Aprobar pago</button>
+                <button class="btn btn-outline-danger" type="submit" formaction="@Url.Action("Rechazar", "Pagos")">Rechazar pago</button>
+            </div>
+        </form>
+    </section>
+}
+
 <section class="app-card section-card">
     <div class="button-group">
-        <a class="btn btn-outline-secondary" asp-controller="Pagos" asp-action="MisPagos">Volver</a>
+        <a class="btn btn-outline-secondary" href="@Model.ReturnUrl">Volver</a>
         <a class="btn btn-primary" asp-controller="Expensas" asp-action="Details" asp-route-id="@Model.ExpensaId" asp-route-returnUrl="@Url.Action("Details", "Pagos", new { id = Model.Id })">Ver expensa asociada</a>
     </div>
 </section>
