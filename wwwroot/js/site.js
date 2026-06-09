@@ -162,6 +162,34 @@
     return !hasDuplicates;
   };
 
+  const actualizarIndicesUF = () => {
+    document.querySelectorAll("[data-uf-row]").forEach((row, index) => {
+      row.querySelectorAll("[data-uf-field]").forEach((field) => {
+        const fieldName = field.dataset.ufField;
+
+        if (!fieldName) {
+          return;
+        }
+
+        const indexedName = `UnidadesFuncionales[${index}].${fieldName}`;
+        field.name = indexedName;
+        field.id = `UnidadesFuncionales_${index}__${fieldName}`;
+      });
+
+      row.querySelectorAll("[data-uf-error-for]").forEach((error) => {
+        const fieldName = error.dataset.ufErrorFor;
+
+        if (!fieldName) {
+          return;
+        }
+
+        const indexedName = `UnidadesFuncionales[${index}].${fieldName}`;
+        error.dataset.errorFor = indexedName;
+        error.setAttribute("data-valmsg-for", indexedName);
+      });
+    });
+  };
+
   window.agregarUF = () => {
     const body = document.querySelector("[data-uf-body]");
     const firstRow = body?.querySelector("[data-uf-row]");
@@ -173,7 +201,9 @@
     const clone = firstRow.cloneNode(true);
 
     clone.querySelectorAll("input").forEach((input) => {
-      input.value = "";
+      input.value = input.type === "hidden" && input.dataset.ufField === "Id"
+        ? "0"
+        : "";
       input.classList.remove("is-invalid");
     });
 
@@ -182,6 +212,7 @@
     });
 
     body.appendChild(clone);
+    actualizarIndicesUF();
   };
 
   window.eliminarUF = (button) => {
@@ -193,10 +224,13 @@
     }
 
     row.remove();
+    actualizarIndicesUF();
     window.validarUFDuplicadas();
   };
 
   if (consorcioForm) {
+    actualizarIndicesUF();
+
     consorcioForm.addEventListener("submit", (event) => {
       event.preventDefault();
 

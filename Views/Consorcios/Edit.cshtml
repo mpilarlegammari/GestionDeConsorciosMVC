@@ -1,15 +1,15 @@
 @model ConsorcioViewModel
 @{
-    ViewData["Title"] = "Crear Consorcio";
+    ViewData["Title"] = "Editar Consorcio";
     ViewData["Role"] = "Administrador";
 }
 
 <section class="page-intro">
     <div>
-        <h2>Crear Consorcio</h2>
-        <p>Alta de nuevo edificio y unidades funcionales.</p>
+        <h2>Editar Consorcio</h2>
+        <p>Actualizacion de datos generales y unidades funcionales.</p>
     </div>
-    <a class="btn btn-outline-secondary" href="/Consorcios">Cancelar</a>
+    <a class="btn btn-outline-secondary" asp-controller="Consorcios" asp-action="Details" asp-route-id="@Model.Id">Cancelar</a>
 </section>
 
 @if (!ViewData.ModelState.IsValid)
@@ -17,8 +17,10 @@
     <section class="form-alert show" role="alert" asp-validation-summary="All"></section>
 }
 
-<form class="consorcio-form" data-consorcio-form data-real-submit method="post" asp-controller="Consorcios" asp-action="Create" novalidate>
+<form class="consorcio-form" data-consorcio-form data-real-submit method="post" asp-controller="Consorcios" asp-action="Edit" asp-route-id="@Model.Id" novalidate>
     @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
     <section class="app-card">
         <div class="app-card-title">
             <h3>Datos del consorcio</h3>
@@ -27,37 +29,42 @@
         <div class="form-grid">
             <div>
                 <label class="form-label" asp-for="Nombre"></label>
-                <input class="form-control" asp-for="Nombre" type="text" placeholder="Ej: Consorcio Las Heras" data-required />
+                <input class="form-control" asp-for="Nombre" type="text" data-required />
                 <span class="field-validation" asp-validation-for="Nombre" data-error-for="Nombre"></span>
             </div>
             <div>
                 <label class="form-label" asp-for="Cuit"></label>
-                <input class="form-control" asp-for="Cuit" type="text" placeholder="30-00000000-0" data-required />
+                <input class="form-control" asp-for="Cuit" type="text" data-required />
                 <span class="field-validation" asp-validation-for="Cuit" data-error-for="Cuit"></span>
             </div>
             <div class="form-span-2">
                 <label class="form-label" asp-for="Direccion"></label>
-                <input class="form-control" asp-for="Direccion" type="text" placeholder="Calle y altura" data-required />
+                <input class="form-control" asp-for="Direccion" type="text" data-required />
                 <span class="field-validation" asp-validation-for="Direccion" data-error-for="Direccion"></span>
             </div>
             <div>
                 <label class="form-label" asp-for="Ciudad"></label>
-                <input class="form-control" asp-for="Ciudad" type="text" placeholder="Ciudad" data-required />
+                <input class="form-control" asp-for="Ciudad" type="text" data-required />
                 <span class="field-validation" asp-validation-for="Ciudad" data-error-for="Ciudad"></span>
             </div>
             <div>
                 <label class="form-label" asp-for="CodigoPostal"></label>
-                <input class="form-control" asp-for="CodigoPostal" type="text" placeholder="Ej: 1425" data-required />
+                <input class="form-control" asp-for="CodigoPostal" type="text" data-required />
                 <span class="field-validation" asp-validation-for="CodigoPostal" data-error-for="CodigoPostal"></span>
             </div>
             <div>
                 <label class="form-label" asp-for="CantidadPisos"></label>
-                <input class="form-control" asp-for="CantidadPisos" type="number" min="1" placeholder="Ej: 12" data-required />
+                <input class="form-control" asp-for="CantidadPisos" type="number" min="1" data-required />
                 <span class="field-validation" asp-validation-for="CantidadPisos" data-error-for="CantidadPisos"></span>
+            </div>
+            <div>
+                <label class="form-label" asp-for="Estado"></label>
+                <select class="form-select" asp-for="Estado" asp-items="Html.GetEnumSelectList<EstadoConsorcio>()"></select>
+                <span class="field-validation" asp-validation-for="Estado" data-error-for="Estado"></span>
             </div>
             <div class="form-span-2">
                 <label class="form-label" asp-for="Observaciones"></label>
-                <textarea class="form-control" asp-for="Observaciones" rows="3" placeholder="Notas internas o datos relevantes"></textarea>
+                <textarea class="form-control" asp-for="Observaciones" rows="3"></textarea>
                 <span class="field-validation" asp-validation-for="Observaciones" data-error-for="Observaciones"></span>
             </div>
         </div>
@@ -67,9 +74,9 @@
         <div class="app-card-title">
             <div>
                 <h3>Unidades funcionales</h3>
-                <p class="card-description">Agrega una o mas UF para la carga inicial.</p>
+                <p class="card-description">Actualiza los datos de las UF ya registradas.</p>
             </div>
-            <button class="btn btn-outline-primary" type="button" onclick="agregarUF()">Agregar UF</button>
+            <span class="status-badge">@Model.UnidadesFuncionales.Count UF</span>
         </div>
         <div class="form-alert" data-uf-summary></div>
         <div class="table-responsive">
@@ -83,7 +90,6 @@
                         <th>Mail propietario</th>
                         <th>DNI propietario</th>
                         <th>Telefono</th>
-                        <th>Accion</th>
                     </tr>
                 </thead>
                 <tbody data-uf-body>
@@ -92,22 +98,21 @@
                         <tr data-uf-row>
                             <td>
                                 <input type="hidden" asp-for="UnidadesFuncionales[i].Id" data-uf-field="Id" />
-                                <input class="form-control" asp-for="UnidadesFuncionales[i].NumeroUF" data-uf-field="NumeroUF" type="text" placeholder="001" data-uf-numero data-required />
+                                <input class="form-control" asp-for="UnidadesFuncionales[i].NumeroUF" data-uf-field="NumeroUF" type="text" data-uf-numero data-required />
                                 <span class="field-validation" asp-validation-for="UnidadesFuncionales[i].NumeroUF" data-uf-error-for="NumeroUF" data-error-for="@($"UnidadesFuncionales[{i}].NumeroUF")"></span>
                             </td>
-                            <td><input class="form-control" asp-for="UnidadesFuncionales[i].Piso" data-uf-field="Piso" type="text" placeholder="1" /></td>
-                            <td><input class="form-control" asp-for="UnidadesFuncionales[i].Departamento" data-uf-field="Departamento" type="text" placeholder="A" /></td>
-                            <td><input class="form-control" asp-for="UnidadesFuncionales[i].NombrePropietario" data-uf-field="NombrePropietario" type="text" placeholder="Nombre y apellido" /></td>
+                            <td><input class="form-control" asp-for="UnidadesFuncionales[i].Piso" data-uf-field="Piso" type="text" /></td>
+                            <td><input class="form-control" asp-for="UnidadesFuncionales[i].Departamento" data-uf-field="Departamento" type="text" /></td>
+                            <td><input class="form-control" asp-for="UnidadesFuncionales[i].NombrePropietario" data-uf-field="NombrePropietario" type="text" /></td>
                             <td>
-                                <input class="form-control" asp-for="UnidadesFuncionales[i].MailPropietario" data-uf-field="MailPropietario" type="email" placeholder="propietario@mail.com" data-uf-email />
+                                <input class="form-control" asp-for="UnidadesFuncionales[i].MailPropietario" data-uf-field="MailPropietario" type="email" data-uf-email />
                                 <span class="field-validation" asp-validation-for="UnidadesFuncionales[i].MailPropietario" data-uf-error-for="MailPropietario" data-error-for="@($"UnidadesFuncionales[{i}].MailPropietario")"></span>
                             </td>
                             <td>
-                                <input class="form-control" asp-for="UnidadesFuncionales[i].DniPropietario" data-uf-field="DniPropietario" type="text" placeholder="DNI" data-uf-dni data-required />
+                                <input class="form-control" asp-for="UnidadesFuncionales[i].DniPropietario" data-uf-field="DniPropietario" type="text" data-uf-dni data-required />
                                 <span class="field-validation" asp-validation-for="UnidadesFuncionales[i].DniPropietario" data-uf-error-for="DniPropietario" data-error-for="@($"UnidadesFuncionales[{i}].DniPropietario")"></span>
                             </td>
-                            <td><input class="form-control" asp-for="UnidadesFuncionales[i].Telefono" data-uf-field="Telefono" type="tel" placeholder="Telefono" /></td>
-                            <td><button class="btn btn-outline-danger btn-sm" type="button" onclick="eliminarUF(this)">Eliminar</button></td>
+                            <td><input class="form-control" asp-for="UnidadesFuncionales[i].Telefono" data-uf-field="Telefono" type="tel" /></td>
                         </tr>
                     }
                 </tbody>
@@ -116,7 +121,7 @@
     </section>
 
     <section class="form-actions">
-        <a class="btn btn-outline-secondary" href="/Consorcios">Cancelar</a>
-        <button class="btn btn-primary" type="submit">Crear consorcio</button>
+        <a class="btn btn-outline-secondary" asp-controller="Consorcios" asp-action="Details" asp-route-id="@Model.Id">Cancelar</a>
+        <button class="btn btn-primary" type="submit">Guardar cambios</button>
     </section>
 </form>

@@ -1,4 +1,4 @@
-@model Consorcio
+@model ConsorcioDetailsViewModel
 @{
     ViewData["Title"] = "Detalle Consorcio";
     ViewData["Role"] = "Administrador";
@@ -43,22 +43,22 @@
 <section class="dashboard-grid" aria-label="Resumen consorcio">
     <article class="app-card metric-card">
         <span>Cantidad UF</span>
-        <strong>@Model.UnidadesFuncionales.Count</strong>
+        <strong>@Model.CantidadUnidades</strong>
         <small>Unidades activas</small>
     </article>
     <article class="app-card metric-card">
         <span>Expensas pendientes</span>
-        <strong>@Model.UnidadesFuncionales.SelectMany(u => u.Expensas).Count(e => e.Estado == EstadoExpensa.Pendiente)</strong>
+        <strong>@Model.ExpensasPendientes</strong>
         <small>Registradas</small>
     </article>
     <article class="app-card metric-card">
         <span>Gastos del mes</span>
-        <strong>@Model.Gastos.Sum(g => g.Monto).ToString("C")</strong>
+        <strong>@Model.TotalGastos.ToString("C")</strong>
         <small>Total cargado</small>
     </article>
     <article class="app-card metric-card">
         <span>Reclamos abiertos</span>
-        <strong>@Model.UnidadesFuncionales.SelectMany(u => u.Reclamos).Count(r => r.Estado != EstadoReclamo.Cerrado)</strong>
+        <strong>@Model.ReclamosAbiertos</strong>
         <small>En seguimiento</small>
     </article>
 </section>
@@ -72,6 +72,10 @@
             <div>
                 <dt>Nombre</dt>
                 <dd>@Model.Nombre</dd>
+            </div>
+            <div>
+                <dt>CUIT</dt>
+                <dd>@Model.Cuit</dd>
             </div>
             <div>
                 <dt>Direccion</dt>
@@ -103,8 +107,8 @@
         </div>
         <ul class="activity-list">
             <li><span class="activity-dot success"></span><span>Consorcio creado el @Model.FechaCreacion.ToString("dd/MM/yyyy").</span></li>
-            <li><span class="activity-dot"></span><span>@Model.UnidadesFuncionales.Count unidades funcionales registradas.</span></li>
-            <li><span class="activity-dot warning"></span><span>@Model.Gastos.Count gastos cargados.</span></li>
+            <li><span class="activity-dot"></span><span>@Model.CantidadUnidades unidades funcionales registradas.</span></li>
+            <li><span class="activity-dot warning"></span><span>@Model.CantidadGastos gastos cargados.</span></li>
         </ul>
     </aside>
 </section>
@@ -112,7 +116,7 @@
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Unidades funcionales</h3>
-        <span class="status-badge">@Model.UnidadesFuncionales.Count UF</span>
+        <span class="status-badge">@Model.CantidadUnidades UF</span>
     </div>
     <div class="table-responsive">
         <table class="table table-clean">
@@ -123,6 +127,7 @@
                     <th>Departamento</th>
                     <th>Propietario</th>
                     <th>Mail</th>
+                    <th>DNI</th>
                     <th>Estado</th>
                 </tr>
             </thead>
@@ -130,7 +135,7 @@
                 @if (Model.UnidadesFuncionales.Count == 0)
                 {
                     <tr>
-                        <td colspan="6">Este consorcio todavia no tiene unidades funcionales cargadas.</td>
+                        <td colspan="7">Este consorcio todavia no tiene unidades funcionales cargadas.</td>
                     </tr>
                 }
                 else
@@ -143,6 +148,7 @@
                             <td>@unidad.Departamento</td>
                             <td>@unidad.NombrePropietario</td>
                             <td>@unidad.MailPropietario</td>
+                            <td>@unidad.DniPropietario</td>
                             <td><span class="status-badge @EstadoUfClass(unidad.Estado)">@unidad.Estado</span></td>
                         </tr>
                     }
