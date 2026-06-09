@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GestionDeConsorciosMVC.Migrations
 {
     /// <inheritdoc />
-    public partial class cambiosclases : Migration
+    public partial class InicialGestionConsorcios : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -104,15 +104,15 @@ namespace GestionDeConsorciosMVC.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ConsorcioId = table.Column<int>(type: "int", nullable: false),
-                    NumeroFactura = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NumeroFactura = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Monto = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Concepto = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Categoria = table.Column<int>(type: "int", nullable: false),
-                    Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Categoria = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ArchivoFacturaPath = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FechaCreacion = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FechaCreacion = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ConsorcioId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -283,6 +283,12 @@ namespace GestionDeConsorciosMVC.Migrations
                 name: "IX_Gastos_ConsorcioId",
                 table: "Gastos",
                 column: "ConsorcioId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Gastos_NumeroFactura",
+                table: "Gastos",
+                column: "NumeroFactura",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Pagos_ExpensaId",

@@ -7,11 +7,11 @@
 }
 
 @functions {
-    private static string CategoriaClass(CategoriaGasto categoria) => categoria switch
+    private static string CategoriaClass(string? categoria) => categoria?.Trim() switch
     {
-        CategoriaGasto.Limpieza => "success",
-        CategoriaGasto.Mantenimiento => "warning",
-        CategoriaGasto.Seguridad => "neutral",
+        "Limpieza" => "success",
+        "Mantenimiento" => "warning",
+        "Seguridad" => "neutral",
         _ => string.Empty
     };
 }

@@ -48,6 +48,10 @@ namespace GestionDeConsorciosMVC.Context
                 .Property(p => p.MontoPagado)
                 .HasPrecision(18, 2);
 
+            modelBuilder.Entity<Gasto>()
+                .HasIndex(gasto => gasto.NumeroFactura)
+                .IsUnique();
+
             modelBuilder.Entity<Consorcio>()
                 .HasMany(c => c.UnidadesFuncionales)
                 .WithOne(u => u.Consorcio)

@@ -10,10 +10,12 @@ public class Gasto
     public DateTime Fecha { get; set; }
     public decimal Monto { get; set; }
     public string Concepto { get; set; } = string.Empty;
-    public CategoriaGasto Categoria { get; set; } = CategoriaGasto.Otros;
-    public string? Descripcion { get; set; }
+    public string Categoria { get; set; } = string.Empty;
     public string? ArchivoFacturaPath { get; set; }
+
+    public string? Descripcion { get; set; }
     public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
 
     public Consorcio Consorcio { get; set; } = null!;
 }
+

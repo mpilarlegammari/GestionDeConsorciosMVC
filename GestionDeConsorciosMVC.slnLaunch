@@ -1,0 +1,22 @@
+[
+  {
+    "Name": "https",
+    "Projects": [
+      {
+        "Path": "GestionDeConsorciosMVC.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      }
+    ]
+  },
+  {
+    "Name": "http",
+    "Projects": [
+      {
+        "Path": "GestionDeConsorciosMVC.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      }
+    ]
+  }
+]

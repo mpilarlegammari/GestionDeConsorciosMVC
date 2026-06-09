@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using GestionDeConsorciosMVC.Context;
+using GestionDeConsorciosMVC.Services;
 
 namespace GestionDeConsorciosMVC
 {
@@ -16,6 +17,8 @@ options.UseSqlServer(builder.Configuration["ConnectionString:DefaultConnection"]
 
             // Add services to the container. 
             builder.Services.AddControllersWithViews();
+            builder.Services.AddScoped<IGastoService, GastoService>();
+            builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
             var app = builder.Build();
 

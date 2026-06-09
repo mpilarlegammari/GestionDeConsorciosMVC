@@ -182,8 +182,9 @@ namespace GestionDeConsorciosMVC.Migrations
                     b.Property<string>("ArchivoFacturaPath")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Categoria")
-                        .HasColumnType("int");
+                    b.Property<string>("Categoria")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Concepto")
                         .IsRequired()
@@ -207,11 +208,14 @@ namespace GestionDeConsorciosMVC.Migrations
 
                     b.Property<string>("NumeroFactura")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ConsorcioId");
+
+                    b.HasIndex("NumeroFactura")
+                        .IsUnique();
 
                     b.ToTable("Gastos", (string)null);
                 });

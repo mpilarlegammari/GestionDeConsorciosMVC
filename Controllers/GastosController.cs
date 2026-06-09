@@ -1,48 +1,37 @@
-using GestionDeConsorciosMVC.Context;
-using Microsoft.EntityFrameworkCore;
+using GestionDeConsorciosMVC.Services;
+using GestionDeConsorciosMVC.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GestionDeConsorciosMVC.Controllers
 {
     public class GastosController : Controller
     {
-        private static readonly string[] AllowedExtensions = [".pdf", ".jpg", ".jpeg", ".png"];
-        private readonly GestionDeConsorciosContext _context;
-        private readonly IWebHostEnvironment _environment;
+        private const long MaxFacturaBytes = 5 * 1024 * 1024;
+        private static readonly string[] AllowedFacturaExtensions = [".pdf", ".jpg", ".jpeg", ".png"];
 
-        public GastosController(GestionDeConsorciosContext context, IWebHostEnvironment environment)
+        private readonly IGastoService _gastoService;
+        private readonly IFileStorageService _fileStorageService;
+
+        public GastosController(IGastoService gastoService, IFileStorageService fileStorageService)
         {
-            _context = context;
-            _environment = environment;
+            _gastoService = gastoService;
+            _fileStorageService = fileStorageService;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? consorcioId)
         {
-            var gastos = await _context.Gastos
-                .Include(g => g.Consorcio)
-                .OrderByDescending(g => g.Fecha)
-                .ThenByDescending(g => g.Id)
-                .ToListAsync();
+            var gastos = await _gastoService.GetAllAsync(consorcioId);
+            ViewBag.Consorcios = await _gastoService.GetConsorciosAsync();
+            ViewData["ConsorcioId"] = consorcioId;
 
-            ViewBag.Consorcios = await _context.Consorcios.OrderBy(c => c.Nombre).ToListAsync();
             return View(gastos);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Create()
-        {
-            await LoadConsorciosAsync();
-            return View();
         }
 
         [HttpGet]
         public async Task<IActionResult> MisGastos()
         {
-            var gastos = await _context.Gastos
-                .Include(g => g.Consorcio)
-                .OrderByDescending(g => g.Fecha)
-                .ToListAsync();
+            var gastos = await _gastoService.GetAllAsync();
 
             return View(gastos);
         }
@@ -50,9 +39,7 @@ namespace GestionDeConsorciosMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var gasto = await _context.Gastos
-                .Include(g => g.Consorcio)
-                .FirstOrDefaultAsync(g => g.Id == id);
+            var gasto = await _gastoService.GetByIdAsync(id);
 
             if (gasto is null)
             {
@@ -62,119 +49,165 @@ namespace GestionDeConsorciosMVC.Controllers
             return View(gasto);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Create(int? consorcioId)
+        {
+            var model = new GastoVM
+            {
+                ConsorcioId = consorcioId ?? 0,
+                Fecha = DateTime.Today
+            };
+
+            await PopulateSelectionsAsync(model);
+            return View(model);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-            int ConsorcioId,
-            string NumeroFactura,
-            DateTime Fecha,
-            decimal Monto,
-            string Categoria,
-            string Concepto,
-            string? Descripcion,
-            IFormFile? ArchivoFactura)
+        public async Task<IActionResult> Create(GastoVM model, IFormFile? ArchivoFactura)
         {
-            NumeroFactura = NumeroFactura?.Trim() ?? string.Empty;
-            Concepto = Concepto?.Trim() ?? string.Empty;
-            Categoria = Categoria?.Trim() ?? string.Empty;
-            Descripcion = Descripcion?.Trim();
-
-            if (!await _context.Consorcios.AnyAsync(c => c.Id == ConsorcioId))
-            {
-                ModelState.AddModelError(nameof(ConsorcioId), "Debe seleccionar un consorcio valido.");
-            }
-
-            if (string.IsNullOrWhiteSpace(NumeroFactura))
-            {
-                ModelState.AddModelError(nameof(NumeroFactura), "El numero de factura es obligatorio.");
-            }
-            else if (await _context.Gastos.AnyAsync(g => g.NumeroFactura == NumeroFactura))
-            {
-                ModelState.AddModelError(nameof(NumeroFactura), "Ya existe un gasto con ese numero de factura.");
-            }
-
-            if (Fecha == default)
-            {
-                ModelState.AddModelError(nameof(Fecha), "La fecha es obligatoria.");
-            }
-
-            if (Monto <= 0)
-            {
-                ModelState.AddModelError(nameof(Monto), "El monto debe ser mayor a 0.");
-            }
-
-            if (!Enum.TryParse<CategoriaGasto>(Categoria, out var categoriaGasto) || !Enum.IsDefined(categoriaGasto))
-            {
-                ModelState.AddModelError(nameof(Categoria), "Debe seleccionar una categoria valida.");
-            }
-
-            if (string.IsNullOrWhiteSpace(Concepto))
-            {
-                ModelState.AddModelError(nameof(Concepto), "El concepto es obligatorio.");
-            }
-
-            if (ArchivoFactura is not null && ArchivoFactura.Length > 0)
-            {
-                var extension = Path.GetExtension(ArchivoFactura.FileName).ToLowerInvariant();
-
-                if (!AllowedExtensions.Contains(extension))
-                {
-                    ModelState.AddModelError(nameof(ArchivoFactura), "Formato permitido: pdf, jpg, jpeg o png.");
-                }
-            }
+            await ValidateFacturaAsync(model, ArchivoFactura, required: true);
 
             if (!ModelState.IsValid)
             {
-                TempData["Error"] = string.Join(" ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                await LoadConsorciosAsync();
-                return View();
+                TempData["Error"] = string.Join(" ", ModelState.Values
+                    .SelectMany(value => value.Errors)
+                    .Select(error => error.ErrorMessage));
+                await PopulateSelectionsAsync(model);
+                return View(model);
             }
 
-            var archivoPath = await SaveArchivoFacturaAsync(ArchivoFactura);
-            var gasto = new Gasto
-            {
-                ConsorcioId = ConsorcioId,
-                NumeroFactura = NumeroFactura,
-                Fecha = Fecha,
-                Monto = Monto,
-                Categoria = categoriaGasto,
-                Concepto = Concepto,
-                Descripcion = string.IsNullOrWhiteSpace(Descripcion) ? null : Descripcion,
-                ArchivoFacturaPath = archivoPath
-            };
-
-            _context.Gastos.Add(gasto);
-            await _context.SaveChangesAsync();
+            var facturaPath = await _fileStorageService.SaveAsync(ArchivoFactura!, "gastos");
+            var gasto = await _gastoService.CreateAsync(model, facturaPath);
 
             TempData["Success"] = "Gasto registrado correctamente.";
             return RedirectToAction(nameof(Details), new { id = gasto.Id });
         }
 
-        private async Task LoadConsorciosAsync()
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
         {
-            ViewBag.Consorcios = await _context.Consorcios
-                .OrderBy(c => c.Nombre)
-                .ToListAsync();
-        }
+            var model = await _gastoService.GetForEditAsync(id);
 
-        private async Task<string?> SaveArchivoFacturaAsync(IFormFile? archivo)
-        {
-            if (archivo is null || archivo.Length == 0)
+            if (model is null)
             {
-                return null;
+                return NotFound();
             }
 
-            var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads", "gastos");
-            Directory.CreateDirectory(uploadsPath);
+            await PopulateSelectionsAsync(model);
+            return View(model);
+        }
 
-            var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
-            var fileName = $"{Guid.NewGuid():N}{extension}";
-            var filePath = Path.Combine(uploadsPath, fileName);
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, GastoVM model, IFormFile? ArchivoFactura)
+        {
+            if (id != model.Id)
+            {
+                return BadRequest();
+            }
 
-            await using var stream = System.IO.File.Create(filePath);
-            await archivo.CopyToAsync(stream);
+            await ValidateFacturaAsync(model, ArchivoFactura, required: false);
 
-            return $"/uploads/gastos/{fileName}";
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = string.Join(" ", ModelState.Values
+                    .SelectMany(value => value.Errors)
+                    .Select(error => error.ErrorMessage));
+                await PopulateSelectionsAsync(model);
+                return View(model);
+            }
+
+            var facturaPath = ArchivoFactura is { Length: > 0 }
+                ? await _fileStorageService.SaveAsync(ArchivoFactura, "gastos")
+                : null;
+
+            var updated = await _gastoService.UpdateAsync(model, facturaPath);
+
+            if (!updated)
+            {
+                return NotFound();
+            }
+
+            TempData["Success"] = "Gasto actualizado correctamente.";
+            return RedirectToAction(nameof(Details), new { id = model.Id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var gasto = await _gastoService.GetByIdAsync(id);
+
+            if (gasto is null)
+            {
+                return NotFound();
+            }
+
+            return View(gasto);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var deleted = await _gastoService.DeleteAsync(id);
+
+            if (!deleted)
+            {
+                return NotFound();
+            }
+
+            TempData["Success"] = "Gasto eliminado correctamente.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        private async Task ValidateFacturaAsync(GastoVM model, IFormFile? factura, bool required)
+        {
+            if (await _gastoService.ExistsNumeroFacturaAsync(model.NumeroFactura, model.Id == 0 ? null : model.Id))
+            {
+                ModelState.AddModelError(nameof(GastoVM.NumeroFactura), "Ya existe un gasto con ese numero de factura.");
+            }
+
+            if (factura is null || factura.Length == 0)
+            {
+                if (required)
+                {
+                    ModelState.AddModelError(nameof(factura), "Debe adjuntar la factura del gasto.");
+                }
+
+                return;
+            }
+
+            if (factura.Length > MaxFacturaBytes)
+            {
+                ModelState.AddModelError(nameof(factura), "La factura no puede superar los 5 MB.");
+            }
+
+            var extension = Path.GetExtension(factura.FileName).ToLowerInvariant();
+
+            if (!AllowedFacturaExtensions.Contains(extension))
+            {
+                ModelState.AddModelError(nameof(factura), "La factura debe ser PDF, JPG o PNG.");
+            }
+        }
+
+        private async Task PopulateSelectionsAsync(GastoVM model)
+        {
+            ViewBag.Consorcios = await _gastoService.GetConsorciosAsync();
+            ViewBag.Categorias = GetCategorias();
+        }
+
+        private static IEnumerable<string> GetCategorias()
+        {
+            return
+            [
+                "Limpieza",
+                "Mantenimiento",
+                "Servicios",
+                "Seguridad",
+                "Administracion",
+                "Otros"
+            ];
         }
     }
 }
