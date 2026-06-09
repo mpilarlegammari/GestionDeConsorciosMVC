@@ -1,0 +1,150 @@
+@model ReclamosAdminIndexViewModel
+
+@{
+    ViewData["Title"] = "Reclamos";
+    ViewData["Role"] = "Administrador";
+}
+
+@functions {
+    private static string EstadoClass(EstadoReclamo estado) => estado switch
+    {
+        EstadoReclamo.Abierto => "warning",
+        EstadoReclamo.EnProceso => "info",
+        EstadoReclamo.Cerrado => "success",
+        _ => "neutral"
+    };
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Reclamos</h2>
+        <p>Seguimiento administrativo de reclamos informados por propietarios.</p>
+    </div>
+    <span class="status-badge">Gestion</span>
+</section>
+
+@if (TempData["Success"] is string successMessage)
+{
+    <section class="form-alert show success" role="status">@successMessage</section>
+}
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
+<section class="app-card filter-card" aria-label="Filtros de reclamos">
+    <form method="get" asp-action="Index">
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="estado">Estado</label>
+                <select class="form-select" id="estado" name="estado">
+                    <option value="">Todos</option>
+                    @foreach (var estado in Enum.GetValues<EstadoReclamo>())
+                    {
+                        if (Model.Estado == estado)
+                        {
+                            <option value="@estado" selected>@estado</option>
+                        }
+                        else
+                        {
+                            <option value="@estado">@estado</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="consorcioId">Consorcio</label>
+                <select class="form-select" id="consorcioId" name="consorcioId">
+                    <option value="">Todos</option>
+                    @foreach (var consorcio in Model.Consorcios)
+                    {
+                        if (Model.ConsorcioId == consorcio.Id)
+                        {
+                            <option value="@consorcio.Id" selected>@consorcio.Nombre</option>
+                        }
+                        else
+                        {
+                            <option value="@consorcio.Id">@consorcio.Nombre</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="busqueda">Buscar</label>
+                <input class="form-control" id="busqueda" name="busqueda" value="@Model.Busqueda" type="search" placeholder="Asunto, categoria, descripcion u observacion" />
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">Limpiar</a>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="summary-grid" aria-label="Resumen de reclamos">
+    <article class="app-card metric-card">
+        <span>Total</span>
+        <strong>@Model.CantidadReclamos</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>Abiertos</span>
+        <strong>@Model.CantidadAbiertos</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>En proceso</span>
+        <strong>@Model.CantidadEnProceso</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>Cerrados</span>
+        <strong>@Model.CantidadCerrados</strong>
+    </article>
+</section>
+
+<section class="app-card section-card">
+    <div class="app-card-title">
+        <h3>Reclamos recibidos</h3>
+        <span class="status-badge">Datos reales</span>
+    </div>
+
+    @if (Model.Reclamos.Count == 0)
+    {
+        <p class="empty-state">No hay reclamos para los filtros seleccionados.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-clean">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Consorcio</th>
+                        <th>UF</th>
+                        <th>Asunto</th>
+                        <th>Categoria</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var reclamo in Model.Reclamos)
+                    {
+                        <tr>
+                            <td>@reclamo.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                            <td>@reclamo.UnidadFuncional.Consorcio.Nombre</td>
+                            <td>@reclamo.UnidadFuncional.NumeroUF</td>
+                            <td>@reclamo.Asunto</td>
+                            <td>@reclamo.Categoria</td>
+                            <td><span class="status-badge @EstadoClass(reclamo.Estado)">@reclamo.Estado</span></td>
+                            <td>
+                                <div class="table-actions">
+                                    <a asp-controller="Reclamos" asp-action="Details" asp-route-id="@reclamo.Id">Ver detalle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

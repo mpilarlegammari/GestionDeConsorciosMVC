@@ -1,0 +1,148 @@
+@model MisReclamosViewModel
+
+@{
+    ViewData["Title"] = "Mis Reclamos";
+    ViewData["Role"] = "Propietario";
+    var returnUrl = Context.Request.Path + Context.Request.QueryString.ToString();
+}
+
+@functions {
+    private static string EstadoClass(EstadoReclamo estado) => estado switch
+    {
+        EstadoReclamo.Abierto => "warning",
+        EstadoReclamo.EnProceso => "info",
+        EstadoReclamo.Cerrado => "success",
+        _ => "neutral"
+    };
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Mis Reclamos</h2>
+        <p>Seguimiento de reclamos asociados a tus unidades funcionales.</p>
+    </div>
+    <a class="btn btn-primary" asp-controller="Reclamos" asp-action="Create">Nuevo reclamo</a>
+</section>
+
+@if (TempData["Success"] is string successMessage)
+{
+    <section class="form-alert show success" role="status">@successMessage</section>
+}
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
+<section class="app-card filter-card" aria-label="Filtros de mis reclamos">
+    <form method="get" asp-action="MisReclamos">
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="estado">Estado</label>
+                <select class="form-select" id="estado" name="estado">
+                    <option value="">Todos</option>
+                    @foreach (var estado in Enum.GetValues<EstadoReclamo>())
+                    {
+                        if (Model.Estado == estado)
+                        {
+                            <option value="@estado" selected>@estado</option>
+                        }
+                        else
+                        {
+                            <option value="@estado">@estado</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="busqueda">Buscar</label>
+                <input class="form-control" id="busqueda" name="busqueda" value="@Model.Busqueda" type="search" placeholder="Asunto, categoria, descripcion u observacion" />
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-outline-secondary" asp-action="MisReclamos">Limpiar</a>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="summary-grid" aria-label="Resumen de mis reclamos">
+    <article class="app-card metric-card">
+        <span>Total</span>
+        <strong>@Model.CantidadReclamos</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>Abiertos</span>
+        <strong>@Model.CantidadAbiertos</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>En proceso</span>
+        <strong>@Model.CantidadEnProceso</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>Cerrados</span>
+        <strong>@Model.CantidadCerrados</strong>
+    </article>
+</section>
+
+<section class="content-grid">
+    <article class="app-card">
+        <div class="app-card-title">
+            <h3>Reclamos informados</h3>
+            <span class="status-badge">@Model.UnidadesResumen</span>
+        </div>
+
+        @if (Model.Reclamos.Count == 0)
+        {
+            <p class="empty-state">No hay reclamos para los filtros seleccionados.</p>
+        }
+        else
+        {
+            <ul class="activity-list">
+                @foreach (var reclamo in Model.Reclamos)
+                {
+                    var resumen = reclamo.Descripcion.Length > 160
+                        ? reclamo.Descripcion.Substring(0, 160) + "..."
+                        : reclamo.Descripcion;
+
+                    <li>
+                        <span class="activity-dot @(reclamo.Estado == EstadoReclamo.Cerrado ? "success" : reclamo.Estado == EstadoReclamo.Abierto ? "warning" : string.Empty)"></span>
+                        <span>
+                            <strong>@reclamo.FechaCreacion.ToString("dd/MM/yyyy") - @reclamo.Asunto</strong><br />
+                            @resumen
+                            <span class="status-badge @EstadoClass(reclamo.Estado)">@reclamo.Estado</span>
+                            <span class="status-badge">@reclamo.Categoria</span>
+                            <span class="table-actions">
+                                <a asp-controller="Reclamos"
+                                   asp-action="Details"
+                                   asp-route-id="@reclamo.Id"
+                                   asp-route-rol="propietario"
+                                   asp-route-returnUrl="@returnUrl">Ver detalle</a>
+                            </span>
+                        </span>
+                    </li>
+                }
+            </ul>
+        }
+    </article>
+
+    <aside class="app-card">
+        <div class="app-card-title">
+            <h3>Unidades</h3>
+        </div>
+        <ul class="simple-list">
+            <li>
+                <span>Perfil</span>
+                <strong>Propietario</strong>
+            </li>
+            <li>
+                <span>Unidades</span>
+                <strong>@Model.UnidadesResumen</strong>
+            </li>
+            <li>
+                <span>Estado</span>
+                <strong>Solo seguimiento</strong>
+            </li>
+        </ul>
+    </aside>
+</section>

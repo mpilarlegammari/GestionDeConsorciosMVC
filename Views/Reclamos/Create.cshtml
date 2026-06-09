@@ -1,0 +1,105 @@
+@model ReclamoCreateViewModel
+
+@{
+    ViewData["Title"] = "Nuevo reclamo";
+    ViewData["Role"] = "Propietario";
+    var puedeCrear = Model.UnidadesFuncionales.Count > 0;
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Nuevo reclamo</h2>
+        <p>Informar una situacion para seguimiento de la administracion.</p>
+    </div>
+    <span class="status-badge">Propietario</span>
+</section>
+
+@if (TempData["Success"] is string successMessage)
+{
+    <section class="form-alert show success" role="status">@successMessage</section>
+}
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
+<form asp-action="Create" method="post">
+    <section class="app-card section-card">
+        <div class="app-card-title">
+            <h3>Datos del reclamo</h3>
+            <span class="status-badge">Backend</span>
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="field-validation"></div>
+
+        <div class="form-grid">
+            <div>
+                <label class="form-label" asp-for="UnidadFuncionalId">Unidad funcional</label>
+                <select class="form-select" asp-for="UnidadFuncionalId" disabled="@(!puedeCrear)">
+                    <option value="">Seleccionar UF</option>
+                    @foreach (var unidad in Model.UnidadesFuncionales)
+                    {
+                        var label = $"{unidad.Consorcio.Nombre} - UF {unidad.NumeroUF}";
+                        if (!string.IsNullOrWhiteSpace(unidad.Piso) || !string.IsNullOrWhiteSpace(unidad.Departamento))
+                        {
+                            label += $" ({unidad.Piso} {unidad.Departamento})";
+                        }
+
+                        if (Model.UnidadFuncionalId == unidad.Id)
+                        {
+                            <option value="@unidad.Id" selected>@label</option>
+                        }
+                        else
+                        {
+                            <option value="@unidad.Id">@label</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="UnidadFuncionalId" class="field-validation"></span>
+            </div>
+            <div>
+                <label class="form-label" asp-for="Categoria">Categoria</label>
+                <select class="form-select" asp-for="Categoria" disabled="@(!puedeCrear)">
+                    <option value="">Seleccionar categoria</option>
+                    @foreach (var categoria in Model.Categorias)
+                    {
+                        if (Model.Categoria == categoria)
+                        {
+                            <option value="@categoria" selected>@categoria</option>
+                        }
+                        else
+                        {
+                            <option value="@categoria">@categoria</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="Categoria" class="field-validation"></span>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" asp-for="Asunto">Asunto</label>
+                <input class="form-control" asp-for="Asunto" type="text" placeholder="Ej: Perdida de agua en pasillo" disabled="@(!puedeCrear)" />
+                <span asp-validation-for="Asunto" class="field-validation"></span>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" asp-for="Descripcion">Descripcion</label>
+                <textarea class="form-control" asp-for="Descripcion" rows="6" placeholder="Describe el problema con el mayor detalle posible." disabled="@(!puedeCrear)"></textarea>
+                <span asp-validation-for="Descripcion" class="field-validation"></span>
+            </div>
+        </div>
+
+        @if (!puedeCrear)
+        {
+            <p class="form-note">No hay unidades funcionales vinculadas a tu usuario. La administracion debe asociar tu email a una UF antes de cargar reclamos.</p>
+        }
+        else
+        {
+            <p class="form-note">El reclamo quedara registrado como abierto y visible para la administracion.</p>
+        }
+
+        <div class="form-actions">
+            <a class="btn btn-outline-secondary" asp-controller="Reclamos" asp-action="MisReclamos">Cancelar</a>
+            <button class="btn btn-primary" type="submit" disabled="@(!puedeCrear)">Crear reclamo</button>
+        </div>
+    </section>
+</form>

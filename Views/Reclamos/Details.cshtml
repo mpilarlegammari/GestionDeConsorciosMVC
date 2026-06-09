@@ -1,0 +1,185 @@
+@model ReclamoDetailsViewModel
+
+@{
+    ViewData["Title"] = "Detalle del Reclamo";
+    ViewData["Role"] = Model.DetailRole;
+    var esPropietario = Model.DetailRole.Equals("Propietario", StringComparison.OrdinalIgnoreCase);
+    var puedeCambiarEstado = !esPropietario;
+}
+
+@functions {
+    private static string EstadoClass(EstadoReclamo estado) => estado switch
+    {
+        EstadoReclamo.Abierto => "warning",
+        EstadoReclamo.EnProceso => "info",
+        EstadoReclamo.Cerrado => "success",
+        _ => "neutral"
+    };
+}
+
+@if (TempData["Success"] is string successMessage)
+{
+    <section class="form-alert show success" role="status">@successMessage</section>
+}
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
+<section class="page-intro">
+    <div>
+        <h2>@Model.Asunto</h2>
+        <p>Reclamo creado el @Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm").</p>
+    </div>
+    <span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span>
+</section>
+
+<section class="dashboard-grid">
+    <article class="app-card metric-card">
+        <span>Estado</span>
+        <strong><span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span></strong>
+        <small>Seguimiento actual</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Categoria</span>
+        <strong>@Model.Categoria</strong>
+        <small>Clasificacion</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Unidad</span>
+        <strong>UF @Model.UnidadFuncionalNumero</strong>
+        <small>@Model.ConsorcioNombre</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Cierre</span>
+        <strong>@(Model.FechaCierre.HasValue ? Model.FechaCierre.Value.ToString("dd/MM") : "Pendiente")</strong>
+        <small>@(Model.FechaCierre.HasValue ? Model.FechaCierre.Value.Year.ToString() : "Sin fecha")</small>
+    </article>
+</section>
+
+<section class="content-grid section-card">
+    <article class="app-card">
+        <div class="app-card-title">
+            <h3>Datos generales</h3>
+        </div>
+        <dl class="detail-list">
+            <div>
+                <dt>Consorcio</dt>
+                <dd>@Model.ConsorcioNombre</dd>
+            </div>
+            <div>
+                <dt>Unidad funcional</dt>
+                <dd>UF @Model.UnidadFuncionalNumero</dd>
+            </div>
+            <div>
+                <dt>Piso / departamento</dt>
+                <dd>@(string.IsNullOrWhiteSpace(Model.Piso) && string.IsNullOrWhiteSpace(Model.Departamento) ? "-" : $"{Model.Piso} {Model.Departamento}")</dd>
+            </div>
+            <div>
+                <dt>Propietario</dt>
+                <dd>@Model.PropietarioNombre</dd>
+            </div>
+            <div>
+                <dt>Email propietario</dt>
+                <dd>@Model.PropietarioMail</dd>
+            </div>
+            <div>
+                <dt>Fecha de creacion</dt>
+                <dd>@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</dd>
+            </div>
+            <div>
+                <dt>Fecha de cierre</dt>
+                <dd>@(Model.FechaCierre.HasValue ? Model.FechaCierre.Value.ToString("dd/MM/yyyy HH:mm") : "Sin cerrar")</dd>
+            </div>
+            <div>
+                <dt>Categoria</dt>
+                <dd>@Model.Categoria</dd>
+            </div>
+            <div class="detail-span-2">
+                <dt>Descripcion</dt>
+                <dd>@Model.Descripcion</dd>
+            </div>
+            <div class="detail-span-2">
+                <dt>Observacion administracion</dt>
+                <dd>@(string.IsNullOrWhiteSpace(Model.ObservacionAdministracion) ? "Sin observacion administrativa." : Model.ObservacionAdministracion)</dd>
+            </div>
+        </dl>
+    </article>
+
+    <aside class="app-card">
+        <div class="app-card-title">
+            <h3>Seguimiento</h3>
+        </div>
+        <ul class="simple-list">
+            <li>
+                <span>Estado actual</span>
+                <strong>@Model.Estado</strong>
+            </li>
+            <li>
+                <span>Creado</span>
+                <strong>@Model.FechaCreacion.ToString("dd/MM/yyyy")</strong>
+            </li>
+            <li>
+                <span>Cerrado</span>
+                <strong>@(Model.FechaCierre.HasValue ? Model.FechaCierre.Value.ToString("dd/MM/yyyy") : "Pendiente")</strong>
+            </li>
+        </ul>
+    </aside>
+</section>
+
+@if (puedeCambiarEstado)
+{
+    <section class="app-card section-card">
+        <div class="app-card-title">
+            <h3>Cambio de estado</h3>
+            <span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span>
+        </div>
+        <form asp-action="CambiarEstado" method="post">
+            <input type="hidden" name="ReclamoId" value="@Model.Id" />
+            <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+
+            <div class="form-grid">
+                <div>
+                    <label class="form-label" for="Estado">Estado</label>
+                    <select class="form-select" id="Estado" name="Estado">
+                        @foreach (var estado in Enum.GetValues<EstadoReclamo>())
+                        {
+                            if (Model.Estado == estado)
+                            {
+                                <option value="@estado" selected>@estado</option>
+                            }
+                            else
+                            {
+                                <option value="@estado">@estado</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="form-span-2">
+                    <label class="form-label" for="ObservacionAdministracion">Observacion administrativa</label>
+                    <textarea class="form-control" id="ObservacionAdministracion" name="ObservacionAdministracion" rows="4" placeholder="Detalle opcional para el seguimiento">@Model.ObservacionAdministracion</textarea>
+                    <p class="form-note">Si cerras el reclamo, se registrara automaticamente la fecha de cierre.</p>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Actualizar estado</button>
+            </div>
+        </form>
+    </section>
+}
+
+<section class="app-card section-card">
+    <div class="button-group">
+        <a class="btn btn-outline-secondary" href="@Model.ReturnUrl">Volver</a>
+        @if (esPropietario)
+        {
+            <a class="btn btn-primary" asp-controller="Reclamos" asp-action="Create">Nuevo reclamo</a>
+        }
+        else
+        {
+            <a class="btn btn-primary" asp-controller="Reclamos" asp-action="Index">Listado administrativo</a>
+        }
+    </div>
+</section>
