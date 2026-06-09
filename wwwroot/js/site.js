@@ -614,6 +614,7 @@
 
   const comunicadoForm = document.querySelector("[data-comunicado-form]");
   const allowedComunicadoExtensions = ["pdf", "jpg", "jpeg", "png"];
+  const maxComunicadoFileSize = 5 * 1024 * 1024;
 
   window.mostrarAdjuntoComunicadoSeleccionado = (input) => {
     const file = input.files?.[0];
@@ -686,6 +687,9 @@
       if (!allowedComunicadoExtensions.includes(extension)) {
         setFieldError(fileInput, "Formato permitido: pdf, jpg, jpeg o png.");
         isValid = false;
+      } else if (file.size > maxComunicadoFileSize) {
+        setFieldError(fileInput, "El adjunto no puede superar los 5 MB.");
+        isValid = false;
       }
     }
 
@@ -693,7 +697,9 @@
       summary.textContent = isValid
         ? (draftOnly
           ? "Borrador mock validado. No se guardaron datos."
-          : "Comunicado mock validado. No se enviaron datos.")
+          : comunicadoForm.hasAttribute("data-real-submit")
+            ? "Comunicado validado. Enviando datos."
+            : "Comunicado mock validado. No se enviaron datos.")
         : "Revisa los campos marcados antes de continuar.";
       summary.classList.toggle("show", true);
       summary.classList.toggle("success", isValid);
@@ -704,7 +710,9 @@
       message: isValid
         ? (draftOnly
           ? "El borrador mock esta listo. No se guardaron datos."
-          : "El comunicado mock quedaria listo para enviar.")
+          : comunicadoForm.hasAttribute("data-real-submit")
+            ? "El comunicado se enviara al backend."
+            : "El comunicado mock quedaria listo para enviar.")
         : "Completa consorcio, titulo, mensaje y revisa el adjunto.",
       variant: isValid ? "success" : "danger"
     });
@@ -715,7 +723,11 @@
   if (comunicadoForm) {
     comunicadoForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      window.validarFormularioComunicado(false);
+      const isValid = window.validarFormularioComunicado(false);
+
+      if (isValid && comunicadoForm.hasAttribute("data-real-submit")) {
+        comunicadoForm.submit();
+      }
     });
   }
 

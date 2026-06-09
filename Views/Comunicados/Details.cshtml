@@ -1,53 +1,64 @@
+@model ComunicadoDetailsViewModel
+
 @{
     ViewData["Title"] = "Detalle Comunicado";
-    var role = (ViewData["Role"] as string ?? "Administrador").Trim();
-    var esPropietario = role.Equals("Propietario", StringComparison.OrdinalIgnoreCase)
-        || Context.Request.Path.Value?.Contains("MisComunicados", StringComparison.OrdinalIgnoreCase) == true
-        || Context.Request.Query["rol"] == "propietario";
-    ViewData["Role"] = esPropietario ? "Propietario" : "Administrador";
+    ViewData["Role"] = Model.DetailRole;
+    var esPropietario = Model.DetailRole.Equals("Propietario", StringComparison.OrdinalIgnoreCase);
+    var archivoNombre = string.IsNullOrWhiteSpace(Model.ArchivoAdjuntoPath)
+        ? "Sin adjunto"
+        : System.IO.Path.GetFileName(Model.ArchivoAdjuntoPath);
 }
-
-@* TODO backend: reemplazar comunicados mock por Model.Comunicados. *@
-@* TODO backend: obtener comunicados según rol. *@
-@* TODO backend: admin ve comunicados enviados. *@
-@* TODO backend: propietario ve solo comunicados de su consorcio. *@
-@* TODO backend: guardar adjuntos en servidor. *@
-@* TODO backend: validar permisos. *@
 
 <section class="page-intro">
     <div>
-        <h2>Corte de agua programado</h2>
-        <p>Detalle del comunicado publicado el 26/05/2026.</p>
+        <h2>@Model.Titulo</h2>
+        <p>Detalle del comunicado publicado el @Model.FechaPublicacion.ToString("dd/MM/yyyy").</p>
     </div>
-    <span class="status-badge warning">Importante</span>
+    @if (Model.Importante)
+    {
+        <span class="status-badge warning">Importante</span>
+    }
+    else
+    {
+        <span class="status-badge neutral">Normal</span>
+    }
 </section>
 
 <section class="content-grid">
     <article class="app-card">
         <div class="app-card-title">
             <h3>Mensaje completo</h3>
-            <span class="status-badge">Edificio Las Heras</span>
+            <span class="status-badge">@Model.ConsorcioNombre</span>
         </div>
         <dl class="detail-list">
             <div>
                 <dt>Fecha</dt>
-                <dd>26/05/2026</dd>
+                <dd>@Model.FechaPublicacion.ToString("dd/MM/yyyy HH:mm")</dd>
             </div>
             <div>
                 <dt>Consorcio</dt>
-                <dd>Edificio Las Heras</dd>
+                <dd>@Model.ConsorcioNombre</dd>
             </div>
             <div>
                 <dt>Estado importante</dt>
-                <dd><span class="status-badge warning">Importante</span></dd>
+                <dd>
+                    @if (Model.Importante)
+                    {
+                        <span class="status-badge warning">Importante</span>
+                    }
+                    else
+                    {
+                        <span class="status-badge neutral">Normal</span>
+                    }
+                </dd>
             </div>
             <div>
                 <dt>Archivo adjunto</dt>
-                <dd>cronograma-corte-agua.pdf</dd>
+                <dd>@archivoNombre</dd>
             </div>
             <div class="detail-span-2">
                 <dt>Mensaje</dt>
-                <dd>Se informa a los propietarios que el día 28/05/2026 entre las 9:00 y las 13:00 se realizará un corte de agua programado por tareas de mantenimiento en el tanque principal. Se recomienda tomar los recaudos necesarios durante esa franja horaria.</dd>
+                <dd>@Model.Mensaje</dd>
             </div>
         </dl>
     </article>
@@ -55,20 +66,27 @@
     <aside class="app-card">
         <div class="app-card-title">
             <h3>Adjunto</h3>
-            <span class="status-badge">Mock</span>
+            <span class="status-badge">Archivo</span>
         </div>
         <ul class="simple-list">
             <li>
                 <span>Archivo</span>
-                <strong>cronograma-corte-agua.pdf</strong>
-            </li>
-            <li>
-                <span>Tipo</span>
-                <strong>PDF</strong>
+                <strong>@archivoNombre</strong>
             </li>
             <li>
                 <span>Disponibilidad</span>
-                <strong>Consulta mock</strong>
+                <strong>@(string.IsNullOrWhiteSpace(Model.ArchivoAdjuntoPath) ? "Sin adjunto" : "Disponible")</strong>
+            </li>
+            <li>
+                <span>Vista</span>
+                @if (!string.IsNullOrWhiteSpace(Model.ArchivoAdjuntoPath))
+                {
+                    <a href="@Model.ArchivoAdjuntoPath" target="_blank" rel="noopener">Abrir adjunto</a>
+                }
+                else
+                {
+                    <strong>No aplica</strong>
+                }
             </li>
         </ul>
     </aside>
@@ -76,15 +94,14 @@
 
 <section class="app-card section-card">
     <div class="button-group">
-        @if (esPropietario)
+        <a class="btn btn-outline-secondary" href="@Model.ReturnUrl">Volver</a>
+        @if (!string.IsNullOrWhiteSpace(Model.ArchivoAdjuntoPath))
         {
-            <a class="btn btn-outline-secondary" asp-controller="Comunicados" asp-action="MisComunicados">Volver</a>
+            <a class="btn btn-primary" href="@Model.ArchivoAdjuntoPath" target="_blank" rel="noopener">Descargar adjunto</a>
         }
-        else
+        @if (!esPropietario)
         {
-            <a class="btn btn-outline-secondary" asp-controller="Comunicados" asp-action="Index">Volver</a>
-            <a class="btn btn-outline-primary" href="#">Editar comunicado</a>
+            <a class="btn btn-outline-primary" asp-controller="Comunicados" asp-action="Create">Nuevo comunicado</a>
         }
-        <a class="btn btn-primary" href="#" data-mock-attachment data-attachment-title="Adjunto de comunicado" data-attachment-file="cronograma-corte-agua.pdf" data-attachment-description="Adjunto mock del comunicado seleccionado.">Descargar adjunto</a>
     </div>
 </section>

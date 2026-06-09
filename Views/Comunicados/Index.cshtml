@@ -1,113 +1,156 @@
+@model ComunicadosAdminIndexViewModel
+
 @{
     ViewData["Title"] = "Comunicados";
     ViewData["Role"] = "Administrador";
 }
 
-@* TODO backend: reemplazar comunicados mock por Model.Comunicados. *@
-@* TODO backend: obtener comunicados según rol. *@
-@* TODO backend: admin ve comunicados enviados. *@
-@* TODO backend: guardar adjuntos en servidor. *@
-@* TODO backend: validar permisos. *@
-
 <section class="page-intro">
     <div>
         <h2>Comunicados</h2>
-        <p>Gestión de avisos enviados a los consorcios.</p>
+        <p>Gestion de avisos enviados a los consorcios.</p>
     </div>
     <a class="btn btn-primary" asp-controller="Comunicados" asp-action="Create">Nuevo comunicado</a>
 </section>
+
+@if (TempData["Success"] is string successMessage)
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
 
 <section class="app-card filter-card" aria-label="Filtros de comunicados">
     <form method="get" asp-action="Index">
         <div class="form-grid">
             <div>
-                <label class="form-label" for="consorcio">Consorcio</label>
-                <select class="form-select" id="consorcio" name="consorcio">
+                <label class="form-label" for="consorcioId">Consorcio</label>
+                <select class="form-select" id="consorcioId" name="consorcioId">
                     <option value="">Todos</option>
-                    <option>Edificio Las Heras</option>
-                    <option>Consorcio San Martín</option>
-                    <option>Torre Belgrano</option>
+                    @foreach (var consorcio in Model.Consorcios)
+                    {
+                        if (Model.ConsorcioId == consorcio.Id)
+                        {
+                            <option value="@consorcio.Id" selected>@consorcio.Nombre</option>
+                        }
+                        else
+                        {
+                            <option value="@consorcio.Id">@consorcio.Nombre</option>
+                        }
+                    }
                 </select>
             </div>
             <div>
-                <label class="form-label" for="mes">Mes</label>
-                <select class="form-select" id="mes" name="mes">
+                <label class="form-label" for="importante">Importancia</label>
+                <select class="form-select" id="importante" name="importante">
                     <option value="">Todos</option>
-                    <option value="5">Mayo</option>
-                    <option value="4">Abril</option>
-                    <option value="3">Marzo</option>
-                </select>
-            </div>
-            <div>
-                <label class="form-label" for="importancia">Importancia</label>
-                <select class="form-select" id="importancia" name="importancia">
-                    <option value="">Todos</option>
-                    <option>Importante</option>
-                    <option>Normal</option>
+                    @if (Model.Importante == true)
+                    {
+                        <option value="true" selected>Importantes</option>
+                        <option value="false">Normales</option>
+                    }
+                    else if (Model.Importante == false)
+                    {
+                        <option value="true">Importantes</option>
+                        <option value="false" selected>Normales</option>
+                    }
+                    else
+                    {
+                        <option value="true">Importantes</option>
+                        <option value="false">Normales</option>
+                    }
                 </select>
             </div>
             <div class="form-span-2">
-                <label class="form-label" for="busqueda">Buscar por título</label>
-                <input class="form-control" id="busqueda" name="busqueda" type="search" placeholder="Ej: asamblea o mantenimiento" />
+                <label class="form-label" for="busqueda">Buscar por titulo o mensaje</label>
+                <input class="form-control" id="busqueda" name="busqueda" value="@Model.Busqueda" type="search" placeholder="Ej: asamblea o mantenimiento" />
             </div>
             <div class="filter-actions">
                 <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">Limpiar</a>
             </div>
         </div>
     </form>
 </section>
 
+<section class="summary-grid" aria-label="Resumen de comunicados">
+    <article class="app-card metric-card">
+        <span>Total</span>
+        <strong>@Model.CantidadComunicados</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>Importantes</span>
+        <strong>@Model.CantidadImportantes</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>Con adjunto</span>
+        <strong>@Model.CantidadConAdjunto</strong>
+    </article>
+</section>
+
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Comunicados enviados</h3>
-        <span class="status-badge">Datos mock</span>
+        <span class="status-badge">Datos reales</span>
     </div>
-    <div class="table-responsive">
-        <table class="table table-clean">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Consorcio</th>
-                    <th>Título</th>
-                    <th>Importante</th>
-                    <th>Adjunto</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>26/05/2026</td>
-                    <td>Edificio Las Heras</td>
-                    <td>Corte de agua programado</td>
-                    <td><span class="status-badge warning">Importante</span></td>
-                    <td>Sí</td>
-                    <td><div class="table-actions"><a asp-controller="Comunicados" asp-action="Details" asp-route-id="301">Ver detalle</a><a href="#">Editar</a><button type="button" data-mock-confirm data-confirm-title="Eliminar comunicado" data-confirm-message="Vas a eliminar el comunicado Corte de agua programado de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button></div></td>
-                </tr>
-                <tr>
-                    <td>24/05/2026</td>
-                    <td>Torre Belgrano</td>
-                    <td>Limpieza de tanques</td>
-                    <td><span class="status-badge warning">Importante</span></td>
-                    <td>No</td>
-                    <td><div class="table-actions"><a asp-controller="Comunicados" asp-action="Details" asp-route-id="302">Ver detalle</a><a href="#">Editar</a><button type="button" data-mock-confirm data-confirm-title="Eliminar comunicado" data-confirm-message="Vas a eliminar el comunicado Limpieza de tanques de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button></div></td>
-                </tr>
-                <tr>
-                    <td>18/05/2026</td>
-                    <td>Consorcio San Martín</td>
-                    <td>Asamblea ordinaria</td>
-                    <td><span class="status-badge neutral">Normal</span></td>
-                    <td>Sí</td>
-                    <td><div class="table-actions"><a asp-controller="Comunicados" asp-action="Details" asp-route-id="303">Ver detalle</a><a href="#">Editar</a><button type="button" data-mock-confirm data-confirm-title="Eliminar comunicado" data-confirm-message="Vas a eliminar el comunicado Asamblea ordinaria de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button></div></td>
-                </tr>
-                <tr>
-                    <td>10/05/2026</td>
-                    <td>Edificio Las Heras</td>
-                    <td>Mantenimiento de ascensores</td>
-                    <td><span class="status-badge neutral">Normal</span></td>
-                    <td>No</td>
-                    <td><div class="table-actions"><a asp-controller="Comunicados" asp-action="Details" asp-route-id="304">Ver detalle</a><a href="#">Editar</a><button type="button" data-mock-confirm data-confirm-title="Eliminar comunicado" data-confirm-message="Vas a eliminar el comunicado Mantenimiento de ascensores de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button></div></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+
+    @if (Model.Comunicados.Count == 0)
+    {
+        <p class="empty-state">No hay comunicados para los filtros seleccionados.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-clean">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Consorcio</th>
+                        <th>Titulo</th>
+                        <th>Importante</th>
+                        <th>Adjunto</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var comunicado in Model.Comunicados)
+                    {
+                        <tr>
+                            <td>@comunicado.FechaPublicacion.ToString("dd/MM/yyyy")</td>
+                            <td>@comunicado.Consorcio.Nombre</td>
+                            <td>@comunicado.Titulo</td>
+                            <td>
+                                @if (comunicado.Importante)
+                                {
+                                    <span class="status-badge warning">Importante</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge neutral">Normal</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(comunicado.ArchivoAdjuntoPath))
+                                {
+                                    <a href="@comunicado.ArchivoAdjuntoPath" target="_blank" rel="noopener">Ver adjunto</a>
+                                }
+                                else
+                                {
+                                    <span>No</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <a asp-controller="Comunicados" asp-action="Details" asp-route-id="@comunicado.Id">Ver detalle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </section>

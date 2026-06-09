@@ -10,6 +10,7 @@ builder.Services.AddSession();
 builder.Services.AddScoped<IGastoService, GastoService>();
 builder.Services.AddScoped<IExpensasService, ExpensasService>();
 builder.Services.AddScoped<IPagosService, PagosService>();
+builder.Services.AddScoped<IComunicadosService, ComunicadosService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddDbContext<GestionDeConsorciosContext>(options =>
     options.UseSqlServer(
