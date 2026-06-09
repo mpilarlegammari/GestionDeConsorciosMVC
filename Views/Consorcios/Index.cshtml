@@ -1,3 +1,4 @@
+@model IEnumerable<Consorcio>
 @{
     ViewData["Title"] = "Consorcios";
     ViewData["Role"] = "Administrador";
@@ -36,7 +37,7 @@
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Listado de consorcios</h3>
-        <span class="status-badge">Datos mock</span>
+        <span class="status-badge">@Model.Count() registrados</span>
     </div>
     <div class="table-responsive">
         <table class="table table-clean">
@@ -45,68 +46,33 @@
                     <th>Nombre</th>
                     <th>Direccion</th>
                     <th>Cantidad UF</th>
-                    <th>Administrador</th>
-                    <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Consorcio Las Heras</td>
-                    <td>Av. Las Heras 2450</td>
-                    <td>28</td>
-                    <td>Mariana Perez</td>
-                    <td><span class="status-badge success">Activo</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <a href="/Consorcios/Details/1">Ver detalle</a>
-                            <a href="/Consorcios/Edit/1">Editar</a>
-                            <button type="button" data-mock-confirm data-confirm-title="Eliminar consorcio" data-confirm-message="Vas a eliminar Consorcio Las Heras de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Edificio San Martin</td>
-                    <td>San Martin 1180</td>
-                    <td>20</td>
-                    <td>Diego Alvarez</td>
-                    <td><span class="status-badge success">Activo</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <a href="/Consorcios/Details/2">Ver detalle</a>
-                            <a href="/Consorcios/Edit/2">Editar</a>
-                            <button type="button" data-mock-confirm data-confirm-title="Eliminar consorcio" data-confirm-message="Vas a eliminar Edificio San Martin de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Complejo Los Robles</td>
-                    <td>Mitre 630</td>
-                    <td>24</td>
-                    <td>Laura Gomez</td>
-                    <td><span class="status-badge warning">Pendiente</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <a href="/Consorcios/Details/3">Ver detalle</a>
-                            <a href="/Consorcios/Edit/3">Editar</a>
-                            <button type="button" data-mock-confirm data-confirm-title="Eliminar consorcio" data-confirm-message="Vas a eliminar Complejo Los Robles de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Torres del Parque</td>
-                    <td>Paraguay 410</td>
-                    <td>14</td>
-                    <td>Jorge Medina</td>
-                    <td><span class="status-badge neutral">Inactivo</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <a href="/Consorcios/Details/4">Ver detalle</a>
-                            <a href="/Consorcios/Edit/4">Editar</a>
-                            <button type="button" data-mock-confirm data-confirm-title="Eliminar consorcio" data-confirm-message="Vas a eliminar Torres del Parque de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button>
-                        </div>
-                    </td>
-                </tr>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="4">Todavia no hay consorcios cargados.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var consorcio in Model)
+                    {
+                        <tr>
+                            <td>@consorcio.Nombre</td>
+                            <td>@consorcio.Direccion</td>
+                            <td>@consorcio.UnidadesFuncionales.Count</td>
+                            <td>
+                                <div class="table-actions">
+                                    <a asp-controller="Consorcios" asp-action="Details" asp-route-id="@consorcio.Id">Ver detalle</a>
+                                    <a asp-controller="Consorcios" asp-action="Edit" asp-route-id="@consorcio.Id">Editar</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
     </div>

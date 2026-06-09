@@ -1,43 +1,57 @@
+@model Expensa
 @{
     ViewData["Title"] = "Detalle de Expensa";
-    ViewData["Role"] = "Propietario";
+    ViewData["Role"] = ViewBag.DetailRole as string ?? "Propietario";
+    var gastos = ViewBag.Gastos as IEnumerable<Gasto> ?? Enumerable.Empty<Gasto>();
+    var returnUrl = ViewBag.ReturnUrl as string ?? Url.Action("MisExpensas", "Expensas") ?? "/Expensas/MisExpensas";
 }
 
-@* TODO backend: reemplazar datos mock por Model.Expensas. *@
-@* TODO backend: obtener expensas desde usuario autenticado. *@
-@* TODO backend: calcular estado automáticamente. *@
-@* TODO backend: obtener detalle de gastos asociados. *@
-@* TODO backend: generar PDF real de liquidación. *@
-@* TODO backend: validar permisos por propietario. *@
+@functions {
+    private static string EstadoClass(EstadoExpensa estado) => estado switch
+    {
+        EstadoExpensa.Pagada => "success",
+        EstadoExpensa.Pendiente => "warning",
+        EstadoExpensa.Vencida => "danger",
+        _ => "neutral"
+    };
+
+    private static string CategoriaClass(CategoriaGasto categoria) => categoria switch
+    {
+        CategoriaGasto.Limpieza => "success",
+        CategoriaGasto.Mantenimiento => "warning",
+        CategoriaGasto.Seguridad => "neutral",
+        _ => string.Empty
+    };
+}
 
 <section class="page-intro">
     <div>
         <h2>Detalle de Expensa</h2>
-        <p>Período Mayo 2026</p>
+        <p>Periodo @Model.Periodo</p>
     </div>
-    <span class="status-badge warning">Pendiente</span>
+    <span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span>
 </section>
 
 <section class="dashboard-grid">
     <article class="app-card metric-card">
         <span>Total</span>
-        <strong>$85.000</strong>
-        <small>Liquidación mensual</small>
+        <strong>@Model.MontoTotal.ToString("C")</strong>
+        <small>Liquidacion mensual</small>
     </article>
     <article class="app-card metric-card">
         <span>Vencimiento</span>
-        <strong>10/06</strong>
-        <small>Año 2026</small>
+        <strong>@Model.FechaVencimiento.ToString("dd/MM")</strong>
+        <small>@Model.FechaVencimiento.Year</small>
     </article>
     <article class="app-card metric-card">
         <span>Estado</span>
-        <strong><span class="status-badge warning">Pendiente</span></strong>
-        <small>Pago no registrado</small>
+        <strong><span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span></strong>
+        <small>@Model.Pagos.Count pagos asociados</small>
     </article>
     <article class="app-card metric-card">
-        <span>Fecha emisión</span>
-        <strong>31/05</strong>
-        <small>Año 2026</small>
+        <span>Fecha emision</span>
+        <strong>@Model.FechaEmision.ToString("dd/MM")</strong>
+        <small>@Model.FechaEmision.Year</small>
     </article>
 </section>
 
@@ -49,31 +63,31 @@
         <dl class="detail-list">
             <div>
                 <dt>Consorcio</dt>
-                <dd>Edificio Las Heras</dd>
+                <dd>@Model.UnidadFuncional.Consorcio.Nombre</dd>
             </div>
             <div>
                 <dt>Unidad funcional</dt>
-                <dd>UF 3B</dd>
+                <dd>@Model.UnidadFuncional.NumeroUF</dd>
             </div>
             <div>
-                <dt>Período</dt>
-                <dd>Mayo 2026</dd>
+                <dt>Periodo</dt>
+                <dd>@Model.Periodo</dd>
             </div>
             <div>
-                <dt>Fecha emisión</dt>
-                <dd>31/05/2026</dd>
+                <dt>Fecha emision</dt>
+                <dd>@Model.FechaEmision.ToString("dd/MM/yyyy")</dd>
             </div>
             <div>
                 <dt>Fecha vencimiento</dt>
-                <dd>10/06/2026</dd>
+                <dd>@Model.FechaVencimiento.ToString("dd/MM/yyyy")</dd>
             </div>
             <div>
                 <dt>Estado</dt>
-                <dd><span class="status-badge warning">Pendiente</span></dd>
+                <dd><span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span></dd>
             </div>
             <div class="detail-span-2">
-                <dt>Método de distribución mock</dt>
-                <dd>Distribución proporcional según porcentaje asignado a la unidad funcional.</dd>
+                <dt>Metodo de distribucion</dt>
+                <dd>Partes iguales por unidad funcional.</dd>
             </div>
         </dl>
     </article>
@@ -84,20 +98,16 @@
         </div>
         <ul class="simple-list">
             <li>
-                <span>Estado actual</span>
-                <strong>Pendiente</strong>
+                <span>Total pagado</span>
+                <strong>@Model.Pagos.Where(p => p.Estado == EstadoPago.Aprobado).Sum(p => p.MontoPagado).ToString("C")</strong>
             </li>
             <li>
-                <span>Fecha último pago</span>
-                <strong>12/05/2026</strong>
-            </li>
-            <li>
-                <span>Medio de pago</span>
-                <strong>Transferencia</strong>
+                <span>Pagos pendientes</span>
+                <strong>@Model.Pagos.Count(p => p.Estado == EstadoPago.PendienteRevision)</strong>
             </li>
             <li>
                 <span>Observaciones</span>
-                <strong>Pago anterior aprobado</strong>
+                <strong>@(string.IsNullOrWhiteSpace(Model.Observaciones) ? "Sin observaciones" : Model.Observaciones)</strong>
             </li>
         </ul>
     </aside>
@@ -106,43 +116,40 @@
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Detalle de gastos</h3>
-        <span class="status-badge">Incluidos en la liquidación</span>
+        <span class="status-badge">Incluidos en la liquidacion</span>
     </div>
     <div class="table-responsive">
         <table class="table table-clean">
             <thead>
                 <tr>
                     <th>Concepto</th>
-                    <th>Categoría</th>
+                    <th>Categoria</th>
                     <th>Monto</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Servicio integral de limpieza</td>
-                    <td><span class="status-badge success">Limpieza</span></td>
-                    <td>$250.000</td>
-                </tr>
-                <tr>
-                    <td>Servicio de vigilancia nocturna</td>
-                    <td><span class="status-badge neutral">Seguridad</span></td>
-                    <td>$320.000</td>
-                </tr>
-                <tr>
-                    <td>Luz y agua de espacios comunes</td>
-                    <td><span class="status-badge">Servicios</span></td>
-                    <td>$430.000</td>
-                </tr>
-                <tr>
-                    <td>Mantenimiento de ascensores</td>
-                    <td><span class="status-badge warning">Mantenimiento</span></td>
-                    <td>$245.000</td>
-                </tr>
+                @if (!gastos.Any())
+                {
+                    <tr>
+                        <td colspan="3">No se encontraron gastos para este periodo.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var gasto in gastos)
+                    {
+                        <tr>
+                            <td>@gasto.Concepto</td>
+                            <td><span class="status-badge @CategoriaClass(gasto.Categoria)">@gasto.Categoria</span></td>
+                            <td>@gasto.Monto.ToString("C")</td>
+                        </tr>
+                    }
+                }
             </tbody>
             <tfoot>
                 <tr>
                     <th colspan="2">Total general</th>
-                    <th>$1.245.000</th>
+                    <th>@gastos.Sum(g => g.Monto).ToString("C")</th>
                 </tr>
             </tfoot>
         </table>
@@ -151,8 +158,7 @@
 
 <section class="app-card section-card">
     <div class="button-group">
-        <a class="btn btn-outline-secondary" asp-controller="Expensas" asp-action="MisExpensas">Volver</a>
+        <a class="btn btn-outline-secondary" href="@returnUrl">Volver</a>
         <a class="btn btn-primary" href="/Pagos/InformarPago">Informar pago</a>
-        <a class="btn btn-outline-primary" href="#" data-mock-attachment data-attachment-title="Liquidacion de expensa" data-attachment-file="liquidacion-mayo-2026-uf-3b.pdf" data-attachment-description="Liquidacion mock del detalle de expensa.">Descargar liquidación</a>
     </div>
 </section>

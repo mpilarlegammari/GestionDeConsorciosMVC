@@ -233,10 +233,14 @@
       showMockToast({
         title: isValid ? "Consorcio validado" : "Revisa el formulario",
         message: isValid
-          ? "La carga mock del consorcio esta lista. No se guardaron datos."
+          ? "La carga del consorcio esta lista para guardarse."
           : "Hay campos obligatorios o unidades funcionales duplicadas.",
         variant: isValid ? "success" : "danger"
       });
+
+      if (isValid && consorcioForm.hasAttribute("data-real-submit")) {
+        consorcioForm.submit();
+      }
     });
   }
 
@@ -336,7 +340,7 @@
     showMockToast({
       title: isValid ? "Gasto validado" : "Revisa el gasto",
       message: isValid
-        ? "El gasto mock esta listo para registrar cuando exista backend."
+        ? "El gasto esta listo para guardarse."
         : "Completa los campos obligatorios y revisa el archivo adjunto.",
       variant: isValid ? "success" : "danger"
     });
@@ -347,7 +351,11 @@
   if (gastoForm) {
     gastoForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      window.validarFormularioGasto();
+      const isValid = window.validarFormularioGasto();
+
+      if (isValid && gastoForm.hasAttribute("data-real-submit")) {
+        gastoForm.submit();
+      }
     });
   }
 
@@ -454,7 +462,7 @@
     showMockToast({
       title: isValid ? "Pago listo para revision" : "Revisa el pago",
       message: isValid
-        ? "El pago mock quedaria pendiente de revision administrativa."
+        ? "El pago quedara pendiente de revision administrativa."
         : "Completa los datos obligatorios y adjunta un comprobante valido.",
       variant: isValid ? "success" : "danger"
     });
@@ -465,7 +473,11 @@
   if (pagoForm) {
     pagoForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      window.validarFormularioPago();
+      const isValid = window.validarFormularioPago();
+
+      if (isValid && pagoForm.hasAttribute("data-real-submit")) {
+        pagoForm.submit();
+      }
     });
   }
 
@@ -541,8 +553,8 @@
       title: isValid ? (previewOnly ? "Vista previa validada" : "Expensas validadas") : "Revisa la generacion",
       message: isValid
         ? (previewOnly
-          ? "La vista previa mock esta lista para revisar."
-          : "La generacion mock quedaria lista cuando exista backend.")
+          ? "La vista previa esta lista para revisar."
+          : "La generacion esta lista para guardarse.")
         : "Completa los campos obligatorios y revisa las fechas.",
       variant: isValid ? "success" : "danger"
     });
@@ -553,7 +565,11 @@
   if (expensasForm) {
     expensasForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      window.validarGeneracionExpensas(false);
+      const isValid = window.validarGeneracionExpensas(false);
+
+      if (isValid && expensasForm.hasAttribute("data-real-submit")) {
+        expensasForm.submit();
+      }
     });
   }
 

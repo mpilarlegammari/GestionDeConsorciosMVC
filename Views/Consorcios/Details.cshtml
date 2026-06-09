@@ -1,16 +1,40 @@
+@model Consorcio
 @{
     ViewData["Title"] = "Detalle Consorcio";
     ViewData["Role"] = "Administrador";
 }
 
+@functions {
+    private static string EstadoClass(EstadoConsorcio estado) => estado switch
+    {
+        EstadoConsorcio.Activo => "success",
+        EstadoConsorcio.Pendiente => "warning",
+        EstadoConsorcio.Inactivo => "neutral",
+        _ => "neutral"
+    };
+
+    private static string EstadoUfClass(EstadoUnidadFuncional estado) => estado switch
+    {
+        EstadoUnidadFuncional.Activa => "success",
+        EstadoUnidadFuncional.Morosa => "warning",
+        EstadoUnidadFuncional.Inactiva => "neutral",
+        _ => "neutral"
+    };
+}
+
+@if (TempData["Success"] is string successMessage)
+{
+    <section class="form-alert show success" role="status">@successMessage</section>
+}
+
 <section class="page-intro">
     <div>
-        <h2>Consorcio Las Heras</h2>
-        <p>Av. Las Heras 2450</p>
-        <span class="status-badge success">Activo</span>
+        <h2>@Model.Nombre</h2>
+        <p>@Model.Direccion</p>
+        <span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span>
     </div>
     <div class="button-group">
-        <a class="btn btn-outline-primary" href="/Consorcios/Edit/1">Editar consorcio</a>
+        <a class="btn btn-outline-primary" asp-controller="Consorcios" asp-action="Edit" asp-route-id="@Model.Id">Editar consorcio</a>
         <a class="btn btn-outline-primary" href="/Gastos/Create">Registrar gasto</a>
         <a class="btn btn-primary" href="/Expensas/Generar">Generar expensas</a>
     </div>
@@ -19,22 +43,22 @@
 <section class="dashboard-grid" aria-label="Resumen consorcio">
     <article class="app-card metric-card">
         <span>Cantidad UF</span>
-        <strong>28</strong>
+        <strong>@Model.UnidadesFuncionales.Count</strong>
         <small>Unidades activas</small>
     </article>
     <article class="app-card metric-card">
         <span>Expensas pendientes</span>
-        <strong>9</strong>
-        <small>Mayo 2026</small>
+        <strong>@Model.UnidadesFuncionales.SelectMany(u => u.Expensas).Count(e => e.Estado == EstadoExpensa.Pendiente)</strong>
+        <small>Registradas</small>
     </article>
     <article class="app-card metric-card">
         <span>Gastos del mes</span>
-        <strong>$420.000</strong>
-        <small>Mock frontend</small>
+        <strong>@Model.Gastos.Sum(g => g.Monto).ToString("C")</strong>
+        <small>Total cargado</small>
     </article>
     <article class="app-card metric-card">
         <span>Reclamos abiertos</span>
-        <strong>3</strong>
+        <strong>@Model.UnidadesFuncionales.SelectMany(u => u.Reclamos).Count(r => r.Estado != EstadoReclamo.Cerrado)</strong>
         <small>En seguimiento</small>
     </article>
 </section>
@@ -47,27 +71,27 @@
         <dl class="detail-list">
             <div>
                 <dt>Nombre</dt>
-                <dd>Consorcio Las Heras</dd>
+                <dd>@Model.Nombre</dd>
             </div>
             <div>
                 <dt>Direccion</dt>
-                <dd>Av. Las Heras 2450</dd>
+                <dd>@Model.Direccion</dd>
             </div>
             <div>
                 <dt>Ciudad</dt>
-                <dd>Ciudad Autonoma de Buenos Aires</dd>
+                <dd>@Model.Ciudad</dd>
             </div>
             <div>
                 <dt>Codigo Postal</dt>
-                <dd>1425</dd>
+                <dd>@Model.CodigoPostal</dd>
             </div>
             <div>
                 <dt>Cantidad pisos</dt>
-                <dd>12</dd>
+                <dd>@Model.CantidadPisos</dd>
             </div>
             <div>
                 <dt>Estado</dt>
-                <dd><span class="status-badge success">Activo</span></dd>
+                <dd><span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span></dd>
             </div>
         </dl>
     </article>
@@ -75,13 +99,12 @@
     <aside class="app-card">
         <div class="app-card-title">
             <h3>Ultimos movimientos</h3>
-            <span class="status-badge">Mock</span>
+            <span class="status-badge">Backend</span>
         </div>
         <ul class="activity-list">
-            <li><span class="activity-dot success"></span><span>Gasto registrado.</span></li>
-            <li><span class="activity-dot"></span><span>Expensa generada.</span></li>
-            <li><span class="activity-dot danger"></span><span>Reclamo creado.</span></li>
-            <li><span class="activity-dot warning"></span><span>Comunicado enviado.</span></li>
+            <li><span class="activity-dot success"></span><span>Consorcio creado el @Model.FechaCreacion.ToString("dd/MM/yyyy").</span></li>
+            <li><span class="activity-dot"></span><span>@Model.UnidadesFuncionales.Count unidades funcionales registradas.</span></li>
+            <li><span class="activity-dot warning"></span><span>@Model.Gastos.Count gastos cargados.</span></li>
         </ul>
     </aside>
 </section>
@@ -89,7 +112,7 @@
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Unidades funcionales</h3>
-        <span class="status-badge">28 UF</span>
+        <span class="status-badge">@Model.UnidadesFuncionales.Count UF</span>
     </div>
     <div class="table-responsive">
         <table class="table table-clean">
@@ -104,38 +127,26 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>001</td>
-                    <td>1</td>
-                    <td>A</td>
-                    <td>Lucia Rivas</td>
-                    <td>lucia.rivas@mail.com</td>
-                    <td><span class="status-badge success">Activo</span></td>
-                </tr>
-                <tr>
-                    <td>002</td>
-                    <td>1</td>
-                    <td>B</td>
-                    <td>Martin Diaz</td>
-                    <td>martin.diaz@mail.com</td>
-                    <td><span class="status-badge success">Activo</span></td>
-                </tr>
-                <tr>
-                    <td>305</td>
-                    <td>3</td>
-                    <td>E</td>
-                    <td>Camila Suarez</td>
-                    <td>camila.suarez@mail.com</td>
-                    <td><span class="status-badge warning">Pendiente</span></td>
-                </tr>
-                <tr>
-                    <td>904</td>
-                    <td>9</td>
-                    <td>D</td>
-                    <td>Roberto Nunez</td>
-                    <td>roberto.nunez@mail.com</td>
-                    <td><span class="status-badge neutral">Inactivo</span></td>
-                </tr>
+                @if (Model.UnidadesFuncionales.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6">Este consorcio todavia no tiene unidades funcionales cargadas.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var unidad in Model.UnidadesFuncionales.OrderBy(u => u.NumeroUF))
+                    {
+                        <tr>
+                            <td>@unidad.NumeroUF</td>
+                            <td>@unidad.Piso</td>
+                            <td>@unidad.Departamento</td>
+                            <td>@unidad.NombrePropietario</td>
+                            <td>@unidad.MailPropietario</td>
+                            <td><span class="status-badge @EstadoUfClass(unidad.Estado)">@unidad.Estado</span></td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
     </div>

@@ -1,25 +1,31 @@
 @{
     ViewData["Title"] = "Registrar Gasto";
     ViewData["Role"] = "Administrador";
+    var consorcios = ViewBag.Consorcios as IEnumerable<Consorcio> ?? Enumerable.Empty<Consorcio>();
 }
 
 <section class="page-intro">
     <div>
         <h2>Registrar Gasto</h2>
-        <p>Carga visual de gastos del consorcio preparada para futura integracion MVC.</p>
+        <p>Carga de gastos del consorcio conectada al backend.</p>
     </div>
     <a class="btn btn-outline-secondary" href="/Gastos">Cancelar</a>
 </section>
 
-@* TODO backend: Validar que no exista otro gasto con el mismo número de factura. *@
-<form asp-action="Create" method="post" enctype="multipart/form-data" class="consorcio-form" data-gasto-form novalidate>
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
+<form asp-action="Create" method="post" enctype="multipart/form-data" class="consorcio-form" data-gasto-form data-real-submit novalidate>
+    @Html.AntiForgeryToken()
     <section class="app-card">
         <div class="app-card-title">
             <div>
                 <h3>Datos del gasto</h3>
-                <p class="card-description">Los datos son mock y no se persisten todavia.</p>
+                <p class="card-description">El gasto se guarda asociado al consorcio seleccionado.</p>
             </div>
-            <span class="status-badge">Frontend</span>
+            <span class="status-badge">Backend</span>
         </div>
 
         <div class="form-alert" data-gasto-summary></div>
@@ -29,9 +35,10 @@
                 <label class="form-label" for="ConsorcioId">Consorcio</label>
                 <select class="form-select" id="ConsorcioId" name="ConsorcioId" data-gasto-required>
                     <option value="">Seleccionar consorcio</option>
-                    <option value="1">Consorcio Las Heras</option>
-                    <option value="2">Edificio San Martin</option>
-                    <option value="3">Complejo Los Robles</option>
+                    @foreach (var consorcio in consorcios)
+                    {
+                        <option value="@consorcio.Id">@consorcio.Nombre</option>
+                    }
                 </select>
                 <span class="field-validation" data-error-for="ConsorcioId"></span>
             </div>
@@ -54,12 +61,12 @@
                 <label class="form-label" for="Categoria">Categoria</label>
                 <select class="form-select" id="Categoria" name="Categoria" data-gasto-required>
                     <option value="">Seleccionar categoria</option>
-                    <option>Limpieza</option>
-                    <option>Mantenimiento</option>
-                    <option>Servicios</option>
-                    <option>Seguridad</option>
-                    <option>Administracion</option>
-                    <option>Otros</option>
+                    <option value="Limpieza">Limpieza</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                    <option value="Servicios">Servicios</option>
+                    <option value="Seguridad">Seguridad</option>
+                    <option value="Administracion">Administracion</option>
+                    <option value="Otros">Otros</option>
                 </select>
                 <span class="field-validation" data-error-for="Categoria"></span>
             </div>
@@ -96,7 +103,6 @@
 
     <section class="form-actions">
         <a class="btn btn-outline-secondary" href="/Gastos">Cancelar</a>
-        <button class="btn btn-outline-primary" type="button" data-mock-toast data-toast-title="Borrador mock" data-toast-message="El borrador visual del gasto quedaria pendiente de guardado real." data-toast-variant="success">Guardar borrador mock</button>
-        <button class="btn btn-primary" type="submit">Registrar gasto mock</button>
+        <button class="btn btn-primary" type="submit">Registrar gasto</button>
     </section>
 </form>

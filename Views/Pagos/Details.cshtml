@@ -1,42 +1,52 @@
+@model Pago
 @{
     ViewData["Title"] = "Detalle del Pago";
     ViewData["Role"] = "Propietario";
 }
 
-@* TODO backend: reemplazar datos mock por Model.Pagos. *@
-@* TODO backend: asociar pago a ExpensaId. *@
-@* TODO backend: guardar comprobante en servidor. *@
-@* TODO backend: permitir aprobación/rechazo solo a Administrador. *@
-@* TODO backend: validar permisos por propietario. *@
+@functions {
+    private static string EstadoClass(EstadoPago estado) => estado switch
+    {
+        EstadoPago.Aprobado => "success",
+        EstadoPago.PendienteRevision => "warning",
+        EstadoPago.Rechazado => "danger",
+        _ => "neutral"
+    };
+}
+
+@if (TempData["Success"] is string successMessage)
+{
+    <section class="form-alert show success" role="status">@successMessage</section>
+}
 
 <section class="page-intro">
     <div>
         <h2>Detalle del Pago</h2>
-        <p>Pago informado para la expensa de Mayo 2026.</p>
+        <p>Pago informado para la expensa @Model.Expensa.Periodo.</p>
     </div>
-    <span class="status-badge warning">Pendiente de revisión</span>
+    <span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span>
 </section>
 
 <section class="dashboard-grid">
     <article class="app-card metric-card">
         <span>Monto pagado</span>
-        <strong>$85.000</strong>
+        <strong>@Model.MontoPagado.ToString("C")</strong>
         <small>Importe informado</small>
     </article>
     <article class="app-card metric-card">
         <span>Fecha de pago</span>
-        <strong>05/06</strong>
-        <small>Año 2026</small>
+        <strong>@Model.FechaPago.ToString("dd/MM")</strong>
+        <small>@Model.FechaPago.Year</small>
     </article>
     <article class="app-card metric-card">
         <span>Medio</span>
-        <strong>Transferencia</strong>
-        <small>Banco Nación</small>
+        <strong>@Model.MedioPago</strong>
+        <small>@(string.IsNullOrWhiteSpace(Model.BancoEntidad) ? "Sin entidad" : Model.BancoEntidad)</small>
     </article>
     <article class="app-card metric-card">
         <span>Estado</span>
-        <strong><span class="status-badge warning">Pendiente</span></strong>
-        <small>Revisión administrativa</small>
+        <strong><span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span></strong>
+        <small>Revision administrativa</small>
     </article>
 </section>
 
@@ -48,59 +58,59 @@
         <dl class="detail-list">
             <div>
                 <dt>Consorcio</dt>
-                <dd>Edificio Las Heras</dd>
+                <dd>@Model.Expensa.UnidadFuncional.Consorcio.Nombre</dd>
             </div>
             <div>
                 <dt>Unidad funcional</dt>
-                <dd>UF 3B</dd>
+                <dd>@Model.Expensa.UnidadFuncional.NumeroUF</dd>
             </div>
             <div>
-                <dt>Período</dt>
-                <dd>Mayo 2026</dd>
+                <dt>Periodo</dt>
+                <dd>@Model.Expensa.Periodo</dd>
             </div>
             <div>
                 <dt>Fecha de pago</dt>
-                <dd>05/06/2026</dd>
+                <dd>@Model.FechaPago.ToString("dd/MM/yyyy")</dd>
             </div>
             <div>
                 <dt>Monto</dt>
-                <dd>$85.000</dd>
+                <dd>@Model.MontoPagado.ToString("C")</dd>
             </div>
             <div>
                 <dt>Medio de pago</dt>
-                <dd>Transferencia bancaria</dd>
+                <dd>@Model.MedioPago</dd>
             </div>
             <div>
-                <dt>Número de operación</dt>
-                <dd>TRX-548921</dd>
+                <dt>Numero de operacion</dt>
+                <dd>@(string.IsNullOrWhiteSpace(Model.NumeroOperacion) ? "-" : Model.NumeroOperacion)</dd>
             </div>
             <div>
                 <dt>Banco o entidad</dt>
-                <dd>Banco Nación</dd>
+                <dd>@(string.IsNullOrWhiteSpace(Model.BancoEntidad) ? "-" : Model.BancoEntidad)</dd>
             </div>
             <div class="detail-span-2">
                 <dt>Comentarios</dt>
-                <dd>Pago realizado desde cuenta propia. Se adjunta comprobante de transferencia.</dd>
+                <dd>@(string.IsNullOrWhiteSpace(Model.Comentarios) ? "Sin comentarios." : Model.Comentarios)</dd>
             </div>
         </dl>
     </article>
 
     <aside class="app-card">
         <div class="app-card-title">
-            <h3>Estado / revisión</h3>
+            <h3>Estado / revision</h3>
         </div>
         <ul class="simple-list">
             <li>
                 <span>Estado actual</span>
-                <strong>Pendiente de revisión</strong>
+                <strong>@Model.Estado</strong>
             </li>
             <li>
-                <span>Fecha de revisión</span>
-                <strong>Sin revisar</strong>
+                <span>Fecha de revision</span>
+                <strong>@(Model.FechaRevision.HasValue ? Model.FechaRevision.Value.ToString("dd/MM/yyyy") : "Sin revisar")</strong>
             </li>
             <li>
-                <span>Observación administración</span>
-                <strong>Pago recibido, pendiente de validar.</strong>
+                <span>Observacion administracion</span>
+                <strong>@(string.IsNullOrWhiteSpace(Model.ObservacionAdministracion) ? "Pendiente de validar." : Model.ObservacionAdministracion)</strong>
             </li>
         </ul>
     </aside>
@@ -109,20 +119,27 @@
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Comprobante</h3>
-        <span class="status-badge">Archivo mock</span>
+        <span class="status-badge">Archivo real</span>
     </div>
     <div class="detail-list">
         <div>
-            <dt>Nombre de archivo</dt>
-            <dd>comprobante-transferencia-mayo-2026.pdf</dd>
+            <dt>Archivo</dt>
+            <dd>@(string.IsNullOrWhiteSpace(Model.ComprobantePath) ? "Sin comprobante" : Model.ComprobantePath)</dd>
         </div>
         <div>
             <dt>Acciones</dt>
             <dd>
-                <span class="table-actions">
-                    <a href="#" data-mock-attachment data-attachment-title="Comprobante de pago" data-attachment-file="comprobante-transferencia-mayo-2026.pdf" data-attachment-description="Comprobante mock del pago informado.">Ver comprobante</a>
-                    <a href="#" data-mock-attachment data-attachment-title="Descargar comprobante" data-attachment-file="comprobante-transferencia-mayo-2026.pdf" data-attachment-description="Descarga mock sin archivo real asociado.">Descargar comprobante</a>
-                </span>
+                @if (!string.IsNullOrWhiteSpace(Model.ComprobantePath))
+                {
+                    <span class="table-actions">
+                        <a href="@Model.ComprobantePath" target="_blank" rel="noopener">Ver comprobante</a>
+                        <a href="@Model.ComprobantePath" download>Descargar comprobante</a>
+                    </span>
+                }
+                else
+                {
+                    <span>No hay comprobante adjunto.</span>
+                }
             </dd>
         </div>
     </div>
@@ -131,6 +148,6 @@
 <section class="app-card section-card">
     <div class="button-group">
         <a class="btn btn-outline-secondary" asp-controller="Pagos" asp-action="MisPagos">Volver</a>
-        <a class="btn btn-primary" asp-controller="Expensas" asp-action="Details" asp-route-id="105">Ver expensa asociada</a>
+        <a class="btn btn-primary" asp-controller="Expensas" asp-action="Details" asp-route-id="@Model.ExpensaId" asp-route-returnUrl="@Url.Action("Details", "Pagos", new { id = Model.Id })">Ver expensa asociada</a>
     </div>
 </section>

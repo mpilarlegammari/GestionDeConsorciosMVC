@@ -1,9 +1,21 @@
+using GestionDeConsorciosMVC.Context;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<GestionDeConsorciosContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? builder.Configuration["ConnectionString:DefaultConnection"]));
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    await DevDataSeeder.SeedFirstConsorcioOwnersAsync(app.Services);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

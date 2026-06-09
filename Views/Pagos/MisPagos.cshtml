@@ -1,17 +1,23 @@
+@model IEnumerable<Pago>
 @{
     ViewData["Title"] = "Mis Pagos";
     ViewData["Role"] = "Propietario";
 }
 
-@* TODO backend: reemplazar datos mock por Model.Pagos. *@
-@* TODO backend: obtener expensas pendientes del usuario autenticado. *@
-@* TODO backend: asociar pago a ExpensaId. *@
-@* TODO backend: validar permisos por propietario. *@
+@functions {
+    private static string EstadoClass(EstadoPago estado) => estado switch
+    {
+        EstadoPago.Aprobado => "success",
+        EstadoPago.PendienteRevision => "warning",
+        EstadoPago.Rechazado => "danger",
+        _ => "neutral"
+    };
+}
 
 <section class="page-intro">
     <div>
         <h2>Mis Pagos</h2>
-        <p>Consultá los pagos informados y su estado de revisión.</p>
+        <p>Consulta los pagos informados y su estado de revision.</p>
     </div>
     <a class="btn btn-primary" asp-controller="Pagos" asp-action="InformarPago">Informar pago</a>
 </section>
@@ -29,7 +35,7 @@
                 </select>
             </div>
             <div>
-                <label class="form-label" for="anio">Año</label>
+                <label class="form-label" for="anio">Anio</label>
                 <select class="form-select" id="anio" name="anio">
                     <option>2026</option>
                     <option>2025</option>
@@ -39,7 +45,7 @@
                 <label class="form-label" for="estado">Estado</label>
                 <select class="form-select" id="estado" name="estado">
                     <option value="">Todos</option>
-                    <option>Pendiente de revisión</option>
+                    <option>Pendiente de revision</option>
                     <option>Aprobado</option>
                     <option>Rechazado</option>
                 </select>
@@ -54,76 +60,51 @@
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Pagos informados</h3>
-        <span class="status-badge">Datos mock</span>
+        <span class="status-badge">@Model.Count() registrados</span>
     </div>
     <div class="table-responsive">
         <table class="table table-clean">
             <thead>
                 <tr>
-                    <th>Período</th>
+                    <th>Periodo</th>
                     <th>Fecha de pago</th>
                     <th>Monto</th>
                     <th>Medio</th>
-                    <th>N° operación</th>
+                    <th>Nro operacion</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Mayo 2026</td>
-                    <td>05/06/2026</td>
-                    <td>$85.000</td>
-                    <td>Transferencia bancaria</td>
-                    <td>TRX-548921</td>
-                    <td><span class="status-badge warning">Pendiente de revisión</span></td>
-                    <td><div class="table-actions"><a asp-controller="Pagos" asp-action="Details" asp-route-id="205">Ver detalle</a><a href="#" data-mock-attachment data-attachment-title="Comprobante de pago" data-attachment-file="comprobante-mayo-2026.pdf" data-attachment-description="Comprobante mock del pago informado para Mayo 2026.">Ver comprobante</a></div></td>
-                </tr>
-                <tr>
-                    <td>Abril 2026</td>
-                    <td>08/05/2026</td>
-                    <td>$78.500</td>
-                    <td>Mercado Pago</td>
-                    <td>MP-884210</td>
-                    <td><span class="status-badge success">Aprobado</span></td>
-                    <td><div class="table-actions"><a asp-controller="Pagos" asp-action="Details" asp-route-id="204">Ver detalle</a><a href="#" data-mock-attachment data-attachment-title="Comprobante de pago" data-attachment-file="comprobante-abril-2026.pdf" data-attachment-description="Comprobante mock del pago informado para Abril 2026.">Ver comprobante</a></div></td>
-                </tr>
-                <tr>
-                    <td>Marzo 2026</td>
-                    <td>07/04/2026</td>
-                    <td>$74.800</td>
-                    <td>Transferencia bancaria</td>
-                    <td>TRX-447803</td>
-                    <td><span class="status-badge success">Aprobado</span></td>
-                    <td><div class="table-actions"><a asp-controller="Pagos" asp-action="Details" asp-route-id="203">Ver detalle</a><a href="#" data-mock-attachment data-attachment-title="Comprobante de pago" data-attachment-file="comprobante-marzo-2026.pdf" data-attachment-description="Comprobante mock del pago informado para Marzo 2026.">Ver comprobante</a></div></td>
-                </tr>
-                <tr>
-                    <td>Febrero 2026</td>
-                    <td>15/03/2026</td>
-                    <td>$70.000</td>
-                    <td>Depósito</td>
-                    <td>DEP-302119</td>
-                    <td><span class="status-badge danger">Rechazado</span></td>
-                    <td><div class="table-actions"><a asp-controller="Pagos" asp-action="Details" asp-route-id="202">Ver detalle</a><a href="#" data-mock-attachment data-attachment-title="Comprobante de pago" data-attachment-file="comprobante-febrero-2026.pdf" data-attachment-description="Comprobante mock del pago informado para Febrero 2026.">Ver comprobante</a></div></td>
-                </tr>
-                <tr>
-                    <td>Enero 2026</td>
-                    <td>09/02/2026</td>
-                    <td>$69.200</td>
-                    <td>Efectivo</td>
-                    <td>REC-1021</td>
-                    <td><span class="status-badge success">Aprobado</span></td>
-                    <td><div class="table-actions"><a asp-controller="Pagos" asp-action="Details" asp-route-id="201">Ver detalle</a><a href="#" data-mock-attachment data-attachment-title="Comprobante de pago" data-attachment-file="comprobante-enero-2026.pdf" data-attachment-description="Comprobante mock del pago informado para Enero 2026.">Ver comprobante</a></div></td>
-                </tr>
-                <tr>
-                    <td>Diciembre 2025</td>
-                    <td>08/01/2026</td>
-                    <td>$66.900</td>
-                    <td>Transferencia bancaria</td>
-                    <td>TRX-339120</td>
-                    <td><span class="status-badge warning">Pendiente de revisión</span></td>
-                    <td><div class="table-actions"><a asp-controller="Pagos" asp-action="Details" asp-route-id="200">Ver detalle</a><a href="#" data-mock-attachment data-attachment-title="Comprobante de pago" data-attachment-file="comprobante-diciembre-2025.pdf" data-attachment-description="Comprobante mock del pago informado para Diciembre 2025.">Ver comprobante</a></div></td>
-                </tr>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7">Todavia no hay pagos informados.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var pago in Model)
+                    {
+                        <tr>
+                            <td>@pago.Expensa.Periodo</td>
+                            <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
+                            <td>@pago.MontoPagado.ToString("C")</td>
+                            <td>@pago.MedioPago</td>
+                            <td>@(string.IsNullOrWhiteSpace(pago.NumeroOperacion) ? "-" : pago.NumeroOperacion)</td>
+                            <td><span class="status-badge @EstadoClass(pago.Estado)">@pago.Estado</span></td>
+                            <td>
+                                <div class="table-actions">
+                                    <a asp-controller="Pagos" asp-action="Details" asp-route-id="@pago.Id">Ver detalle</a>
+                                    @if (!string.IsNullOrWhiteSpace(pago.ComprobantePath))
+                                    {
+                                        <a href="@pago.ComprobantePath" target="_blank" rel="noopener">Ver comprobante</a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
     </div>

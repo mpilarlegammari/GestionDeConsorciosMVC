@@ -11,11 +11,17 @@
     <a class="btn btn-outline-secondary" href="/Consorcios">Cancelar</a>
 </section>
 
-<form class="consorcio-form" data-consorcio-form novalidate>
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
+<form class="consorcio-form" data-consorcio-form data-real-submit method="post" asp-controller="Consorcios" asp-action="Create" novalidate>
+    @Html.AntiForgeryToken()
     <section class="app-card">
         <div class="app-card-title">
             <h3>Datos del consorcio</h3>
-            <span class="status-badge">Mock</span>
+            <span class="status-badge">Backend</span>
         </div>
         <div class="form-grid">
             <div>
@@ -105,7 +111,6 @@
 
     <section class="form-actions">
         <a class="btn btn-outline-secondary" href="/Consorcios">Cancelar</a>
-        <button class="btn btn-outline-primary" type="button" data-mock-toast data-toast-title="Borrador mock" data-toast-message="El borrador visual del consorcio quedaria pendiente de guardado real." data-toast-variant="success">Guardar borrador</button>
         <button class="btn btn-primary" type="submit">Crear consorcio</button>
     </section>
 </form>

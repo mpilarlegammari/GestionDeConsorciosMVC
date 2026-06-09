@@ -1,84 +1,91 @@
 @{
     ViewData["Title"] = "Generar expensas";
     ViewData["Role"] = "Administrador";
+    var consorcios = ViewBag.Consorcios as IEnumerable<Consorcio> ?? Enumerable.Empty<Consorcio>();
+    var gastos = ViewBag.Gastos as IEnumerable<Gasto> ?? Enumerable.Empty<Gasto>();
+    var totalGastos = gastos.Sum(g => g.Monto);
 }
 
-@* TODO backend: reemplazar datos mock por ViewModel. *@
-@* TODO backend: obtener consorcios administrados por el usuario. *@
-@* TODO backend: obtener gastos del período seleccionado. *@
-@* TODO backend: calcular total de gastos. *@
-@* TODO backend: calcular monto por UF según gastos del período. *@
-@* TODO backend: generar una expensa por UF. *@
-@* TODO backend: evitar generar dos veces la misma expensa para el mismo período y consorcio. *@
-@* TODO backend: validar que el período no esté previamente generado. *@
-@* TODO backend: persistir expensas. *@
-@* TODO backend: generar liquidación PDF en etapa futura. *@
+@functions {
+    private static string CategoriaClass(CategoriaGasto categoria) => categoria switch
+    {
+        CategoriaGasto.Limpieza => "success",
+        CategoriaGasto.Mantenimiento => "warning",
+        CategoriaGasto.Seguridad => "neutral",
+        _ => string.Empty
+    };
+}
 
 <section class="page-intro">
     <div>
         <h2>Generar expensas</h2>
-        <p>Creá las liquidaciones mensuales para un consorcio.</p>
+        <p>Crea las liquidaciones mensuales para un consorcio.</p>
     </div>
-    <span class="status-badge warning">Mock administrativo</span>
+    <span class="status-badge">Backend</span>
 </section>
 
-<form asp-action="Generar" method="post" data-expensas-form>
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
+<form asp-action="Generar" method="post" data-expensas-form data-real-submit>
+    @Html.AntiForgeryToken()
     <section class="app-card section-card">
         <div class="app-card-title">
-            <h3>Datos de generación</h3>
-            <span class="status-badge">Sin persistencia</span>
+            <h3>Datos de generacion</h3>
+            <span class="status-badge">Persistencia activa</span>
         </div>
 
         <div class="form-grid">
             <div>
                 <label class="form-label" for="ConsorcioId">Consorcio</label>
-                <select class="form-select" id="ConsorcioId" name="ConsorcioId" data-expensas-required onchange="actualizarResumenExpensasMock()">
+                <select class="form-select" id="ConsorcioId" name="ConsorcioId" data-expensas-required>
                     <option value="">Seleccionar consorcio</option>
-                    <option value="1" selected>Edificio Las Heras</option>
-                    <option value="2">Consorcio San Martín</option>
-                    <option value="3">Torre Belgrano</option>
+                    @foreach (var consorcio in consorcios)
+                    {
+                        <option value="@consorcio.Id">@consorcio.Nombre (@consorcio.UnidadesFuncionales.Count UF)</option>
+                    }
                 </select>
                 <span class="field-validation" data-error-for="ConsorcioId"></span>
             </div>
             <div>
-                <label class="form-label" for="Periodo">Período</label>
-                <input class="form-control" id="Periodo" name="Periodo" type="month" value="2026-05" data-expensas-required onchange="actualizarResumenExpensasMock()" />
+                <label class="form-label" for="Periodo">Periodo</label>
+                <input class="form-control" id="Periodo" name="Periodo" type="month" value="@DateTime.Today.ToString("yyyy-MM")" data-expensas-required />
                 <span class="field-validation" data-error-for="Periodo"></span>
             </div>
             <div>
-                <label class="form-label" for="FechaEmision">Fecha de emisión</label>
-                <input class="form-control" id="FechaEmision" name="FechaEmision" type="date" value="2026-05-31" data-expensas-required />
+                <label class="form-label" for="FechaEmision">Fecha de emision</label>
+                <input class="form-control" id="FechaEmision" name="FechaEmision" type="date" value="@DateTime.Today.ToString("yyyy-MM-dd")" data-expensas-required />
                 <span class="field-validation" data-error-for="FechaEmision"></span>
             </div>
             <div>
                 <label class="form-label" for="FechaVencimiento">Fecha de vencimiento</label>
-                <input class="form-control" id="FechaVencimiento" name="FechaVencimiento" type="date" value="2026-06-10" data-expensas-required />
+                <input class="form-control" id="FechaVencimiento" name="FechaVencimiento" type="date" value="@DateTime.Today.AddDays(10).ToString("yyyy-MM-dd")" data-expensas-required />
                 <span class="field-validation" data-error-for="FechaVencimiento"></span>
             </div>
             <div>
-                <label class="form-label" for="CriterioDistribucion">Criterio de distribución</label>
+                <label class="form-label" for="CriterioDistribucion">Criterio de distribucion</label>
                 <select class="form-select" id="CriterioDistribucion" name="CriterioDistribucion" data-expensas-required>
                     <option value="">Seleccionar criterio</option>
                     <option selected>Partes iguales por UF</option>
-                    <option>Por porcentaje asignado</option>
-                    <option>Manual</option>
                 </select>
                 <span class="field-validation" data-error-for="CriterioDistribucion"></span>
             </div>
             <div class="form-span-2">
                 <label class="form-label" for="Observaciones">Observaciones</label>
-                <textarea class="form-control" id="Observaciones" name="Observaciones" rows="4" placeholder="Notas internas para la liquidación."></textarea>
+                <textarea class="form-control" id="Observaciones" name="Observaciones" rows="4" placeholder="Notas internas para la liquidacion."></textarea>
             </div>
         </div>
 
-        <p class="form-note">La generación real de expensas será implementada por backend.</p>
+        <p class="form-note">Se toma el total de gastos del periodo y se divide en partes iguales entre las UF del consorcio.</p>
         <div class="form-summary" data-expensas-summary></div>
     </section>
 
     <section class="app-card section-card">
         <div class="app-card-title">
-            <h3>Gastos incluidos en la liquidación</h3>
-            <span class="status-badge">Mayo 2026</span>
+            <h3>Gastos incluidos en la liquidacion</h3>
+            <span class="status-badge">@totalGastos.ToString("C")</span>
         </div>
         <div class="table-responsive">
             <table class="table table-clean">
@@ -86,55 +93,36 @@
                     <tr>
                         <th>Fecha</th>
                         <th>Concepto</th>
-                        <th>Categoría</th>
+                        <th>Categoria</th>
                         <th>Monto</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>23/05/2026</td>
-                        <td>Mantenimiento de ascensor</td>
-                        <td><span class="status-badge warning">Mantenimiento</span></td>
-                        <td>$180.000</td>
-                    </tr>
-                    <tr>
-                        <td>21/05/2026</td>
-                        <td>Servicio de limpieza</td>
-                        <td><span class="status-badge success">Limpieza</span></td>
-                        <td>$250.000</td>
-                    </tr>
-                    <tr>
-                        <td>18/05/2026</td>
-                        <td>Servicios espacios comunes</td>
-                        <td><span class="status-badge">Servicios</span></td>
-                        <td>$430.000</td>
-                    </tr>
-                    <tr>
-                        <td>15/05/2026</td>
-                        <td>Servicio de vigilancia</td>
-                        <td><span class="status-badge neutral">Seguridad</span></td>
-                        <td>$320.000</td>
-                    </tr>
-                    <tr>
-                        <td>12/05/2026</td>
-                        <td>Honorarios administración</td>
-                        <td><span class="status-badge">Administración</span></td>
-                        <td>$55.000</td>
-                    </tr>
-                    <tr>
-                        <td>09/05/2026</td>
-                        <td>Reposición de luminarias</td>
-                        <td><span class="status-badge warning">Otros</span></td>
-                        <td>$10.000</td>
-                    </tr>
+                    @if (!gastos.Any())
+                    {
+                        <tr>
+                            <td colspan="4">Selecciona un consorcio y periodo con gastos cargados para generar expensas.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var gasto in gastos)
+                        {
+                            <tr>
+                                <td>@gasto.Fecha.ToString("dd/MM/yyyy")</td>
+                                <td>@gasto.Concepto</td>
+                                <td><span class="status-badge @CategoriaClass(gasto.Categoria)">@gasto.Categoria</span></td>
+                                <td>@gasto.Monto.ToString("C")</td>
+                            </tr>
+                        }
+                    }
                 </tbody>
             </table>
         </div>
 
         <div class="form-actions">
             <a class="btn btn-outline-secondary" asp-controller="Expensas" asp-action="Index">Cancelar</a>
-            <button class="btn btn-outline-primary" type="button" onclick="validarGeneracionExpensas(true)">Vista previa mock</button>
-            <button class="btn btn-primary" type="submit">Generar expensas mock</button>
+            <button class="btn btn-primary" type="submit">Generar expensas</button>
         </div>
     </section>
 </form>

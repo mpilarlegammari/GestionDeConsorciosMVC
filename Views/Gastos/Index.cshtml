@@ -1,6 +1,18 @@
+@model IEnumerable<Gasto>
 @{
     ViewData["Title"] = "Gastos";
     ViewData["Role"] = "Administrador";
+    var consorcios = ViewBag.Consorcios as IEnumerable<Consorcio> ?? Enumerable.Empty<Consorcio>();
+}
+
+@functions {
+    private static string CategoriaClass(CategoriaGasto categoria) => categoria switch
+    {
+        CategoriaGasto.Limpieza => "success",
+        CategoriaGasto.Mantenimiento => "warning",
+        CategoriaGasto.Seguridad => "neutral",
+        _ => string.Empty
+    };
 }
 
 <section class="page-intro">
@@ -17,9 +29,10 @@
             <label class="form-label" for="filtroConsorcio">Consorcio</label>
             <select class="form-select" id="filtroConsorcio">
                 <option value="">Todos</option>
-                <option>Consorcio Las Heras</option>
-                <option>Edificio San Martin</option>
-                <option>Complejo Los Robles</option>
+                @foreach (var consorcio in consorcios)
+                {
+                    <option value="@consorcio.Id">@consorcio.Nombre</option>
+                }
             </select>
         </div>
         <div>
@@ -59,7 +72,7 @@
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Listado de gastos</h3>
-        <span class="status-badge">Datos mock</span>
+        <span class="status-badge">@Model.Count() registrados</span>
     </div>
     <div class="table-responsive">
         <table class="table table-clean">
@@ -71,71 +84,35 @@
                     <th>Concepto</th>
                     <th>Categoria</th>
                     <th>Monto</th>
-                    <th>Comprobante</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>23/05/2026</td>
-                    <td>Consorcio Las Heras</td>
-                    <td>FAC-0961</td>
-                    <td>Mantenimiento de ascensor</td>
-                    <td><span class="status-badge warning">Mantenimiento</span></td>
-                    <td>$180.000</td>
-                    <td><span class="status-badge success">Adjunto</span></td>
-                    <td><div class="table-actions"><a href="/Gastos/Details/1">Ver detalle</a><a href="/Gastos/Edit/1">Editar</a><button type="button" data-mock-confirm data-confirm-title="Eliminar gasto" data-confirm-message="Vas a eliminar la factura FAC-0961 de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button></div></td>
-                </tr>
-                <tr>
-                    <td>21/05/2026</td>
-                    <td>Edificio San Martin</td>
-                    <td>FAC-0957</td>
-                    <td>Servicio de limpieza</td>
-                    <td><span class="status-badge success">Limpieza</span></td>
-                    <td>$92.500</td>
-                    <td><span class="status-badge success">Adjunto</span></td>
-                    <td><div class="table-actions"><a href="/Gastos/Details/2">Ver detalle</a><a href="/Gastos/Edit/2">Editar</a><button type="button" data-mock-confirm data-confirm-title="Eliminar gasto" data-confirm-message="Vas a eliminar la factura FAC-0957 de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button></div></td>
-                </tr>
-                <tr>
-                    <td>18/05/2026</td>
-                    <td>Complejo Los Robles</td>
-                    <td>FAC-0948</td>
-                    <td>Edesur espacios comunes</td>
-                    <td><span class="status-badge">Servicios</span></td>
-                    <td>$240.300</td>
-                    <td><span class="status-badge success">Adjunto</span></td>
-                    <td><div class="table-actions"><a href="/Gastos/Details/3">Ver detalle</a><a href="/Gastos/Edit/3">Editar</a><button type="button" data-mock-confirm data-confirm-title="Eliminar gasto" data-confirm-message="Vas a eliminar la factura FAC-0948 de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button></div></td>
-                </tr>
-                <tr>
-                    <td>15/05/2026</td>
-                    <td>Consorcio Las Heras</td>
-                    <td>FAC-0939</td>
-                    <td>Servicio de vigilancia</td>
-                    <td><span class="status-badge neutral">Seguridad</span></td>
-                    <td>$310.000</td>
-                    <td><span class="status-badge success">Adjunto</span></td>
-                    <td><div class="table-actions"><a href="/Gastos/Details/4">Ver detalle</a><a href="/Gastos/Edit/4">Editar</a><button type="button" data-mock-confirm data-confirm-title="Eliminar gasto" data-confirm-message="Vas a eliminar la factura FAC-0939 de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button></div></td>
-                </tr>
-                <tr>
-                    <td>12/05/2026</td>
-                    <td>Torres del Parque</td>
-                    <td>FAC-0926</td>
-                    <td>Honorarios administracion</td>
-                    <td><span class="status-badge">Administracion</span></td>
-                    <td>$150.000</td>
-                    <td><span class="status-badge neutral">Pendiente</span></td>
-                    <td><div class="table-actions"><a href="/Gastos/Details/5">Ver detalle</a><a href="/Gastos/Edit/5">Editar</a><button type="button" data-mock-confirm data-confirm-title="Eliminar gasto" data-confirm-message="Vas a eliminar la factura FAC-0926 de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button></div></td>
-                </tr>
-                <tr>
-                    <td>09/05/2026</td>
-                    <td>Edificio San Martin</td>
-                    <td>FAC-0918</td>
-                    <td>Compra de lamparas</td>
-                    <td><span class="status-badge warning">Otros</span></td>
-                    <td>$28.600</td>
-                    <td><span class="status-badge success">Adjunto</span></td>
-                    <td><div class="table-actions"><a href="/Gastos/Details/6">Ver detalle</a><a href="/Gastos/Edit/6">Editar</a><button type="button" data-mock-confirm data-confirm-title="Eliminar gasto" data-confirm-message="Vas a eliminar la factura FAC-0918 de forma visual. Esta accion no modifica datos reales." data-confirm-action="Eliminar mock">Eliminar</button></div></td>
-                </tr>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7">Todavia no hay gastos cargados.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var gasto in Model)
+                    {
+                        <tr>
+                            <td>@gasto.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@gasto.Consorcio.Nombre</td>
+                            <td>@gasto.NumeroFactura</td>
+                            <td>@gasto.Concepto</td>
+                            <td><span class="status-badge @CategoriaClass(gasto.Categoria)">@gasto.Categoria</span></td>
+                            <td>@gasto.Monto.ToString("C")</td>
+                            <td>
+                                <div class="table-actions">
+                                    <a asp-controller="Gastos" asp-action="Details" asp-route-id="@gasto.Id">Ver detalle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
     </div>

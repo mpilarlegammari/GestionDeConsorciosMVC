@@ -1,17 +1,29 @@
+@model IEnumerable<Expensa>
 @{
     ViewData["Title"] = "Expensas";
     ViewData["Role"] = "Administrador";
+    var consorcios = ViewBag.Consorcios as IEnumerable<Consorcio> ?? Enumerable.Empty<Consorcio>();
 }
 
-@* TODO backend: reemplazar datos mock por ViewModel. *@
-@* TODO backend: obtener consorcios administrados por el usuario. *@
-@* TODO backend: reemplazar tabla mock por Model.Expensas. *@
-@* TODO backend: generar liquidación PDF en etapa futura. *@
+@functions {
+    private static string EstadoClass(EstadoExpensa estado) => estado switch
+    {
+        EstadoExpensa.Pagada => "success",
+        EstadoExpensa.Pendiente => "warning",
+        EstadoExpensa.Vencida => "danger",
+        _ => "neutral"
+    };
+}
+
+@if (TempData["Success"] is string successMessage)
+{
+    <section class="form-alert show success" role="status">@successMessage</section>
+}
 
 <section class="page-intro">
     <div>
         <h2>Expensas</h2>
-        <p>Gestión de liquidaciones por consorcio y período.</p>
+        <p>Gestion de liquidaciones por consorcio y periodo.</p>
     </div>
     <a class="btn btn-primary" asp-controller="Expensas" asp-action="Generar">Generar expensas</a>
 </section>
@@ -23,9 +35,10 @@
                 <label class="form-label" for="consorcio">Consorcio</label>
                 <select class="form-select" id="consorcio" name="consorcio">
                     <option value="">Todos</option>
-                    <option>Edificio Las Heras</option>
-                    <option>Consorcio San Martín</option>
-                    <option>Torre Belgrano</option>
+                    @foreach (var consorcio in consorcios)
+                    {
+                        <option value="@consorcio.Id">@consorcio.Nombre</option>
+                    }
                 </select>
             </div>
             <div>
@@ -37,7 +50,7 @@
                 </select>
             </div>
             <div>
-                <label class="form-label" for="anio">Año</label>
+                <label class="form-label" for="anio">Anio</label>
                 <select class="form-select" id="anio" name="anio">
                     <option>2026</option>
                     <option>2025</option>
@@ -62,13 +75,13 @@
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Liquidaciones generadas</h3>
-        <span class="status-badge">Datos mock</span>
+        <span class="status-badge">@Model.Count() registradas</span>
     </div>
     <div class="table-responsive">
         <table class="table table-clean">
             <thead>
                 <tr>
-                    <th>Período</th>
+                    <th>Periodo</th>
                     <th>Consorcio</th>
                     <th>UF</th>
                     <th>Propietario</th>
@@ -79,86 +92,33 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Mayo 2026</td>
-                    <td>Edificio Las Heras</td>
-                    <td>UF 3B</td>
-                    <td>María Gómez</td>
-                    <td>$85.000</td>
-                    <td>10/06/2026</td>
-                    <td><span class="status-badge warning">Pendiente</span></td>
-                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="105">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#" data-mock-attachment data-attachment-title="Liquidacion de expensa" data-attachment-file="liquidacion-mayo-2026-uf-3b.pdf" data-attachment-description="Liquidacion mock generada para consulta visual.">Descargar</a></div></td>
-                </tr>
-                <tr>
-                    <td>Mayo 2026</td>
-                    <td>Edificio Las Heras</td>
-                    <td>UF 2A</td>
-                    <td>Jorge Pérez</td>
-                    <td>$83.000</td>
-                    <td>10/06/2026</td>
-                    <td><span class="status-badge success">Pagada</span></td>
-                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="106">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#" data-mock-attachment data-attachment-title="Liquidacion de expensa" data-attachment-file="liquidacion-mayo-2026-uf-2a.pdf" data-attachment-description="Liquidacion mock generada para consulta visual.">Descargar</a></div></td>
-                </tr>
-                <tr>
-                    <td>Mayo 2026</td>
-                    <td>Consorcio San Martín</td>
-                    <td>UF 1C</td>
-                    <td>Lucía Torres</td>
-                    <td>$92.500</td>
-                    <td>10/06/2026</td>
-                    <td><span class="status-badge warning">Pendiente</span></td>
-                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="107">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#" data-mock-attachment data-attachment-title="Liquidacion de expensa" data-attachment-file="liquidacion-mayo-2026-uf-1c.pdf" data-attachment-description="Liquidacion mock generada para consulta visual.">Descargar</a></div></td>
-                </tr>
-                <tr>
-                    <td>Mayo 2026</td>
-                    <td>Torre Belgrano</td>
-                    <td>UF 8D</td>
-                    <td>Andrés Molina</td>
-                    <td>$110.000</td>
-                    <td>10/06/2026</td>
-                    <td><span class="status-badge danger">Vencida</span></td>
-                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="108">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#" data-mock-attachment data-attachment-title="Liquidacion de expensa" data-attachment-file="liquidacion-mayo-2026-uf-8d.pdf" data-attachment-description="Liquidacion mock generada para consulta visual.">Descargar</a></div></td>
-                </tr>
-                <tr>
-                    <td>Abril 2026</td>
-                    <td>Edificio Las Heras</td>
-                    <td>UF 3B</td>
-                    <td>María Gómez</td>
-                    <td>$78.500</td>
-                    <td>10/05/2026</td>
-                    <td><span class="status-badge success">Pagada</span></td>
-                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="104">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#" data-mock-attachment data-attachment-title="Liquidacion de expensa" data-attachment-file="liquidacion-abril-2026-uf-3b.pdf" data-attachment-description="Liquidacion mock generada para consulta visual.">Descargar</a></div></td>
-                </tr>
-                <tr>
-                    <td>Abril 2026</td>
-                    <td>Consorcio San Martín</td>
-                    <td>UF 4A</td>
-                    <td>Carolina Ruiz</td>
-                    <td>$88.900</td>
-                    <td>10/05/2026</td>
-                    <td><span class="status-badge success">Pagada</span></td>
-                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="109">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#" data-mock-attachment data-attachment-title="Liquidacion de expensa" data-attachment-file="liquidacion-abril-2026-uf-4a.pdf" data-attachment-description="Liquidacion mock generada para consulta visual.">Descargar</a></div></td>
-                </tr>
-                <tr>
-                    <td>Abril 2026</td>
-                    <td>Torre Belgrano</td>
-                    <td>UF 6B</td>
-                    <td>Martín Silva</td>
-                    <td>$101.200</td>
-                    <td>10/05/2026</td>
-                    <td><span class="status-badge warning">Pendiente</span></td>
-                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="110">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#" data-mock-attachment data-attachment-title="Liquidacion de expensa" data-attachment-file="liquidacion-abril-2026-uf-6b.pdf" data-attachment-description="Liquidacion mock generada para consulta visual.">Descargar</a></div></td>
-                </tr>
-                <tr>
-                    <td>Marzo 2026</td>
-                    <td>Edificio Las Heras</td>
-                    <td>UF 5C</td>
-                    <td>Paula Fernández</td>
-                    <td>$74.800</td>
-                    <td>10/04/2026</td>
-                    <td><span class="status-badge success">Pagada</span></td>
-                    <td><div class="table-actions"><a asp-controller="Expensas" asp-action="Details" asp-route-id="111">Ver detalle</a><a href="/Pagos/MisPagos">Ver pagos</a><a href="#" data-mock-attachment data-attachment-title="Liquidacion de expensa" data-attachment-file="liquidacion-marzo-2026-uf-5c.pdf" data-attachment-description="Liquidacion mock generada para consulta visual.">Descargar</a></div></td>
-                </tr>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8">Todavia no hay expensas generadas.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var expensa in Model)
+                    {
+                        <tr>
+                            <td>@expensa.Periodo</td>
+                            <td>@expensa.UnidadFuncional.Consorcio.Nombre</td>
+                            <td>@expensa.UnidadFuncional.NumeroUF</td>
+                            <td>@expensa.UnidadFuncional.NombrePropietario</td>
+                            <td>@expensa.MontoTotal.ToString("C")</td>
+                            <td>@expensa.FechaVencimiento.ToString("dd/MM/yyyy")</td>
+                            <td><span class="status-badge @EstadoClass(expensa.Estado)">@expensa.Estado</span></td>
+                            <td>
+                                <div class="table-actions">
+                                    <a asp-controller="Expensas" asp-action="Details" asp-route-id="@expensa.Id" asp-route-returnUrl="@Url.Action("Index", "Expensas")">Ver detalle</a>
+                                    <a href="/Pagos/MisPagos">Ver pagos</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
     </div>
