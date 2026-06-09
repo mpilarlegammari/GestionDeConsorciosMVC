@@ -10,10 +10,23 @@ namespace GestionDeConsorciosMVC.Context
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
+                .AddJsonFile("appsettings.json", optional: true)
+                .AddJsonFile("appsettings.Development.json", optional: true)
+                .AddEnvironmentVariables()
                 .Build();
 
-            string? connectionString = configuration["ConnectionString:DefaultConnection"];
+            string? connectionString =
+                configuration.GetConnectionString("DefaultConnection")
+                ?? configuration["ConnectionString:DefaultConnection"]
+                ?? configuration["GESTION_CONSORCIOS_CONNECTION_STRING"];
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "No se encontró una cadena de conexión para GestionDeConsorciosContext. " +
+                    "Definí ConnectionStrings:DefaultConnection, ConnectionString:DefaultConnection " +
+                    "o la variable de entorno GESTION_CONSORCIOS_CONNECTION_STRING.");
+            }
 
             DbContextOptionsBuilder<GestionDeConsorciosContext> optionsBuilder = new DbContextOptionsBuilder<GestionDeConsorciosContext>();
 

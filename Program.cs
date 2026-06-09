@@ -1,4 +1,5 @@
 using GestionDeConsorciosMVC.Context;
+using GestionDeConsorciosMVC.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
+builder.Services.AddScoped<IGastoService, GastoService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddDbContext<GestionDeConsorciosContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
