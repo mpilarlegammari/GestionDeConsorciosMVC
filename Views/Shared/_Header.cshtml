@@ -1,6 +1,7 @@
 @{
     var pageTitle = ViewData["Title"] as string ?? "Inicio";
     var currentRole = ViewData["Role"] as string ?? "Administrador";
+    var currentEmail = Context.Session.GetString("UserEmail") ?? "Usuario mock";
 }
 
 <header class="app-header">
@@ -22,7 +23,7 @@
         </div>
         <div class="user-chip">
             <span class="user-avatar">US</span>
-            <span>Usuario mock</span>
+            <span>@currentEmail</span>
         </div>
     </div>
 </header>

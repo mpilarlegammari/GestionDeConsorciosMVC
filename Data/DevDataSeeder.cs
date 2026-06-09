@@ -95,7 +95,13 @@ public static class DevDataSeeder
         Expensa expensa)
     {
         var numeroOperacion = $"SEED-CONSORCIO-{unidad.ConsorcioId}-UF-{unidad.NumeroUF}-{expensa.Periodo}";
-        var exists = await context.Pagos.AnyAsync(p => p.NumeroOperacion == numeroOperacion);
+        var exists = await context.Pagos.AnyAsync(p =>
+            p.NumeroOperacion == numeroOperacion
+            || (p.ExpensaId == expensa.Id
+                && p.NumeroOperacion != null
+                && p.NumeroOperacion.StartsWith("SEED-")
+                && p.Comentarios != null
+                && p.Comentarios.Contains(unidad.MailPropietario)));
 
         if (exists)
         {

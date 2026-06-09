@@ -19,6 +19,11 @@ namespace GestionDeConsorciosMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> InformarPago()
         {
+            if (string.IsNullOrWhiteSpace(HttpContext.Session.GetString("UserEmail")))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
             await LoadExpensasPendientesAsync();
             return View();
         }
@@ -26,10 +31,18 @@ namespace GestionDeConsorciosMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> MisPagos()
         {
+            var email = HttpContext.Session.GetString("UserEmail");
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
             var pagos = await _context.Pagos
                 .Include(p => p.Expensa)
                     .ThenInclude(e => e.UnidadFuncional)
                         .ThenInclude(u => u.Consorcio)
+                .Where(p => p.Expensa.UnidadFuncional.MailPropietario == email)
                 .OrderByDescending(p => p.FechaPago)
                 .ToListAsync();
 
@@ -39,6 +52,8 @@ namespace GestionDeConsorciosMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
+            var role = HttpContext.Session.GetString("UserRole");
+            var email = HttpContext.Session.GetString("UserEmail");
             var pago = await _context.Pagos
                 .Include(p => p.Expensa)
                     .ThenInclude(e => e.UnidadFuncional)
@@ -48,6 +63,12 @@ namespace GestionDeConsorciosMVC.Controllers
             if (pago is null)
             {
                 return NotFound();
+            }
+
+            if (role?.Equals("Propietario", StringComparison.OrdinalIgnoreCase) == true
+                && !string.Equals(pago.Expensa.UnidadFuncional.MailPropietario, email, StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
             }
 
             return View(pago);
@@ -65,16 +86,29 @@ namespace GestionDeConsorciosMVC.Controllers
             IFormFile? ComprobantePago,
             string? Comentarios)
         {
+            var email = HttpContext.Session.GetString("UserEmail");
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
             MedioPago = MedioPago?.Trim() ?? string.Empty;
             NumeroOperacion = NumeroOperacion?.Trim();
             BancoEntidad = BancoEntidad?.Trim();
             Comentarios = Comentarios?.Trim();
 
-            var expensa = await _context.Expensas.FindAsync(ExpensaId);
+            var expensa = await _context.Expensas
+                .Include(e => e.UnidadFuncional)
+                .FirstOrDefaultAsync(e => e.Id == ExpensaId);
 
             if (expensa is null)
             {
                 ModelState.AddModelError(nameof(ExpensaId), "Debe seleccionar una expensa valida.");
+            }
+            else if (!string.Equals(expensa.UnidadFuncional.MailPropietario, email, StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError(nameof(ExpensaId), "La expensa seleccionada no pertenece al propietario autenticado.");
             }
 
             if (FechaPago == default)
@@ -136,10 +170,12 @@ namespace GestionDeConsorciosMVC.Controllers
 
         private async Task LoadExpensasPendientesAsync()
         {
+            var email = HttpContext.Session.GetString("UserEmail");
             ViewBag.Expensas = await _context.Expensas
                 .Include(e => e.UnidadFuncional)
                     .ThenInclude(u => u.Consorcio)
-                .Where(e => e.Estado != EstadoExpensa.Pagada)
+                .Where(e => e.Estado != EstadoExpensa.Pagada
+                    && e.UnidadFuncional.MailPropietario == email)
                 .OrderByDescending(e => e.FechaEmision)
                 .ToListAsync();
         }

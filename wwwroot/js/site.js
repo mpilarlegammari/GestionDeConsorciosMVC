@@ -113,6 +113,11 @@
         variant: "success"
       });
 
+      if (loginForm.hasAttribute("data-real-submit")) {
+        loginForm.submit();
+        return;
+      }
+
       window.location.href = role === "Propietario"
         ? "/Home/PropietarioDashboard"
         : "/Home/AdminDashboard";

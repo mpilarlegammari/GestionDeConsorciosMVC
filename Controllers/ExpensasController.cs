@@ -38,10 +38,18 @@ namespace GestionDeConsorciosMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> MisExpensas()
         {
+            var email = HttpContext.Session.GetString("UserEmail");
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
             var expensas = await _context.Expensas
                 .Include(e => e.UnidadFuncional)
                     .ThenInclude(u => u.Consorcio)
                 .Include(e => e.Pagos)
+                .Where(e => e.UnidadFuncional.MailPropietario == email)
                 .OrderByDescending(e => e.FechaEmision)
                 .ToListAsync();
 
@@ -51,6 +59,8 @@ namespace GestionDeConsorciosMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id, string? returnUrl = null)
         {
+            var role = HttpContext.Session.GetString("UserRole");
+            var email = HttpContext.Session.GetString("UserEmail");
             var expensa = await _context.Expensas
                 .Include(e => e.UnidadFuncional)
                     .ThenInclude(u => u.Consorcio)
@@ -60,6 +70,12 @@ namespace GestionDeConsorciosMVC.Controllers
             if (expensa is null)
             {
                 return NotFound();
+            }
+
+            if (role?.Equals("Propietario", StringComparison.OrdinalIgnoreCase) == true
+                && !string.Equals(expensa.UnidadFuncional.MailPropietario, email, StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
             }
 
             ViewBag.Gastos = await GetGastosPeriodoAsync(expensa.UnidadFuncional.ConsorcioId, expensa.Periodo);
