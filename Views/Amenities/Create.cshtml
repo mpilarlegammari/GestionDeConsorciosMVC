@@ -1,0 +1,73 @@
+@model AmenityCreateViewModel
+
+@{
+    ViewData["Title"] = "Nuevo amenity";
+    ViewData["Role"] = "Administrador";
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Nuevo amenity</h2>
+        <p>Registrar un espacio comun para futuras reservas.</p>
+    </div>
+    <span class="status-badge">Administrador</span>
+</section>
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
+<form asp-action="Create" method="post">
+    <section class="app-card section-card">
+        <div class="app-card-title">
+            <h3>Datos del amenity</h3>
+            <span class="status-badge">Backend</span>
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="field-validation"></div>
+
+        <div class="form-grid">
+            <div>
+                <label class="form-label" asp-for="ConsorcioId">Consorcio</label>
+                <select class="form-select" asp-for="ConsorcioId">
+                    <option value="">Seleccionar consorcio</option>
+                    @foreach (var consorcio in Model.Consorcios)
+                    {
+                        <option value="@consorcio.Id">@consorcio.Nombre</option>
+                    }
+                </select>
+                <span asp-validation-for="ConsorcioId" class="field-validation"></span>
+            </div>
+            <div>
+                <label class="form-label" asp-for="Capacidad">Capacidad</label>
+                <input class="form-control" asp-for="Capacidad" type="number" min="1" />
+                <span asp-validation-for="Capacidad" class="field-validation"></span>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" asp-for="Nombre">Nombre</label>
+                <input class="form-control" asp-for="Nombre" type="text" placeholder="Ej: SUM, parrilla, terraza" />
+                <span asp-validation-for="Nombre" class="field-validation"></span>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" asp-for="Descripcion">Descripcion</label>
+                <textarea class="form-control" asp-for="Descripcion" rows="4" placeholder="Detalle breve del espacio y reglas basicas"></textarea>
+                <span asp-validation-for="Descripcion" class="field-validation"></span>
+            </div>
+            <div>
+                <label class="form-label" asp-for="Activo">Estado</label>
+                <div class="form-check">
+                    <input class="form-check-input" asp-for="Activo" type="checkbox" />
+                    <label class="form-check-label" asp-for="Activo">Amenity activo</label>
+                </div>
+            </div>
+        </div>
+
+        <p class="form-note">Los propietarios solo podran reservar amenities activos de su consorcio.</p>
+
+        <div class="form-actions">
+            <a class="btn btn-outline-secondary" asp-controller="Amenities" asp-action="Index">Cancelar</a>
+            <button class="btn btn-primary" type="submit">Crear amenity</button>
+        </div>
+    </section>
+</form>

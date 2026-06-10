@@ -1,0 +1,120 @@
+@model ReservaCreateViewModel
+
+@{
+    ViewData["Title"] = "Nueva reserva";
+    ViewData["Role"] = "Propietario";
+    var puedeCrear = Model.UnidadesFuncionales.Count > 0 && Model.Amenities.Count > 0;
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Nueva reserva</h2>
+        <p>Reservar un amenity disponible de tu consorcio.</p>
+    </div>
+    <span class="status-badge">Propietario</span>
+</section>
+
+@if (TempData["Success"] is string successMessage)
+{
+    <section class="form-alert show success" role="status">@successMessage</section>
+}
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
+<form asp-action="Create" method="post">
+    <section class="app-card section-card">
+        <div class="app-card-title">
+            <h3>Datos de la reserva</h3>
+            <span class="status-badge">Backend</span>
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="field-validation"></div>
+
+        <div class="form-grid">
+            <div>
+                <label class="form-label" asp-for="UnidadFuncionalId">Unidad funcional</label>
+                <select class="form-select" asp-for="UnidadFuncionalId" disabled="@(!puedeCrear)">
+                    <option value="">Seleccionar UF</option>
+                    @foreach (var unidad in Model.UnidadesFuncionales)
+                    {
+                        var label = $"{unidad.Consorcio.Nombre} - UF {unidad.NumeroUF}";
+                        if (!string.IsNullOrWhiteSpace(unidad.Piso) || !string.IsNullOrWhiteSpace(unidad.Departamento))
+                        {
+                            label += $" ({unidad.Piso} {unidad.Departamento})";
+                        }
+
+                        if (Model.UnidadFuncionalId == unidad.Id)
+                        {
+                            <option value="@unidad.Id" selected>@label</option>
+                        }
+                        else
+                        {
+                            <option value="@unidad.Id">@label</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="UnidadFuncionalId" class="field-validation"></span>
+            </div>
+            <div>
+                <label class="form-label" asp-for="AmenityId">Amenity</label>
+                <select class="form-select" asp-for="AmenityId" disabled="@(!puedeCrear)">
+                    <option value="">Seleccionar amenity</option>
+                    @foreach (var amenity in Model.Amenities)
+                    {
+                        var label = $"{amenity.Consorcio.Nombre} - {amenity.Nombre} ({amenity.Capacidad} personas)";
+                        if (Model.AmenityId == amenity.Id)
+                        {
+                            <option value="@amenity.Id" selected>@label</option>
+                        }
+                        else
+                        {
+                            <option value="@amenity.Id">@label</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="AmenityId" class="field-validation"></span>
+            </div>
+            <div>
+                <label class="form-label" asp-for="FechaReserva">Fecha</label>
+                <input class="form-control" id="FechaReserva" name="FechaReserva" type="date" value="@Model.FechaReserva.ToString("yyyy-MM-dd")" disabled="@(!puedeCrear)" />
+                <span asp-validation-for="FechaReserva" class="field-validation"></span>
+            </div>
+            <div>
+                <label class="form-label" asp-for="HoraInicio">Hora inicio</label>
+                <input class="form-control" id="HoraInicio" name="HoraInicio" type="time" value="@Model.HoraInicio.ToString(@"hh\:mm")" disabled="@(!puedeCrear)" />
+                <span asp-validation-for="HoraInicio" class="field-validation"></span>
+            </div>
+            <div>
+                <label class="form-label" asp-for="HoraFin">Hora fin</label>
+                <input class="form-control" id="HoraFin" name="HoraFin" type="time" value="@Model.HoraFin.ToString(@"hh\:mm")" disabled="@(!puedeCrear)" />
+                <span asp-validation-for="HoraFin" class="field-validation"></span>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" asp-for="Observaciones">Observaciones</label>
+                <textarea class="form-control" asp-for="Observaciones" rows="4" placeholder="Detalle opcional para la reserva" disabled="@(!puedeCrear)"></textarea>
+                <span asp-validation-for="Observaciones" class="field-validation"></span>
+            </div>
+        </div>
+
+        @if (Model.UnidadesFuncionales.Count == 0)
+        {
+            <p class="form-note">No hay unidades funcionales vinculadas a tu usuario.</p>
+        }
+        else if (Model.Amenities.Count == 0)
+        {
+            <p class="form-note">No hay amenities activos disponibles para tus consorcios.</p>
+        }
+        else
+        {
+            <p class="form-note">La reserva se confirmara automaticamente si cumple las reglas de deuda, horario y disponibilidad.</p>
+        }
+
+        <div class="form-actions">
+            <a class="btn btn-outline-secondary" asp-controller="Reservas" asp-action="MisReservas">Cancelar</a>
+            <button class="btn btn-primary" type="submit" disabled="@(!puedeCrear)">Crear reserva</button>
+        </div>
+    </section>
+</form>

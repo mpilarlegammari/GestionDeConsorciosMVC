@@ -1,0 +1,141 @@
+@model AmenitiesIndexViewModel
+
+@{
+    ViewData["Title"] = "Amenities";
+    ViewData["Role"] = "Administrador";
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Amenities</h2>
+        <p>Espacios comunes disponibles para reservas.</p>
+    </div>
+    <a class="btn btn-primary" asp-controller="Amenities" asp-action="Create">Nuevo amenity</a>
+</section>
+
+@if (TempData["Success"] is string successMessage)
+{
+    <section class="form-alert show success" role="status">@successMessage</section>
+}
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
+<section class="app-card filter-card" aria-label="Filtros de amenities">
+    <form method="get" asp-action="Index">
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="consorcioId">Consorcio</label>
+                <select class="form-select" id="consorcioId" name="consorcioId">
+                    <option value="">Todos</option>
+                    @foreach (var consorcio in Model.Consorcios)
+                    {
+                        if (Model.ConsorcioId == consorcio.Id)
+                        {
+                            <option value="@consorcio.Id" selected>@consorcio.Nombre</option>
+                        }
+                        else
+                        {
+                            <option value="@consorcio.Id">@consorcio.Nombre</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="activo">Estado</label>
+                <select class="form-select" id="activo" name="activo">
+                    <option value="">Todos</option>
+                    @if (Model.Activo == true)
+                    {
+                        <option value="true" selected>Activos</option>
+                        <option value="false">Inactivos</option>
+                    }
+                    else if (Model.Activo == false)
+                    {
+                        <option value="true">Activos</option>
+                        <option value="false" selected>Inactivos</option>
+                    }
+                    else
+                    {
+                        <option value="true">Activos</option>
+                        <option value="false">Inactivos</option>
+                    }
+                </select>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="busqueda">Buscar</label>
+                <input class="form-control" id="busqueda" name="busqueda" value="@Model.Busqueda" type="search" placeholder="Nombre o descripcion" />
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">Limpiar</a>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="summary-grid" aria-label="Resumen de amenities">
+    <article class="app-card metric-card">
+        <span>Total</span>
+        <strong>@Model.CantidadAmenities</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>Activos</span>
+        <strong>@Model.CantidadActivos</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>Capacidad activa</span>
+        <strong>@Model.CapacidadTotal</strong>
+    </article>
+</section>
+
+<section class="app-card section-card">
+    <div class="app-card-title">
+        <h3>Amenities registrados</h3>
+        <span class="status-badge">Datos reales</span>
+    </div>
+
+    @if (Model.Amenities.Count == 0)
+    {
+        <p class="empty-state">No hay amenities para los filtros seleccionados.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-clean">
+                <thead>
+                    <tr>
+                        <th>Consorcio</th>
+                        <th>Nombre</th>
+                        <th>Capacidad</th>
+                        <th>Estado</th>
+                        <th>Descripcion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var amenity in Model.Amenities)
+                    {
+                        <tr>
+                            <td>@amenity.Consorcio.Nombre</td>
+                            <td>@amenity.Nombre</td>
+                            <td>@amenity.Capacidad</td>
+                            <td>
+                                @if (amenity.Activo)
+                                {
+                                    <span class="status-badge success">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge neutral">Inactivo</span>
+                                }
+                            </td>
+                            <td>@(string.IsNullOrWhiteSpace(amenity.Descripcion) ? "-" : amenity.Descripcion)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

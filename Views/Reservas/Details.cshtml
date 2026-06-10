@@ -1,0 +1,155 @@
+@model ReservaDetailsViewModel
+
+@{
+    ViewData["Title"] = "Detalle de Reserva";
+    ViewData["Role"] = Model.DetailRole;
+    var esPropietario = Model.DetailRole.Equals("Propietario", StringComparison.OrdinalIgnoreCase);
+    var puedeCancelar = esPropietario && Model.Estado != EstadoReserva.Cancelada && Model.FechaReserva.Date >= DateTime.Today;
+}
+
+@functions {
+    private static string EstadoClass(EstadoReserva estado) => estado switch
+    {
+        EstadoReserva.Pendiente => "warning",
+        EstadoReserva.Confirmada => "success",
+        EstadoReserva.Cancelada => "danger",
+        _ => "neutral"
+    };
+}
+
+@if (TempData["Success"] is string successMessage)
+{
+    <section class="form-alert show success" role="status">@successMessage</section>
+}
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
+<section class="page-intro">
+    <div>
+        <h2>@Model.AmenityNombre</h2>
+        <p>Reserva para el @Model.FechaReserva.ToString("dd/MM/yyyy").</p>
+    </div>
+    <span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span>
+</section>
+
+<section class="dashboard-grid">
+    <article class="app-card metric-card">
+        <span>Fecha</span>
+        <strong>@Model.FechaReserva.ToString("dd/MM")</strong>
+        <small>@Model.FechaReserva.Year</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Horario</span>
+        <strong>@Model.HoraInicio.ToString(@"hh\:mm")</strong>
+        <small>Hasta @Model.HoraFin.ToString(@"hh\:mm")</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Unidad</span>
+        <strong>UF @Model.UnidadFuncionalNumero</strong>
+        <small>@Model.ConsorcioNombre</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Estado</span>
+        <strong><span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span></strong>
+        <small>Reserva</small>
+    </article>
+</section>
+
+<section class="content-grid section-card">
+    <article class="app-card">
+        <div class="app-card-title">
+            <h3>Datos generales</h3>
+        </div>
+        <dl class="detail-list">
+            <div>
+                <dt>Consorcio</dt>
+                <dd>@Model.ConsorcioNombre</dd>
+            </div>
+            <div>
+                <dt>Amenity</dt>
+                <dd>@Model.AmenityNombre</dd>
+            </div>
+            <div>
+                <dt>Capacidad</dt>
+                <dd>@Model.AmenityCapacidad personas</dd>
+            </div>
+            <div>
+                <dt>Unidad funcional</dt>
+                <dd>UF @Model.UnidadFuncionalNumero</dd>
+            </div>
+            <div>
+                <dt>Piso / departamento</dt>
+                <dd>@(string.IsNullOrWhiteSpace(Model.Piso) && string.IsNullOrWhiteSpace(Model.Departamento) ? "-" : $"{Model.Piso} {Model.Departamento}")</dd>
+            </div>
+            <div>
+                <dt>Propietario</dt>
+                <dd>@Model.PropietarioNombre</dd>
+            </div>
+            <div>
+                <dt>Email propietario</dt>
+                <dd>@Model.PropietarioMail</dd>
+            </div>
+            <div>
+                <dt>Fecha</dt>
+                <dd>@Model.FechaReserva.ToString("dd/MM/yyyy")</dd>
+            </div>
+            <div>
+                <dt>Horario</dt>
+                <dd>@Model.HoraInicio.ToString(@"hh\:mm") a @Model.HoraFin.ToString(@"hh\:mm")</dd>
+            </div>
+            <div class="detail-span-2">
+                <dt>Descripcion del amenity</dt>
+                <dd>@(string.IsNullOrWhiteSpace(Model.AmenityDescripcion) ? "Sin descripcion." : Model.AmenityDescripcion)</dd>
+            </div>
+            <div class="detail-span-2">
+                <dt>Observaciones</dt>
+                <dd>@(string.IsNullOrWhiteSpace(Model.Observaciones) ? "Sin observaciones." : Model.Observaciones)</dd>
+            </div>
+        </dl>
+    </article>
+
+    <aside class="app-card">
+        <div class="app-card-title">
+            <h3>Estado</h3>
+        </div>
+        <ul class="simple-list">
+            <li>
+                <span>Reserva</span>
+                <strong>@Model.Estado</strong>
+            </li>
+            <li>
+                <span>Fecha</span>
+                <strong>@Model.FechaReserva.ToString("dd/MM/yyyy")</strong>
+            </li>
+            <li>
+                <span>Horario</span>
+                <strong>@Model.HoraInicio.ToString(@"hh\:mm") - @Model.HoraFin.ToString(@"hh\:mm")</strong>
+            </li>
+        </ul>
+    </aside>
+</section>
+
+<section class="app-card section-card">
+    <div class="button-group">
+        <a class="btn btn-outline-secondary" href="@Model.ReturnUrl">Volver</a>
+        @if (puedeCancelar)
+        {
+            <form asp-controller="Reservas" asp-action="Cancelar" method="post" class="inline-form">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                <button class="btn btn-outline-danger" type="submit">Cancelar reserva</button>
+            </form>
+        }
+        @if (esPropietario)
+        {
+            <a class="btn btn-primary" asp-controller="Reservas" asp-action="Create">Nueva reserva</a>
+        }
+        else
+        {
+            <a class="btn btn-primary" asp-controller="Reservas" asp-action="Index">Listado administrativo</a>
+        }
+    </div>
+</section>

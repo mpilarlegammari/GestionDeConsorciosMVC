@@ -1,0 +1,153 @@
+@model MisReservasViewModel
+
+@{
+    ViewData["Title"] = "Mis Reservas";
+    ViewData["Role"] = "Propietario";
+    var returnUrl = Context.Request.Path + Context.Request.QueryString.ToString();
+}
+
+@functions {
+    private static string EstadoClass(EstadoReserva estado) => estado switch
+    {
+        EstadoReserva.Pendiente => "warning",
+        EstadoReserva.Confirmada => "success",
+        EstadoReserva.Cancelada => "danger",
+        _ => "neutral"
+    };
+}
+
+<section class="page-intro">
+    <div>
+        <h2>Mis Reservas</h2>
+        <p>Reservas de amenities asociadas a tus unidades funcionales.</p>
+    </div>
+    <a class="btn btn-primary" asp-controller="Reservas" asp-action="Create">Nueva reserva</a>
+</section>
+
+@if (TempData["Success"] is string successMessage)
+{
+    <section class="form-alert show success" role="status">@successMessage</section>
+}
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
+<section class="app-card filter-card" aria-label="Filtros de mis reservas">
+    <form method="get" asp-action="MisReservas">
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="estado">Estado</label>
+                <select class="form-select" id="estado" name="estado">
+                    <option value="">Todos</option>
+                    @foreach (var estado in Enum.GetValues<EstadoReserva>())
+                    {
+                        if (Model.Estado == estado)
+                        {
+                            <option value="@estado" selected>@estado</option>
+                        }
+                        else
+                        {
+                            <option value="@estado">@estado</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-span-2">
+                <label class="form-label" for="busqueda">Buscar</label>
+                <input class="form-control" id="busqueda" name="busqueda" value="@Model.Busqueda" type="search" placeholder="Amenity u observacion" />
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-outline-secondary" asp-action="MisReservas">Limpiar</a>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="summary-grid" aria-label="Resumen de mis reservas">
+    <article class="app-card metric-card">
+        <span>Total</span>
+        <strong>@Model.CantidadReservas</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>Confirmadas</span>
+        <strong>@Model.CantidadConfirmadas</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>Pendientes</span>
+        <strong>@Model.CantidadPendientes</strong>
+    </article>
+    <article class="app-card metric-card">
+        <span>Canceladas</span>
+        <strong>@Model.CantidadCanceladas</strong>
+    </article>
+</section>
+
+<section class="content-grid">
+    <article class="app-card">
+        <div class="app-card-title">
+            <h3>Reservas registradas</h3>
+            <span class="status-badge">@Model.UnidadesResumen</span>
+        </div>
+
+        @if (Model.Reservas.Count == 0)
+        {
+            <p class="empty-state">No hay reservas para los filtros seleccionados.</p>
+        }
+        else
+        {
+            <ul class="activity-list">
+                @foreach (var reserva in Model.Reservas)
+                {
+                    var puedeCancelar = reserva.Estado != EstadoReserva.Cancelada && reserva.FechaReserva.Date >= DateTime.Today;
+
+                    <li>
+                        <span class="activity-dot @(reserva.Estado == EstadoReserva.Cancelada ? string.Empty : "success")"></span>
+                        <span>
+                            <strong>@reserva.FechaReserva.ToString("dd/MM/yyyy") - @reserva.Amenity.Nombre</strong><br />
+                            @reserva.HoraInicio.ToString(@"hh\:mm") a @reserva.HoraFin.ToString(@"hh\:mm") - UF @reserva.UnidadFuncional.NumeroUF
+                            <span class="status-badge @EstadoClass(reserva.Estado)">@reserva.Estado</span>
+                            <span class="table-actions">
+                                <a asp-controller="Reservas"
+                                   asp-action="Details"
+                                   asp-route-id="@reserva.Id"
+                                   asp-route-rol="propietario"
+                                   asp-route-returnUrl="@returnUrl">Ver detalle</a>
+                                @if (puedeCancelar)
+                                {
+                                    <form asp-controller="Reservas" asp-action="Cancelar" method="post" class="inline-form">
+                                        <input type="hidden" name="id" value="@reserva.Id" />
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                        <button type="submit">Cancelar</button>
+                                    </form>
+                                }
+                            </span>
+                        </span>
+                    </li>
+                }
+            </ul>
+        }
+    </article>
+
+    <aside class="app-card">
+        <div class="app-card-title">
+            <h3>Reglas</h3>
+        </div>
+        <ul class="simple-list">
+            <li>
+                <span>Unidades</span>
+                <strong>@Model.UnidadesResumen</strong>
+            </li>
+            <li>
+                <span>Limite mensual</span>
+                <strong>5 reservas por UF</strong>
+            </li>
+            <li>
+                <span>Deuda vencida</span>
+                <strong>No permite reservar</strong>
+            </li>
+        </ul>
+    </aside>
+</section>
