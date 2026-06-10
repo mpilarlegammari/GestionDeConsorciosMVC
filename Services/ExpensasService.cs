@@ -69,6 +69,68 @@ namespace GestionDeConsorciosMVC.Services
             };
         }
 
+        public async Task<MisExpensasViewModel> GetMisExpensasAsync(
+            string email,
+            int? unidadFuncionalId = null,
+            string? periodo = null,
+            int? anio = null,
+            EstadoExpensa? estado = null)
+        {
+            var normalizedEmail = Normalize(email);
+            var normalizedPeriodo = NormalizeOptional(periodo);
+            var unidades = await GetOwnerUnidadesAsync(normalizedEmail);
+            var unidadesSeleccionadas = unidadFuncionalId.HasValue
+                ? unidades.Where(unidad => unidad.Id == unidadFuncionalId.Value).ToList()
+                : unidades.ToList();
+            var ownerUnidadIds = unidades.Select(unidad => unidad.Id).ToList();
+            var selectedUnidadIds = unidadesSeleccionadas.Select(unidad => unidad.Id).ToList();
+
+            var expensas = new List<Expensa>();
+
+            if (selectedUnidadIds.Count > 0)
+            {
+                var query = _context.Expensas
+                    .Include(expensa => expensa.UnidadFuncional)
+                        .ThenInclude(unidad => unidad.Consorcio)
+                    .Include(expensa => expensa.Pagos)
+                    .AsNoTracking()
+                    .Where(expensa => selectedUnidadIds.Contains(expensa.UnidadFuncionalId));
+
+                if (!string.IsNullOrWhiteSpace(normalizedPeriodo))
+                {
+                    query = query.Where(expensa => expensa.Periodo == normalizedPeriodo);
+                }
+                else if (anio.HasValue && anio.Value > 0)
+                {
+                    query = query.Where(expensa => expensa.FechaEmision.Year == anio.Value);
+                }
+
+                if (estado.HasValue)
+                {
+                    query = query.Where(expensa => expensa.Estado == estado.Value);
+                }
+
+                expensas = await query
+                    .OrderByDescending(expensa => expensa.FechaEmision)
+                    .ThenByDescending(expensa => expensa.Periodo)
+                    .ThenBy(expensa => expensa.UnidadFuncional.NumeroUF)
+                    .ToListAsync();
+            }
+
+            return new MisExpensasViewModel
+            {
+                Expensas = expensas,
+                UnidadesFuncionales = unidades,
+                UnidadesSeleccionadas = unidadesSeleccionadas,
+                PeriodosDisponibles = await GetPeriodosDisponiblesAsync(ownerUnidadIds),
+                AniosDisponibles = await GetAniosDisponiblesAsync(ownerUnidadIds),
+                UnidadFuncionalId = unidadFuncionalId,
+                Periodo = normalizedPeriodo,
+                Anio = anio,
+                Estado = estado
+            };
+        }
+
         public async Task<GenerarExpensasViewModel> BuildGenerarViewModelAsync(GenerarExpensasViewModel? model = null)
         {
             model ??= new GenerarExpensasViewModel();
@@ -199,6 +261,56 @@ namespace GestionDeConsorciosMVC.Services
                 .AsNoTracking()
                 .OrderBy(consorcio => consorcio.Nombre)
                 .ToListAsync();
+        }
+
+        private async Task<List<UnidadFuncional>> GetOwnerUnidadesAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return [];
+            }
+
+            return await _context.UnidadesFuncionales
+                .Include(unidad => unidad.Consorcio)
+                .AsNoTracking()
+                .Where(unidad => unidad.MailPropietario == email)
+                .OrderBy(unidad => unidad.Consorcio.Nombre)
+                .ThenBy(unidad => unidad.NumeroUF)
+                .ToListAsync();
+        }
+
+        private async Task<List<string>> GetPeriodosDisponiblesAsync(List<int> unidadIds)
+        {
+            if (unidadIds.Count == 0)
+            {
+                return [];
+            }
+
+            return await _context.Expensas
+                .AsNoTracking()
+                .Where(expensa => unidadIds.Contains(expensa.UnidadFuncionalId))
+                .Select(expensa => expensa.Periodo)
+                .Distinct()
+                .OrderByDescending(periodo => periodo)
+                .ToListAsync();
+        }
+
+        private async Task<List<int>> GetAniosDisponiblesAsync(List<int> unidadIds)
+        {
+            if (unidadIds.Count == 0)
+            {
+                return [DateTime.Today.Year];
+            }
+
+            var anios = await _context.Expensas
+                .AsNoTracking()
+                .Where(expensa => unidadIds.Contains(expensa.UnidadFuncionalId))
+                .Select(expensa => expensa.FechaEmision.Year)
+                .Distinct()
+                .OrderByDescending(anio => anio)
+                .ToListAsync();
+
+            return anios.Count == 0 ? [DateTime.Today.Year] : anios;
         }
 
         private static void Normalize(GenerarExpensasViewModel model)

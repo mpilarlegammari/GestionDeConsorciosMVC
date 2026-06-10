@@ -42,7 +42,11 @@ namespace GestionDeConsorciosMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> MisExpensas()
+        public async Task<IActionResult> MisExpensas(
+            int? unidadFuncionalId,
+            string? periodo,
+            int? anio,
+            EstadoExpensa? estado)
         {
             var email = HttpContext.Session.GetString("UserEmail");
 
@@ -51,15 +55,14 @@ namespace GestionDeConsorciosMVC.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
-            var expensas = await _context.Expensas
-                .Include(e => e.UnidadFuncional)
-                    .ThenInclude(u => u.Consorcio)
-                .Include(e => e.Pagos)
-                .Where(e => e.UnidadFuncional.MailPropietario == email)
-                .OrderByDescending(e => e.FechaEmision)
-                .ToListAsync();
+            var model = await _expensasService.GetMisExpensasAsync(email, unidadFuncionalId, periodo, anio, estado);
 
-            return View(expensas);
+            if (model.UnidadesFuncionales.Count == 0)
+            {
+                TempData["Error"] = "No tenes unidades funcionales asociadas para consultar expensas.";
+            }
+
+            return View(model);
         }
 
         [HttpGet]
@@ -80,8 +83,10 @@ namespace GestionDeConsorciosMVC.Controllers
                 return Forbid();
             }
 
+            var misExpensasUrl = Url.Action(nameof(MisExpensas), "Expensas") ?? "/Expensas/MisExpensas";
             model.ReturnUrl = GetSafeReturnUrl(returnUrl);
-            model.DetailRole = model.ReturnUrl == Url.Action(nameof(MisExpensas), "Expensas")
+            model.DetailRole = role?.Equals("Propietario", StringComparison.OrdinalIgnoreCase) == true
+                || model.ReturnUrl.StartsWith(misExpensasUrl, StringComparison.OrdinalIgnoreCase)
                 ? "Propietario"
                 : "Administrador";
 

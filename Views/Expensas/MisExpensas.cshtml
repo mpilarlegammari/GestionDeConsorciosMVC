@@ -1,8 +1,10 @@
-@model IEnumerable<Expensa>
+@model MisExpensasViewModel
+
 @{
     ViewData["Title"] = "Mis Expensas";
     ViewData["Role"] = "Propietario";
-    var expensaActual = Model.OrderByDescending(e => e.FechaEmision).FirstOrDefault();
+    var expensaActual = Model.ExpensaActual;
+    var returnUrl = Context.Request.Path + Context.Request.QueryString.ToString();
 }
 
 @functions {
@@ -23,13 +25,18 @@
     <span class="status-badge">Backend</span>
 </section>
 
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
 @if (expensaActual is not null)
 {
     <section class="app-card expense-card">
         <div>
             <span class="card-kicker">Periodo actual</span>
             <h3>@expensaActual.Periodo</h3>
-            <p>Vencimiento: @expensaActual.FechaVencimiento.ToString("dd/MM/yyyy")</p>
+            <p>@Model.ConsorciosResumen - @Model.UnidadesResumen</p>
         </div>
         <div class="expense-summary">
             <div>
@@ -37,44 +44,133 @@
                 <strong><span class="status-badge @EstadoClass(expensaActual.Estado)">@expensaActual.Estado</span></strong>
             </div>
             <div>
+                <span class="card-kicker">Vencimiento</span>
+                <strong>@expensaActual.FechaVencimiento.ToString("dd/MM/yyyy")</strong>
+            </div>
+            <div>
                 <span class="card-kicker">Monto</span>
                 <strong>@expensaActual.MontoTotal.ToString("C")</strong>
             </div>
         </div>
         <div class="button-group">
-            <a class="btn btn-outline-primary" asp-controller="Expensas" asp-action="Details" asp-route-id="@expensaActual.Id" asp-route-returnUrl="@Url.Action("MisExpensas", "Expensas")">Ver detalle</a>
-            <a class="btn btn-primary" href="/Pagos/InformarPago">Informar pago</a>
+            <a class="btn btn-outline-primary"
+               asp-controller="Expensas"
+               asp-action="Details"
+               asp-route-id="@expensaActual.Id"
+               asp-route-returnUrl="@returnUrl">Ver detalle</a>
+            @if (expensaActual.Estado != EstadoExpensa.Pagada)
+            {
+                <a class="btn btn-primary" asp-controller="Pagos" asp-action="InformarPago">Informar pago</a>
+            }
         </div>
     </section>
 }
 
+<section class="app-card filter-card" aria-label="Filtros de mis expensas">
+    <form method="get" asp-action="MisExpensas">
+        <div class="form-grid">
+            <div>
+                <label class="form-label" for="unidadFuncionalId">Unidad funcional</label>
+                <select class="form-select" id="unidadFuncionalId" name="unidadFuncionalId">
+                    <option value="">Todas mis UFs</option>
+                    @foreach (var unidad in Model.UnidadesFuncionales)
+                    {
+                        var label = $"{unidad.Consorcio.Nombre} - UF {unidad.NumeroUF}";
+                        if (!string.IsNullOrWhiteSpace(unidad.Piso) || !string.IsNullOrWhiteSpace(unidad.Departamento))
+                        {
+                            label += $" ({unidad.Piso} {unidad.Departamento})";
+                        }
+
+                        if (Model.UnidadFuncionalId == unidad.Id)
+                        {
+                            <option value="@unidad.Id" selected>@label</option>
+                        }
+                        else
+                        {
+                            <option value="@unidad.Id">@label</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="periodo">Periodo</label>
+                <input class="form-control" id="periodo" name="periodo" type="month" value="@Model.Periodo" list="periodos-disponibles" />
+                <datalist id="periodos-disponibles">
+                    @foreach (var periodo in Model.PeriodosDisponibles)
+                    {
+                        <option value="@periodo"></option>
+                    }
+                </datalist>
+            </div>
+            <div>
+                <label class="form-label" for="anio">Anio</label>
+                <select class="form-select" id="anio" name="anio">
+                    <option value="">Todos</option>
+                    @foreach (var anio in Model.AniosDisponibles)
+                    {
+                        if (Model.Anio == anio)
+                        {
+                            <option value="@anio" selected>@anio</option>
+                        }
+                        else
+                        {
+                            <option value="@anio">@anio</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="estado">Estado</label>
+                <select class="form-select" id="estado" name="estado">
+                    <option value="">Todos</option>
+                    @foreach (var estado in Enum.GetValues<EstadoExpensa>())
+                    {
+                        if (Model.Estado == estado)
+                        {
+                            <option value="@estado" selected>@estado</option>
+                        }
+                        else
+                        {
+                            <option value="@estado">@estado</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-outline-secondary" asp-action="MisExpensas">Limpiar</a>
+            </div>
+        </div>
+    </form>
+</section>
+
 <section class="dashboard-grid">
     <article class="app-card metric-card">
         <span>Expensas pagadas</span>
-        <strong>@Model.Count(e => e.Estado == EstadoExpensa.Pagada)</strong>
-        <small>Historial disponible</small>
+        <strong>@Model.CantidadPagadas</strong>
+        <small>@Model.TotalPagado.ToString("C")</small>
     </article>
     <article class="app-card metric-card">
-        <span>Expensas pendientes</span>
-        <strong>@Model.Count(e => e.Estado == EstadoExpensa.Pendiente)</strong>
+        <span>Pendientes</span>
+        <strong>@Model.CantidadPendientes</strong>
+        <small>@Model.TotalPendiente.ToString("C")</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Vencidas</span>
+        <strong>@Model.CantidadVencidas</strong>
         <small>Requieren seguimiento</small>
     </article>
     <article class="app-card metric-card">
         <span>Total emitido</span>
-        <strong>@Model.Sum(e => e.MontoTotal).ToString("C")</strong>
-        <small>Segun datos actuales</small>
-    </article>
-    <article class="app-card metric-card">
-        <span>Ultima emision</span>
-        <strong>@(expensaActual is null ? "-" : expensaActual.FechaEmision.ToString("dd/MM"))</strong>
-        <small>@(expensaActual is null ? "Sin datos" : expensaActual.FechaEmision.Year)</small>
+        <strong>@Model.TotalEmitido.ToString("C")</strong>
+        <small>@Model.CantidadExpensas expensas</small>
     </article>
 </section>
 
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Historial de expensas</h3>
-        <span class="status-badge">@Model.Count() registradas</span>
+        <span class="status-badge">@Model.CantidadExpensas registradas</span>
     </div>
     <div class="table-responsive">
         <table class="table table-clean">
@@ -82,37 +178,44 @@
                 <tr>
                     <th>Periodo</th>
                     <th>Unidad</th>
-                    <th>Fecha emision</th>
+                    <th>Emision</th>
                     <th>Vencimiento</th>
                     <th>Monto</th>
                     <th>Estado</th>
+                    <th>Pagos</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                @if (!Model.Any())
+                @if (Model.Expensas.Count == 0)
                 {
                     <tr>
-                        <td colspan="7">Todavia no hay expensas generadas.</td>
+                        <td colspan="8">Todavia no hay expensas para los filtros seleccionados.</td>
                     </tr>
                 }
                 else
                 {
-                    @foreach (var expensa in Model)
+                    @foreach (var expensa in Model.Expensas)
                     {
+                        var pagosAprobados = expensa.Pagos.Count(pago => pago.Estado == EstadoPago.Aprobado);
+
                         <tr>
                             <td>@expensa.Periodo</td>
-                            <td>@expensa.UnidadFuncional.NumeroUF</td>
+                            <td>UF @expensa.UnidadFuncional.NumeroUF</td>
                             <td>@expensa.FechaEmision.ToString("dd/MM/yyyy")</td>
                             <td>@expensa.FechaVencimiento.ToString("dd/MM/yyyy")</td>
                             <td>@expensa.MontoTotal.ToString("C")</td>
                             <td><span class="status-badge @EstadoClass(expensa.Estado)">@expensa.Estado</span></td>
+                            <td>@pagosAprobados aprobados / @expensa.Pagos.Count total</td>
                             <td>
                                 <div class="table-actions">
-                                    <a asp-controller="Expensas" asp-action="Details" asp-route-id="@expensa.Id" asp-route-returnUrl="@Url.Action("MisExpensas", "Expensas")">Ver detalle</a>
+                                    <a asp-controller="Expensas"
+                                       asp-action="Details"
+                                       asp-route-id="@expensa.Id"
+                                       asp-route-returnUrl="@returnUrl">Ver detalle</a>
                                     @if (expensa.Estado != EstadoExpensa.Pagada)
                                     {
-                                        <a href="/Pagos/InformarPago">Informar pago</a>
+                                        <a asp-controller="Pagos" asp-action="InformarPago">Informar pago</a>
                                     }
                                 </div>
                             </td>

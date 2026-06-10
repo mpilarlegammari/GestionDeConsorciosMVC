@@ -11,6 +11,13 @@ namespace GestionDeConsorciosMVC.Services
             int? anio = null,
             EstadoExpensa? estado = null);
 
+        Task<MisExpensasViewModel> GetMisExpensasAsync(
+            string email,
+            int? unidadFuncionalId = null,
+            string? periodo = null,
+            int? anio = null,
+            EstadoExpensa? estado = null);
+
         Task<GenerarExpensasViewModel> BuildGenerarViewModelAsync(GenerarExpensasViewModel? model = null);
         Task<ExpensaDetailsViewModel?> GetDetailsAsync(int id);
         Task<Consorcio?> GetConsorcioConUnidadesAsync(int consorcioId);
