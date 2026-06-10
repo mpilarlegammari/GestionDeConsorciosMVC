@@ -10,6 +10,13 @@ namespace GestionDeConsorciosMVC.Services
             int? anio = null,
             string? categoria = null,
             string? busqueda = null);
+        Task<MisGastosViewModel> GetMisGastosAsync(
+            string email,
+            int? unidadFuncionalId = null,
+            int? mes = null,
+            int? anio = null,
+            string? categoria = null,
+            string? busqueda = null);
         Task<Gasto?> GetByIdAsync(int id);
         Task<GastoVM?> GetForEditAsync(int id);
         Task<List<Consorcio>> GetConsorciosAsync();

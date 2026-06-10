@@ -6,6 +6,16 @@ namespace GestionDeConsorciosMVC.Services
 {
 	public class GastoService : IGastoService
 	{
+		private static readonly List<string> DefaultCategorias =
+		[
+			"Limpieza",
+			"Mantenimiento",
+			"Servicios",
+			"Seguridad",
+			"Administracion",
+			"Otros"
+		];
+
 		private readonly GestionDeConsorciosContext _context;
 
 		public GastoService(GestionDeConsorciosContext context)
@@ -59,6 +69,76 @@ namespace GestionDeConsorciosMVC.Services
 				.OrderByDescending(gasto => gasto.Fecha)
 				.ThenBy(gasto => gasto.NumeroFactura)
 				.ToListAsync();
+		}
+
+		public async Task<MisGastosViewModel> GetMisGastosAsync(
+			string email,
+			int? unidadFuncionalId = null,
+			int? mes = null,
+			int? anio = null,
+			string? categoria = null,
+			string? busqueda = null)
+		{
+			var normalizedEmail = Normalize(email);
+			var normalizedCategoria = NormalizeOptional(categoria);
+			var normalizedBusqueda = NormalizeOptional(busqueda);
+			var unidades = await GetOwnerUnidadesAsync(normalizedEmail);
+			var unidadesSeleccionadas = unidadFuncionalId.HasValue
+				? unidades.Where(unidad => unidad.Id == unidadFuncionalId.Value).ToList()
+				: unidades.ToList();
+			var consorcioIds = unidadesSeleccionadas
+				.Select(unidad => unidad.ConsorcioId)
+				.Distinct()
+				.ToList();
+			var ownerConsorcioIds = unidades
+				.Select(unidad => unidad.ConsorcioId)
+				.Distinct()
+				.ToList();
+
+			var query = _context.Gastos
+				.Include(gasto => gasto.Consorcio)
+				.AsNoTracking()
+				.Where(gasto => consorcioIds.Contains(gasto.ConsorcioId));
+
+			if (mes is >= 1 and <= 12)
+			{
+				query = query.Where(gasto => gasto.Fecha.Month == mes.Value);
+			}
+
+			if (anio.HasValue && anio.Value > 0)
+			{
+				query = query.Where(gasto => gasto.Fecha.Year == anio.Value);
+			}
+
+			if (!string.IsNullOrWhiteSpace(normalizedCategoria))
+			{
+				query = query.Where(gasto => gasto.Categoria == normalizedCategoria);
+			}
+
+			if (!string.IsNullOrWhiteSpace(normalizedBusqueda))
+			{
+				var pattern = $"%{normalizedBusqueda}%";
+				query = query.Where(gasto =>
+					EF.Functions.Like(gasto.NumeroFactura, pattern) ||
+					EF.Functions.Like(gasto.Concepto, pattern));
+			}
+
+			return new MisGastosViewModel
+			{
+				Gastos = await query
+					.OrderByDescending(gasto => gasto.Fecha)
+					.ThenBy(gasto => gasto.NumeroFactura)
+					.ToListAsync(),
+				UnidadesFuncionales = unidades,
+				UnidadesSeleccionadas = unidadesSeleccionadas,
+				Categorias = await GetCategoriasAsync(ownerConsorcioIds),
+				AniosDisponibles = await GetAniosDisponiblesAsync(ownerConsorcioIds),
+				UnidadFuncionalId = unidadFuncionalId,
+				Mes = mes,
+				Anio = anio,
+				Categoria = normalizedCategoria,
+				Busqueda = normalizedBusqueda
+			};
 		}
 
 		public async Task<Gasto?> GetByIdAsync(int id)
@@ -180,6 +260,58 @@ namespace GestionDeConsorciosMVC.Services
 		{
 			var normalized = Normalize(value);
 			return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
+		}
+
+		private async Task<List<UnidadFuncional>> GetOwnerUnidadesAsync(string email)
+		{
+			if (string.IsNullOrWhiteSpace(email))
+			{
+				return [];
+			}
+
+			return await _context.UnidadesFuncionales
+				.Include(unidad => unidad.Consorcio)
+				.AsNoTracking()
+				.Where(unidad => unidad.MailPropietario == email)
+				.OrderBy(unidad => unidad.Consorcio.Nombre)
+				.ThenBy(unidad => unidad.NumeroUF)
+				.ToListAsync();
+		}
+
+		private async Task<List<string>> GetCategoriasAsync(List<int> consorcioIds)
+		{
+			if (consorcioIds.Count == 0)
+			{
+				return DefaultCategorias;
+			}
+
+			var categorias = await _context.Gastos
+				.AsNoTracking()
+				.Where(gasto => consorcioIds.Contains(gasto.ConsorcioId))
+				.Select(gasto => gasto.Categoria)
+				.Distinct()
+				.OrderBy(categoria => categoria)
+				.ToListAsync();
+
+			return categorias.Count == 0 ? DefaultCategorias : categorias;
+		}
+
+		private async Task<List<int>> GetAniosDisponiblesAsync(List<int> consorcioIds)
+		{
+			if (consorcioIds.Count == 0)
+			{
+				return [DateTime.Today.Year];
+			}
+
+			var anios = await _context.Gastos
+				.AsNoTracking()
+				.Where(gasto => consorcioIds.Contains(gasto.ConsorcioId))
+				.Select(gasto => gasto.Fecha.Year)
+				.Distinct()
+				.OrderByDescending(anio => anio)
+				.ToListAsync();
+
+			return anios.Count == 0 ? [DateTime.Today.Year] : anios;
 		}
 	}
 }

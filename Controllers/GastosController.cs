@@ -37,11 +37,23 @@ namespace GestionDeConsorciosMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> MisGastos()
+        public async Task<IActionResult> MisGastos(int? unidadFuncionalId, int? mes, int? anio, string? categoria, string? busqueda)
         {
-            var gastos = await _gastoService.GetAllAsync();
+            var email = HttpContext.Session.GetString("UserEmail");
 
-            return View(gastos);
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var model = await _gastoService.GetMisGastosAsync(email, unidadFuncionalId, mes, anio, categoria, busqueda);
+
+            if (model.UnidadesFuncionales.Count == 0)
+            {
+                TempData["Error"] = "No tenes unidades funcionales asociadas para consultar gastos.";
+            }
+
+            return View(model);
         }
 
         [HttpGet]

@@ -1,40 +1,68 @@
+@model MisGastosViewModel
+
 @{
     ViewData["Title"] = "Gastos del Consorcio";
     ViewData["Role"] = "Propietario";
 }
 
-@* TODO backend: reemplazar datos mock por Model.Gastos. *@
-@* TODO backend: obtener Consorcio y Unidad Funcional desde el usuario autenticado. *@
-@* TODO backend: filtrar gastos por ConsorcioId y período. *@
-@* TODO backend: calcular participación estimada según criterio de distribución. *@
-@* TODO backend: exponer solo lectura para propietarios. *@
+@functions {
+    private static string CategoriaClass(string categoria) => categoria switch
+    {
+        "Limpieza" => "success",
+        "Mantenimiento" => "warning",
+        "Seguridad" => "neutral",
+        _ => string.Empty
+    };
+
+    private static string NombreMes(int mes) => mes switch
+    {
+        1 => "Enero",
+        2 => "Febrero",
+        3 => "Marzo",
+        4 => "Abril",
+        5 => "Mayo",
+        6 => "Junio",
+        7 => "Julio",
+        8 => "Agosto",
+        9 => "Septiembre",
+        10 => "Octubre",
+        11 => "Noviembre",
+        12 => "Diciembre",
+        _ => $"Mes {mes}"
+    };
+}
 
 <section class="page-intro">
     <div>
         <h2>Gastos del Consorcio</h2>
-        <p>Consultá los gastos comunes informados por la administración.</p>
+        <p>Consulta los gastos comunes informados por la administracion.</p>
     </div>
     <span class="status-badge">Solo consulta</span>
 </section>
 
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
 <section class="app-card expense-card">
     <div>
         <span class="card-kicker">Consorcio</span>
-        <h3>Edificio Las Heras</h3>
-        <p>Unidad funcional: UF 3B</p>
+        <h3>@Model.ConsorciosResumen</h3>
+        <p>Unidades funcionales: @Model.UnidadesResumen</p>
     </div>
     <div class="expense-summary">
         <div>
-            <span class="card-kicker">Período seleccionado</span>
-            <strong>Mayo 2026</strong>
+            <span class="card-kicker">Periodo / filtro</span>
+            <strong>@Model.PeriodoResumen</strong>
         </div>
         <div>
-            <span class="card-kicker">Total gastos del período</span>
-            <strong>$1.245.000</strong>
+            <span class="card-kicker">Total gastos mostrados</span>
+            <strong>@Model.TotalGastos.ToString("C")</strong>
         </div>
         <div>
-            <span class="card-kicker">Tu participación estimada</span>
-            <strong>$85.000</strong>
+            <span class="card-kicker">Comprobantes</span>
+            <strong>@Model.Gastos.Count(gasto => !string.IsNullOrWhiteSpace(gasto.ArchivoFacturaPath))</strong>
         </div>
     </div>
 </section>
@@ -43,38 +71,86 @@
     <form method="get" asp-action="MisGastos">
         <div class="form-grid">
             <div>
+                <label class="form-label" for="unidadFuncionalId">Unidad funcional</label>
+                <select class="form-select" id="unidadFuncionalId" name="unidadFuncionalId">
+                    <option value="">Todas mis UFs</option>
+                    @foreach (var unidad in Model.UnidadesFuncionales)
+                    {
+                        var label = $"{unidad.Consorcio.Nombre} - UF {unidad.NumeroUF}";
+                        if (!string.IsNullOrWhiteSpace(unidad.Piso) || !string.IsNullOrWhiteSpace(unidad.Departamento))
+                        {
+                            label += $" ({unidad.Piso} {unidad.Departamento})";
+                        }
+
+                        if (Model.UnidadFuncionalId == unidad.Id)
+                        {
+                            <option value="@unidad.Id" selected>@label</option>
+                        }
+                        else
+                        {
+                            <option value="@unidad.Id">@label</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div>
                 <label class="form-label" for="mes">Mes</label>
                 <select class="form-select" id="mes" name="mes">
-                    <option value="5">Mayo</option>
-                    <option value="4">Abril</option>
-                    <option value="3">Marzo</option>
+                    <option value="">Todos</option>
+                    @for (var mes = 1; mes <= 12; mes++)
+                    {
+                        if (Model.Mes == mes)
+                        {
+                            <option value="@mes" selected>@NombreMes(mes)</option>
+                        }
+                        else
+                        {
+                            <option value="@mes">@NombreMes(mes)</option>
+                        }
+                    }
                 </select>
             </div>
             <div>
-                <label class="form-label" for="anio">Año</label>
+                <label class="form-label" for="anio">Anio</label>
                 <select class="form-select" id="anio" name="anio">
-                    <option>2026</option>
-                    <option>2025</option>
+                    <option value="">Todos</option>
+                    @foreach (var anio in Model.AniosDisponibles)
+                    {
+                        if (Model.Anio == anio)
+                        {
+                            <option value="@anio" selected>@anio</option>
+                        }
+                        else
+                        {
+                            <option value="@anio">@anio</option>
+                        }
+                    }
                 </select>
             </div>
             <div>
-                <label class="form-label" for="categoria">Categoría</label>
+                <label class="form-label" for="categoria">Categoria</label>
                 <select class="form-select" id="categoria" name="categoria">
                     <option value="">Todas</option>
-                    <option>Limpieza</option>
-                    <option>Mantenimiento</option>
-                    <option>Servicios</option>
-                    <option>Seguridad</option>
-                    <option>Administración</option>
-                    <option>Otros</option>
+                    @foreach (var categoria in Model.Categorias)
+                    {
+                        if (Model.Categoria == categoria)
+                        {
+                            <option value="@categoria" selected>@categoria</option>
+                        }
+                        else
+                        {
+                            <option value="@categoria">@categoria</option>
+                        }
+                    }
                 </select>
             </div>
             <div class="form-span-2">
                 <label class="form-label" for="busqueda">Buscar por concepto o factura</label>
-                <input class="form-control" id="busqueda" name="busqueda" type="search" placeholder="Ej: limpieza o FAC-0957" />
+                <input class="form-control" id="busqueda" name="busqueda" value="@Model.Busqueda" type="search" placeholder="Ej: limpieza o FAC-0957" />
             </div>
             <div class="filter-actions">
                 <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-outline-secondary" asp-action="MisGastos">Limpiar</a>
             </div>
         </div>
     </form>
@@ -82,108 +158,92 @@
 
 <section class="app-card section-card">
     <div class="app-card-title">
-        <h3>Gastos incluidos en tus expensas</h3>
-        <span class="status-badge">Datos mock</span>
+        <h3>Gastos incluidos en tus consorcios</h3>
+        <span class="status-badge">Datos reales</span>
     </div>
-    <div class="table-responsive">
-        <table class="table table-clean">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Concepto</th>
-                    <th>Categoría</th>
-                    <th>N° Factura</th>
-                    <th>Monto</th>
-                    <th>Comprobante</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>23/05/2026</td>
-                    <td>Mantenimiento de ascensor</td>
-                    <td><span class="status-badge warning">Mantenimiento</span></td>
-                    <td>FAC-0961</td>
-                    <td>$180.000</td>
-                    <td><div class="table-actions"><a href="#" data-mock-attachment data-attachment-title="Comprobante de gasto" data-attachment-file="factura-fac-0961.pdf" data-attachment-description="Comprobante mock del gasto Mantenimiento de ascensor.">Ver comprobante</a><a href="#" data-mock-attachment data-attachment-title="Descargar comprobante" data-attachment-file="factura-fac-0961.pdf" data-attachment-description="Descarga mock sin archivo real asociado.">Descargar</a></div></td>
-                </tr>
-                <tr>
-                    <td>21/05/2026</td>
-                    <td>Servicio de limpieza</td>
-                    <td><span class="status-badge success">Limpieza</span></td>
-                    <td>FAC-0957</td>
-                    <td>$92.500</td>
-                    <td><div class="table-actions"><a href="#" data-mock-attachment data-attachment-title="Comprobante de gasto" data-attachment-file="factura-fac-0957.pdf" data-attachment-description="Comprobante mock del gasto Servicio de limpieza.">Ver comprobante</a><a href="#" data-mock-attachment data-attachment-title="Descargar comprobante" data-attachment-file="factura-fac-0957.pdf" data-attachment-description="Descarga mock sin archivo real asociado.">Descargar</a></div></td>
-                </tr>
-                <tr>
-                    <td>18/05/2026</td>
-                    <td>Edesur espacios comunes</td>
-                    <td><span class="status-badge">Servicios</span></td>
-                    <td>FAC-0948</td>
-                    <td>$240.300</td>
-                    <td><div class="table-actions"><a href="#" data-mock-attachment data-attachment-title="Comprobante de gasto" data-attachment-file="factura-fac-0948.pdf" data-attachment-description="Comprobante mock del gasto Edesur espacios comunes.">Ver comprobante</a><a href="#" data-mock-attachment data-attachment-title="Descargar comprobante" data-attachment-file="factura-fac-0948.pdf" data-attachment-description="Descarga mock sin archivo real asociado.">Descargar</a></div></td>
-                </tr>
-                <tr>
-                    <td>15/05/2026</td>
-                    <td>Servicio de vigilancia</td>
-                    <td><span class="status-badge neutral">Seguridad</span></td>
-                    <td>FAC-0939</td>
-                    <td>$310.000</td>
-                    <td><div class="table-actions"><a href="#" data-mock-attachment data-attachment-title="Comprobante de gasto" data-attachment-file="factura-fac-0939.pdf" data-attachment-description="Comprobante mock del gasto Servicio de vigilancia.">Ver comprobante</a><a href="#" data-mock-attachment data-attachment-title="Descargar comprobante" data-attachment-file="factura-fac-0939.pdf" data-attachment-description="Descarga mock sin archivo real asociado.">Descargar</a></div></td>
-                </tr>
-                <tr>
-                    <td>12/05/2026</td>
-                    <td>Honorarios administración</td>
-                    <td><span class="status-badge">Administración</span></td>
-                    <td>FAC-0926</td>
-                    <td>$150.000</td>
-                    <td><div class="table-actions"><a href="#" data-mock-attachment data-attachment-title="Comprobante de gasto" data-attachment-file="factura-fac-0926.pdf" data-attachment-description="Comprobante mock del gasto Honorarios administracion.">Ver comprobante</a><a href="#" data-mock-attachment data-attachment-title="Descargar comprobante" data-attachment-file="factura-fac-0926.pdf" data-attachment-description="Descarga mock sin archivo real asociado.">Descargar</a></div></td>
-                </tr>
-                <tr>
-                    <td>09/05/2026</td>
-                    <td>Compra de lámparas</td>
-                    <td><span class="status-badge warning">Otros</span></td>
-                    <td>FAC-0918</td>
-                    <td>$28.600</td>
-                    <td><div class="table-actions"><a href="#" data-mock-attachment data-attachment-title="Comprobante de gasto" data-attachment-file="factura-fac-0918.pdf" data-attachment-description="Comprobante mock del gasto Compra de lamparas.">Ver comprobante</a><a href="#" data-mock-attachment data-attachment-title="Descargar comprobante" data-attachment-file="factura-fac-0918.pdf" data-attachment-description="Descarga mock sin archivo real asociado.">Descargar</a></div></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+
+    @if (Model.Gastos.Count == 0)
+    {
+        <p class="empty-state">No hay gastos para los filtros seleccionados.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-clean">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Consorcio</th>
+                        <th>Concepto</th>
+                        <th>Categoria</th>
+                        <th>Nro Factura</th>
+                        <th>Monto</th>
+                        <th>Comprobante</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var gasto in Model.Gastos)
+                    {
+                        <tr>
+                            <td>@gasto.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@gasto.Consorcio.Nombre</td>
+                            <td>@gasto.Concepto</td>
+                            <td><span class="status-badge @CategoriaClass(gasto.Categoria)">@gasto.Categoria</span></td>
+                            <td>@gasto.NumeroFactura</td>
+                            <td>@gasto.Monto.ToString("C")</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(gasto.ArchivoFacturaPath))
+                                {
+                                    <div class="table-actions">
+                                        <a href="@gasto.ArchivoFacturaPath" target="_blank" rel="noopener">Ver comprobante</a>
+                                        <a href="@gasto.ArchivoFacturaPath" download>Descargar</a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span>Sin archivo</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </section>
 
 <section class="content-grid">
     <article class="app-card">
         <div class="app-card-title">
-            <h3>Resumen por categoría</h3>
-            <span class="status-badge">Mayo 2026</span>
+            <h3>Resumen por categoria</h3>
+            <span class="status-badge">@Model.PeriodoResumen</span>
         </div>
-        <ul class="simple-list">
-            <li>
-                <span>Limpieza</span>
-                <strong>$250.000</strong>
-            </li>
-            <li>
-                <span>Servicios</span>
-                <strong>$430.000</strong>
-            </li>
-            <li>
-                <span>Seguridad</span>
-                <strong>$320.000</strong>
-            </li>
-            <li>
-                <span>Mantenimiento</span>
-                <strong>$245.000</strong>
-            </li>
-        </ul>
+
+        @if (Model.ResumenPorCategoria.Count == 0)
+        {
+            <p class="empty-state">Sin gastos para resumir.</p>
+        }
+        else
+        {
+            <ul class="simple-list">
+                @foreach (var item in Model.ResumenPorCategoria)
+                {
+                    <li>
+                        <span>@item.Key</span>
+                        <strong>@item.Value.ToString("C")</strong>
+                    </li>
+                }
+            </ul>
+        }
     </article>
 
     <aside class="app-card">
         <div class="app-card-title">
-            <h3>Notas de administración</h3>
+            <h3>Notas</h3>
         </div>
         <ul class="activity-list">
-            <li><span class="activity-dot"></span><span>Los gastos informados corresponden al período seleccionado.</span></li>
-            <li><span class="activity-dot success"></span><span>Los comprobantes se encuentran disponibles para consulta.</span></li>
+            <li><span class="activity-dot"></span><span>Los gastos se muestran solo para los consorcios asociados a tus unidades funcionales.</span></li>
+            <li><span class="activity-dot success"></span><span>Los comprobantes reales aparecen cuando la administracion cargó factura.</span></li>
             <li><span class="activity-dot warning"></span><span>El monto final de expensas puede incluir ajustes, saldos previos u otros conceptos.</span></li>
         </ul>
     </aside>
