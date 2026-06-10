@@ -1,7 +1,9 @@
-@model IEnumerable<Pago>
+@model MisPagosViewModel
+
 @{
     ViewData["Title"] = "Mis Pagos";
     ViewData["Role"] = "Propietario";
+    var returnUrl = Context.Request.Path + Context.Request.QueryString.ToString();
 }
 
 @functions {
@@ -22,51 +24,140 @@
     <a class="btn btn-primary" asp-controller="Pagos" asp-action="InformarPago">Informar pago</a>
 </section>
 
+@if (TempData["Error"] is string errorMessage)
+{
+    <section class="form-alert show" role="alert">@errorMessage</section>
+}
+
 <section class="app-card filter-card" aria-label="Filtros de mis pagos">
     <form method="get" asp-action="MisPagos">
         <div class="form-grid">
             <div>
-                <label class="form-label" for="mes">Mes</label>
-                <select class="form-select" id="mes" name="mes">
-                    <option value="">Todos</option>
-                    <option value="5">Mayo</option>
-                    <option value="4">Abril</option>
-                    <option value="3">Marzo</option>
+                <label class="form-label" for="unidadFuncionalId">Unidad funcional</label>
+                <select class="form-select" id="unidadFuncionalId" name="unidadFuncionalId">
+                    <option value="">Todas mis UFs</option>
+                    @foreach (var unidad in Model.UnidadesFuncionales)
+                    {
+                        var label = $"{unidad.Consorcio.Nombre} - UF {unidad.NumeroUF}";
+                        if (!string.IsNullOrWhiteSpace(unidad.Piso) || !string.IsNullOrWhiteSpace(unidad.Departamento))
+                        {
+                            label += $" ({unidad.Piso} {unidad.Departamento})";
+                        }
+
+                        if (Model.UnidadFuncionalId == unidad.Id)
+                        {
+                            <option value="@unidad.Id" selected>@label</option>
+                        }
+                        else
+                        {
+                            <option value="@unidad.Id">@label</option>
+                        }
+                    }
                 </select>
+            </div>
+            <div>
+                <label class="form-label" for="periodo">Periodo</label>
+                <input class="form-control" id="periodo" name="periodo" type="month" value="@Model.Periodo" list="periodos-disponibles" />
+                <datalist id="periodos-disponibles">
+                    @foreach (var periodo in Model.PeriodosDisponibles)
+                    {
+                        <option value="@periodo"></option>
+                    }
+                </datalist>
             </div>
             <div>
                 <label class="form-label" for="anio">Anio</label>
                 <select class="form-select" id="anio" name="anio">
-                    <option>2026</option>
-                    <option>2025</option>
+                    <option value="">Todos</option>
+                    @foreach (var anio in Model.AniosDisponibles)
+                    {
+                        if (Model.Anio == anio)
+                        {
+                            <option value="@anio" selected>@anio</option>
+                        }
+                        else
+                        {
+                            <option value="@anio">@anio</option>
+                        }
+                    }
                 </select>
             </div>
             <div>
                 <label class="form-label" for="estado">Estado</label>
                 <select class="form-select" id="estado" name="estado">
                     <option value="">Todos</option>
-                    <option>Pendiente de revision</option>
-                    <option>Aprobado</option>
-                    <option>Rechazado</option>
+                    @foreach (var estado in Model.EstadosDisponibles)
+                    {
+                        if (Model.Estado == estado)
+                        {
+                            <option value="@estado" selected>@estado</option>
+                        }
+                        else
+                        {
+                            <option value="@estado">@estado</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="medioPago">Medio de pago</label>
+                <select class="form-select" id="medioPago" name="medioPago">
+                    <option value="">Todos</option>
+                    @foreach (var medio in Model.MediosPagoDisponibles)
+                    {
+                        if (Model.MedioPago == medio)
+                        {
+                            <option value="@medio" selected>@medio</option>
+                        }
+                        else
+                        {
+                            <option value="@medio">@medio</option>
+                        }
+                    }
                 </select>
             </div>
             <div class="filter-actions">
                 <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-outline-secondary" asp-action="MisPagos">Limpiar</a>
             </div>
         </div>
     </form>
 </section>
 
+<section class="dashboard-grid">
+    <article class="app-card metric-card">
+        <span>Total informado</span>
+        <strong>@Model.TotalPagos.ToString("C")</strong>
+        <small>@Model.CantidadPagos pagos</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Aprobados</span>
+        <strong>@Model.CantidadAprobados</strong>
+        <small>@Model.TotalAprobado.ToString("C")</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Pendientes</span>
+        <strong>@Model.CantidadPendientes</strong>
+        <small>@Model.TotalPendienteRevision.ToString("C")</small>
+    </article>
+    <article class="app-card metric-card">
+        <span>Rechazados</span>
+        <strong>@Model.CantidadRechazados</strong>
+        <small>@Model.TotalRechazado.ToString("C")</small>
+    </article>
+</section>
+
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Pagos informados</h3>
-        <span class="status-badge">@Model.Count() registrados</span>
+        <span class="status-badge">@Model.CantidadPagos registrados</span>
     </div>
     <div class="table-responsive">
         <table class="table table-clean">
             <thead>
                 <tr>
                     <th>Periodo</th>
+                    <th>UF</th>
                     <th>Fecha de pago</th>
                     <th>Monto</th>
                     <th>Medio</th>
@@ -76,18 +167,19 @@
                 </tr>
             </thead>
             <tbody>
-                @if (!Model.Any())
+                @if (Model.Pagos.Count == 0)
                 {
                     <tr>
-                        <td colspan="7">Todavia no hay pagos informados.</td>
+                        <td colspan="8">Todavia no hay pagos informados para los filtros seleccionados.</td>
                     </tr>
                 }
                 else
                 {
-                    @foreach (var pago in Model)
+                    @foreach (var pago in Model.Pagos)
                     {
                         <tr>
                             <td>@pago.Expensa.Periodo</td>
+                            <td>UF @pago.Expensa.UnidadFuncional.NumeroUF</td>
                             <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
                             <td>@pago.MontoPagado.ToString("C")</td>
                             <td>@pago.MedioPago</td>
@@ -95,7 +187,10 @@
                             <td><span class="status-badge @EstadoClass(pago.Estado)">@pago.Estado</span></td>
                             <td>
                                 <div class="table-actions">
-                                    <a asp-controller="Pagos" asp-action="Details" asp-route-id="@pago.Id">Ver detalle</a>
+                                    <a asp-controller="Pagos"
+                                       asp-action="Details"
+                                       asp-route-id="@pago.Id"
+                                       asp-route-returnUrl="@returnUrl">Ver detalle</a>
                                     @if (!string.IsNullOrWhiteSpace(pago.ComprobantePath))
                                     {
                                         <a href="@pago.ComprobantePath" target="_blank" rel="noopener">Ver comprobante</a>

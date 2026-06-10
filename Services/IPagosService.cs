@@ -9,6 +9,14 @@ namespace GestionDeConsorciosMVC.Services
             int? consorcioId = null,
             string? periodo = null);
 
+        Task<MisPagosViewModel> GetMisPagosAsync(
+            string email,
+            int? unidadFuncionalId = null,
+            string? periodo = null,
+            int? anio = null,
+            EstadoPago? estado = null,
+            string? medioPago = null);
+
         Task<PagoDetailsViewModel?> GetDetailsAsync(int id);
         Task<bool> AprobarAsync(RevisarPagoViewModel model);
         Task<bool> RechazarAsync(RevisarPagoViewModel model);

@@ -40,7 +40,12 @@ namespace GestionDeConsorciosMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> MisPagos()
+        public async Task<IActionResult> MisPagos(
+            int? unidadFuncionalId,
+            string? periodo,
+            int? anio,
+            EstadoPago? estado,
+            string? medioPago)
         {
             var email = HttpContext.Session.GetString("UserEmail");
 
@@ -49,19 +54,18 @@ namespace GestionDeConsorciosMVC.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
-            var pagos = await _context.Pagos
-                .Include(p => p.Expensa)
-                    .ThenInclude(e => e.UnidadFuncional)
-                        .ThenInclude(u => u.Consorcio)
-                .Where(p => p.Expensa.UnidadFuncional.MailPropietario == email)
-                .OrderByDescending(p => p.FechaPago)
-                .ToListAsync();
+            var model = await _pagosService.GetMisPagosAsync(email, unidadFuncionalId, periodo, anio, estado, medioPago);
 
-            return View(pagos);
+            if (model.UnidadesFuncionales.Count == 0)
+            {
+                TempData["Error"] = "No tenes unidades funcionales asociadas para consultar pagos.";
+            }
+
+            return View(model);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(int id, string? returnUrl = null)
         {
             var role = HttpContext.Session.GetString("UserRole");
             var email = HttpContext.Session.GetString("UserEmail");
@@ -81,9 +85,7 @@ namespace GestionDeConsorciosMVC.Controllers
             model.DetailRole = role?.Equals("Propietario", StringComparison.OrdinalIgnoreCase) == true
                 ? "Propietario"
                 : "Administrador";
-            model.ReturnUrl = model.DetailRole == "Propietario"
-                ? Url.Action(nameof(MisPagos), "Pagos") ?? "/Pagos/MisPagos"
-                : Url.Action(nameof(Index), "Pagos") ?? "/Pagos";
+            model.ReturnUrl = GetSafeReturnUrl(returnUrl, model.DetailRole == "Propietario");
 
             return View(model);
         }
@@ -268,6 +270,18 @@ namespace GestionDeConsorciosMVC.Controllers
             }
 
             return RedirectToAction(nameof(Details), new { id = model.PagoId });
+        }
+
+        private string GetSafeReturnUrl(string? returnUrl, bool esPropietario)
+        {
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return returnUrl;
+            }
+
+            return esPropietario
+                ? Url.Action(nameof(MisPagos), "Pagos") ?? "/Pagos/MisPagos"
+                : Url.Action(nameof(Index), "Pagos") ?? "/Pagos";
         }
     }
 }
