@@ -18,7 +18,5 @@ namespace GestionDeConsorciosMVC.Services
             string? medioPago = null);
 
         Task<PagoDetailsViewModel?> GetDetailsAsync(int id);
-        Task<bool> AprobarAsync(RevisarPagoViewModel model);
-        Task<bool> RechazarAsync(RevisarPagoViewModel model);
     }
 }

@@ -24,7 +24,7 @@
     <section class="form-alert show" role="alert">@errorMessage</section>
 }
 
-<form asp-action="Create" method="post">
+<form asp-action="Create" method="post" data-reserva-form>
     <section class="app-card section-card">
         <div class="app-card-title">
             <h3>Datos de la reserva</h3>
@@ -36,7 +36,7 @@
         <div class="form-grid">
             <div>
                 <label class="form-label" asp-for="UnidadFuncionalId">Unidad funcional</label>
-                <select class="form-select" asp-for="UnidadFuncionalId" disabled="@(!puedeCrear)">
+                <select class="form-select" asp-for="UnidadFuncionalId" disabled="@(!puedeCrear)" data-reserva-uf>
                     <option value="">Seleccionar UF</option>
                     @foreach (var unidad in Model.UnidadesFuncionales)
                     {
@@ -48,11 +48,11 @@
 
                         if (Model.UnidadFuncionalId == unidad.Id)
                         {
-                            <option value="@unidad.Id" selected>@label</option>
+                            <option value="@unidad.Id" data-consorcio-id="@unidad.ConsorcioId" selected>@label</option>
                         }
                         else
                         {
-                            <option value="@unidad.Id">@label</option>
+                            <option value="@unidad.Id" data-consorcio-id="@unidad.ConsorcioId">@label</option>
                         }
                     }
                 </select>
@@ -60,22 +60,23 @@
             </div>
             <div>
                 <label class="form-label" asp-for="AmenityId">Amenity</label>
-                <select class="form-select" asp-for="AmenityId" disabled="@(!puedeCrear)">
+                <select class="form-select" asp-for="AmenityId" disabled="@(!puedeCrear)" data-reserva-amenity>
                     <option value="">Seleccionar amenity</option>
                     @foreach (var amenity in Model.Amenities)
                     {
                         var label = $"{amenity.Consorcio.Nombre} - {amenity.Nombre} ({amenity.Capacidad} personas)";
                         if (Model.AmenityId == amenity.Id)
                         {
-                            <option value="@amenity.Id" selected>@label</option>
+                            <option value="@amenity.Id" data-consorcio-id="@amenity.ConsorcioId" selected>@label</option>
                         }
                         else
                         {
-                            <option value="@amenity.Id">@label</option>
+                            <option value="@amenity.Id" data-consorcio-id="@amenity.ConsorcioId">@label</option>
                         }
                     }
                 </select>
                 <span asp-validation-for="AmenityId" class="field-validation"></span>
+                <p class="form-note" data-reserva-amenity-empty hidden>No hay amenities activos para la UF seleccionada.</p>
             </div>
             <div>
                 <label class="form-label" asp-for="FechaReserva">Fecha</label>

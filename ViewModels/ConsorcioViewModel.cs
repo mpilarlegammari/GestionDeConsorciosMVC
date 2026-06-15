@@ -38,5 +38,10 @@ namespace GestionDeConsorciosMVC.ViewModels
         {
             new UnidadFuncionalViewModel()
         };
+
+        public List<AmenityViewModel> Amenities { get; set; } = new()
+        {
+            new AmenityViewModel()
+        };
     }
 }

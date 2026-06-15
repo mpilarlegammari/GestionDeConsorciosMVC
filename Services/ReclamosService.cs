@@ -86,7 +86,7 @@ namespace GestionDeConsorciosMVC.Services
 
         public async Task<MisReclamosViewModel> GetMisReclamosAsync(string email, EstadoReclamo? estado = null, string? busqueda = null)
         {
-            var normalizedEmail = Normalize(email);
+            var normalizedEmail = Normalize(email).ToLower();
             var normalizedBusqueda = NormalizeOptional(busqueda);
             var unidades = await GetOwnerUnidadesAsync(normalizedEmail);
             var unidadIds = unidades.Select(unidad => unidad.Id).ToList();
@@ -95,7 +95,8 @@ namespace GestionDeConsorciosMVC.Services
                 .Include(reclamo => reclamo.UnidadFuncional)
                     .ThenInclude(unidad => unidad.Consorcio)
                 .AsNoTracking()
-                .Where(reclamo => unidadIds.Contains(reclamo.UnidadFuncionalId));
+                .Where(reclamo => unidadIds.Contains(reclamo.UnidadFuncionalId)
+                    && reclamo.UnidadFuncional.MailPropietario.ToLower() == normalizedEmail);
 
             if (estado.HasValue)
             {
@@ -138,7 +139,7 @@ namespace GestionDeConsorciosMVC.Services
 
         public async Task<bool> OwnerCanAccessAsync(int reclamoId, string email)
         {
-            var normalizedEmail = Normalize(email);
+            var normalizedEmail = Normalize(email).ToLower();
 
             return await _context.Reclamos
                 .AnyAsync(reclamo => reclamo.Id == reclamoId
@@ -147,19 +148,19 @@ namespace GestionDeConsorciosMVC.Services
 
         public async Task<bool> OwnerHasUnidadesAsync(string email)
         {
-            var normalizedEmail = Normalize(email);
+            var normalizedEmail = Normalize(email).ToLower();
 
             return await _context.UnidadesFuncionales
-                .AnyAsync(unidad => unidad.MailPropietario == normalizedEmail);
+                .AnyAsync(unidad => unidad.MailPropietario.ToLower() == normalizedEmail);
         }
 
         public async Task<bool> UnidadFuncionalBelongsToOwnerAsync(int unidadFuncionalId, string email)
         {
-            var normalizedEmail = Normalize(email);
+            var normalizedEmail = Normalize(email).ToLower();
 
             return await _context.UnidadesFuncionales
                 .AnyAsync(unidad => unidad.Id == unidadFuncionalId
-                    && unidad.MailPropietario == normalizedEmail);
+                    && unidad.MailPropietario.ToLower() == normalizedEmail);
         }
 
         public async Task<Reclamo> CreateAsync(ReclamoCreateViewModel model)
@@ -207,7 +208,7 @@ namespace GestionDeConsorciosMVC.Services
 
         private async Task<List<UnidadFuncional>> GetOwnerUnidadesAsync(string email)
         {
-            var normalizedEmail = Normalize(email);
+            var normalizedEmail = Normalize(email).ToLower();
 
             if (string.IsNullOrWhiteSpace(normalizedEmail))
             {
@@ -217,7 +218,7 @@ namespace GestionDeConsorciosMVC.Services
             return await _context.UnidadesFuncionales
                 .Include(unidad => unidad.Consorcio)
                 .AsNoTracking()
-                .Where(unidad => unidad.MailPropietario == normalizedEmail)
+                .Where(unidad => unidad.MailPropietario.ToLower() == normalizedEmail)
                 .OrderBy(unidad => unidad.Consorcio.Nombre)
                 .ThenBy(unidad => unidad.NumeroUF)
                 .ToListAsync();

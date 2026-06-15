@@ -1,8 +1,6 @@
 @{
     var currentPath = Context.Request.Path.Value ?? "/";
-    var currentRole = (ViewData["Role"] as string ?? "Administrador").Trim();
-
-    // TODO backend: renderizar menú según rol autenticado.
+    var currentRole = (Context.Session.GetString("UserRole") ?? ViewData["Role"] as string ?? "Administrador").Trim();
 
     var adminItems = new[]
     {
@@ -23,8 +21,8 @@
         new { Text = "Informar pago", Url = "/Pagos/InformarPago", Key = "/Pagos/InformarPago", Icon = "upload" },
         new { Text = "Gastos", Url = "/Gastos/MisGastos", Key = "/Gastos/MisGastos", Icon = "receipt" },
         new { Text = "Comunicados", Url = "/Comunicados/MisComunicados", Key = "/Comunicados/MisComunicados", Icon = "message" },
-        new { Text = "Reclamos", Url = "/Reclamos", Key = "/Reclamos", Icon = "alert" },
-        new { Text = "Reservas", Url = "/Reservas", Key = "/Reservas", Icon = "calendar" }
+        new { Text = "Reclamos", Url = "/Reclamos/MisReclamos", Key = "/Reclamos/MisReclamos", Icon = "alert" },
+        new { Text = "Reservas", Url = "/Reservas/MisReservas", Key = "/Reservas/MisReservas", Icon = "calendar" }
     };
 
     var menuItems = currentRole.Equals("Propietario", StringComparison.OrdinalIgnoreCase) ? propietarioItems : adminItems;
@@ -64,7 +62,7 @@
             <span class="status-dot"></span>
             <div>
                 <strong>@currentRole</strong>
-                <small>Sesion mock</small>
+                <small>Sesion activa</small>
             </div>
         </div>
         <a class="sidebar-logout" asp-controller="Auth" asp-action="Login">

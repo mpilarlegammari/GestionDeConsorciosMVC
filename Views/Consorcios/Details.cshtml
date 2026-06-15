@@ -115,6 +115,54 @@
 
 <section class="app-card section-card">
     <div class="app-card-title">
+        <h3>Amenities</h3>
+        <span class="status-badge">@Model.Amenities.Count registrados</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-clean">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Capacidad</th>
+                    <th>Descripcion</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Amenities.Count == 0)
+                {
+                    <tr>
+                        <td colspan="4">Este consorcio todavia no tiene amenities cargados.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var amenity in Model.Amenities.OrderBy(a => a.Nombre))
+                    {
+                        <tr>
+                            <td>@amenity.Nombre</td>
+                            <td>@amenity.Capacidad</td>
+                            <td>@(string.IsNullOrWhiteSpace(amenity.Descripcion) ? "-" : amenity.Descripcion)</td>
+                            <td>
+                                @if (amenity.Activo)
+                                {
+                                    <span class="status-badge success">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge neutral">Inactivo</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="app-card section-card">
+    <div class="app-card-title">
         <h3>Unidades funcionales</h3>
         <span class="status-badge">@Model.CantidadUnidades UF</span>
     </div>

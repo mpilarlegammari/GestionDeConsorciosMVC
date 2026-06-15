@@ -12,6 +12,7 @@ namespace GestionDeConsorciosMVC.Services
         Task<ComunicadoCreateViewModel> BuildCreateViewModelAsync(ComunicadoCreateViewModel? model = null);
         Task<ComunicadoDetailsViewModel?> GetDetailsAsync(int id);
         Task<MisComunicadosViewModel> GetMisComunicadosAsync(string email, bool? importante = null, string? busqueda = null);
+        Task<bool> OwnerCanAccessAsync(int comunicadoId, string email);
         Task<bool> ConsorcioExistsAsync(int consorcioId);
         Task<Comunicado> CreateAsync(ComunicadoCreateViewModel model, string? archivoAdjuntoPath);
     }

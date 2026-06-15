@@ -146,7 +146,7 @@
                             <tr>
                                 <td>@gasto.Fecha.ToString("dd/MM/yyyy")</td>
                                 <td>@gasto.Concepto</td>
-                                <td><span class="status-badge @CategoriaClass(gasto.Categoria)">@gasto.Categoria</span></td>
+                                <td><span class="status-badge @CategoriaClass(gasto.Categoria.ToString())">@gasto.Categoria</span></td>
                                 <td>@gasto.Monto.ToString("C")</td>
                             </tr>
                         }

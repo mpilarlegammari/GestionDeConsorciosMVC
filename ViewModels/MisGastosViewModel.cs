@@ -58,7 +58,7 @@ namespace GestionDeConsorciosMVC.ViewModels
         }
 
         public IReadOnlyDictionary<string, decimal> ResumenPorCategoria => Gastos
-            .GroupBy(gasto => gasto.Categoria)
+            .GroupBy(gasto => gasto.Categoria.ToString())
             .OrderBy(group => group.Key)
             .ToDictionary(group => group.Key, group => group.Sum(gasto => gasto.Monto));
 

@@ -27,8 +27,7 @@
                 <span class="sidebar-label">Acceso al sistema</span>
                 <h1>Administracion simple para consorcios, propietarios y reservas.</h1>
                 <p>
-                    Pantalla mock preparada para conectar luego con autenticacion real,
-                    roles y dashboards diferenciados.
+                    Ingreso con roles diferenciados para administracion y propietarios vinculados a unidades funcionales.
                 </p>
             </div>
 
@@ -36,7 +35,7 @@
                 <span class="status-dot"></span>
                 <div>
                     <strong>Estado frontend</strong>
-                    <small>Login sin validacion real</small>
+                    <small>Sesion conectada al backend</small>
                 </div>
             </div>
         </section>
@@ -44,9 +43,9 @@
         <section class="auth-content">
             <div class="auth-card">
                 <div class="auth-card-header">
-                    <span class="status-badge">Mock</span>
+                    <span class="status-badge success">Backend</span>
                     <h2>Ingresar</h2>
-                    <p>Usa cualquier dato para previsualizar el flujo visual.</p>
+                    <p>Usa un email de propietario asociado a una UF o ingresá como administrador.</p>
                 </div>
 
                 @if (ViewBag.Error is string errorMessage)
@@ -69,7 +68,7 @@
                     </div>
 
                     <div>
-                        <label class="form-label" for="role">Rol para vista mock</label>
+                        <label class="form-label" for="role">Rol</label>
                         <select class="form-select" id="role" name="role" required>
                             <option value="">Seleccionar rol</option>
                             <option value="Administrador">Administrador</option>
@@ -82,7 +81,7 @@
                 </form>
 
                 <div class="auth-helper">
-                    <span>No hay usuarios reales todavia.</span>
+                    <span>El rol propietario valida email activo y UF asociada.</span>
                     <a asp-area="" asp-controller="Home" asp-action="Index">Volver al inicio</a>
                 </div>
             </div>

@@ -23,6 +23,11 @@ namespace GestionDeConsorciosMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(EstadoPago? estado, int? consorcioId, string? periodo)
         {
+            if (IsPropietario())
+            {
+                return RedirectToAction(nameof(MisPagos));
+            }
+
             var model = await _pagosService.GetAdminIndexAsync(estado, consorcioId, periodo);
             return View(model);
         }
@@ -30,7 +35,7 @@ namespace GestionDeConsorciosMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> InformarPago()
         {
-            if (string.IsNullOrWhiteSpace(HttpContext.Session.GetString("UserEmail")))
+            if (!IsPropietario() || string.IsNullOrWhiteSpace(HttpContext.Session.GetString("UserEmail")))
             {
                 return RedirectToAction("Login", "Auth");
             }
@@ -49,7 +54,7 @@ namespace GestionDeConsorciosMVC.Controllers
         {
             var email = HttpContext.Session.GetString("UserEmail");
 
-            if (string.IsNullOrWhiteSpace(email))
+            if (!IsPropietario() || string.IsNullOrWhiteSpace(email))
             {
                 return RedirectToAction("Login", "Auth");
             }
@@ -92,52 +97,6 @@ namespace GestionDeConsorciosMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Aprobar(RevisarPagoViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                TempData["Error"] = string.Join(" ", ModelState.Values
-                    .SelectMany(value => value.Errors)
-                    .Select(error => error.ErrorMessage));
-                return RedirectToAction(nameof(Details), new { id = model.PagoId });
-            }
-
-            var updated = await _pagosService.AprobarAsync(model);
-
-            if (!updated)
-            {
-                return NotFound();
-            }
-
-            TempData["Success"] = "Pago aprobado correctamente. La expensa asociada quedo marcada como pagada.";
-            return RedirectToLocalOrDetails(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Rechazar(RevisarPagoViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                TempData["Error"] = string.Join(" ", ModelState.Values
-                    .SelectMany(value => value.Errors)
-                    .Select(error => error.ErrorMessage));
-                return RedirectToAction(nameof(Details), new { id = model.PagoId });
-            }
-
-            var updated = await _pagosService.RechazarAsync(model);
-
-            if (!updated)
-            {
-                return NotFound();
-            }
-
-            TempData["Success"] = "Pago rechazado correctamente.";
-            return RedirectToLocalOrDetails(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> InformarPago(
             int ExpensaId,
             DateTime FechaPago,
@@ -150,7 +109,7 @@ namespace GestionDeConsorciosMVC.Controllers
         {
             var email = HttpContext.Session.GetString("UserEmail");
 
-            if (string.IsNullOrWhiteSpace(email))
+            if (!IsPropietario() || string.IsNullOrWhiteSpace(email))
             {
                 return RedirectToAction("Login", "Auth");
             }
@@ -188,11 +147,7 @@ namespace GestionDeConsorciosMVC.Controllers
                 ModelState.AddModelError(nameof(MedioPago), "Debe seleccionar un medio de pago.");
             }
 
-            if (ComprobantePago is null || ComprobantePago.Length == 0)
-            {
-                ModelState.AddModelError(nameof(ComprobantePago), "El comprobante es obligatorio.");
-            }
-            else
+            if (ComprobantePago is { Length: > 0 })
             {
                 var extension = Path.GetExtension(ComprobantePago.FileName).ToLowerInvariant();
 
@@ -220,24 +175,27 @@ namespace GestionDeConsorciosMVC.Controllers
                 BancoEntidad = string.IsNullOrWhiteSpace(BancoEntidad) ? null : BancoEntidad,
                 ComprobantePath = comprobantePath,
                 Comentarios = string.IsNullOrWhiteSpace(Comentarios) ? null : Comentarios,
-                Estado = EstadoPago.PendienteRevision
+                Estado = EstadoPago.Aprobado,
+                FechaRevision = DateTime.Now,
+                ObservacionAdministracion = "Aprobado automaticamente al informar el pago."
             };
 
             _context.Pagos.Add(pago);
+            expensa!.Estado = EstadoExpensa.Pagada;
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Pago informado correctamente. Quedo pendiente de revision.";
+            TempData["Success"] = "Pago informado correctamente. La expensa quedo marcada como pagada.";
             return RedirectToAction(nameof(Details), new { id = pago.Id });
         }
 
         private async Task LoadExpensasPendientesAsync()
         {
-            var email = HttpContext.Session.GetString("UserEmail");
+            var email = (HttpContext.Session.GetString("UserEmail") ?? string.Empty).Trim().ToLower();
             ViewBag.Expensas = await _context.Expensas
                 .Include(e => e.UnidadFuncional)
                     .ThenInclude(u => u.Consorcio)
                 .Where(e => e.Estado != EstadoExpensa.Pagada
-                    && e.UnidadFuncional.MailPropietario == email)
+                    && e.UnidadFuncional.MailPropietario.ToLower() == email)
                 .OrderByDescending(e => e.FechaEmision)
                 .ToListAsync();
         }
@@ -262,16 +220,6 @@ namespace GestionDeConsorciosMVC.Controllers
             return $"/uploads/pagos/{fileName}";
         }
 
-        private IActionResult RedirectToLocalOrDetails(RevisarPagoViewModel model)
-        {
-            if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
-            {
-                return Redirect(model.ReturnUrl);
-            }
-
-            return RedirectToAction(nameof(Details), new { id = model.PagoId });
-        }
-
         private string GetSafeReturnUrl(string? returnUrl, bool esPropietario)
         {
             if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -282,6 +230,12 @@ namespace GestionDeConsorciosMVC.Controllers
             return esPropietario
                 ? Url.Action(nameof(MisPagos), "Pagos") ?? "/Pagos/MisPagos"
                 : Url.Action(nameof(Index), "Pagos") ?? "/Pagos";
+        }
+
+        private bool IsPropietario()
+        {
+            return HttpContext.Session.GetString("UserRole")
+                ?.Equals("Propietario", StringComparison.OrdinalIgnoreCase) == true;
         }
     }
 }

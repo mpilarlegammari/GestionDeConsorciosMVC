@@ -115,6 +115,51 @@
         </div>
     </section>
 
+    <section class="app-card section-card">
+        <div class="app-card-title">
+            <div>
+                <h3>Amenities</h3>
+                <p class="card-description">Agrega espacios comunes reservables para este consorcio.</p>
+            </div>
+            <button class="btn btn-outline-primary" type="button" onclick="agregarAmenity()">Agregar amenity</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-clean">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Capacidad</th>
+                        <th>Descripcion</th>
+                        <th>Activo</th>
+                        <th>Accion</th>
+                    </tr>
+                </thead>
+                <tbody data-amenity-body>
+                    @for (var i = 0; i < Model.Amenities.Count; i++)
+                    {
+                        <tr data-amenity-row>
+                            <td>
+                                <input type="hidden" asp-for="Amenities[i].Id" data-amenity-field="Id" />
+                                <input class="form-control" asp-for="Amenities[i].Nombre" data-amenity-field="Nombre" type="text" placeholder="SUM, parrilla, terraza" data-amenity-nombre />
+                                <span class="field-validation" asp-validation-for="Amenities[i].Nombre" data-amenity-error-for="Nombre" data-error-for="@($"Amenities[{i}].Nombre")"></span>
+                            </td>
+                            <td>
+                                <input class="form-control" asp-for="Amenities[i].Capacidad" data-amenity-field="Capacidad" type="number" min="1" placeholder="10" data-amenity-capacidad />
+                                <span class="field-validation" asp-validation-for="Amenities[i].Capacidad" data-amenity-error-for="Capacidad" data-error-for="@($"Amenities[{i}].Capacidad")"></span>
+                            </td>
+                            <td><input class="form-control" asp-for="Amenities[i].Descripcion" data-amenity-field="Descripcion" type="text" placeholder="Detalle breve del espacio" /></td>
+                            <td>
+                                <input class="form-check-input" id="@($"Amenities_{i}__Activo")" name="@($"Amenities[{i}].Activo")" data-amenity-field="Activo" type="checkbox" value="true" checked="@Model.Amenities[i].Activo" />
+                                <input type="hidden" name="@($"Amenities[{i}].Activo")" value="false" data-amenity-active-hidden />
+                            </td>
+                            <td><button class="btn btn-outline-danger btn-sm" type="button" onclick="eliminarAmenity(this)">Eliminar</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
     <section class="form-actions">
         <a class="btn btn-outline-secondary" href="/Consorcios">Cancelar</a>
         <button class="btn btn-primary" type="submit">Crear consorcio</button>

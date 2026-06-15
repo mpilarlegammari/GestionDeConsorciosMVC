@@ -148,7 +148,7 @@
                         <tr>
                             <td>@gasto.Fecha.ToString("dd/MM/yyyy")</td>
                             <td>@gasto.Concepto</td>
-                            <td><span class="status-badge @CategoriaClass(gasto.Categoria)">@gasto.Categoria</span></td>
+                            <td><span class="status-badge @CategoriaClass(gasto.Categoria.ToString())">@gasto.Categoria</span></td>
                             <td>@gasto.Monto.ToString("C")</td>
                         </tr>
                     }
@@ -167,6 +167,9 @@
 <section class="app-card section-card">
     <div class="button-group">
         <a class="btn btn-outline-secondary" href="@Model.ReturnUrl">Volver</a>
-        <a class="btn btn-primary" href="/Pagos/InformarPago">Informar pago</a>
+        @if (Model.DetailRole == "Propietario" && Model.Estado != EstadoExpensa.Pagada)
+        {
+            <a class="btn btn-primary" href="/Pagos/InformarPago">Informar pago</a>
+        }
     </div>
 </section>

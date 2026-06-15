@@ -63,7 +63,7 @@ namespace GestionDeConsorciosMVC.Services
             EstadoPago? estado = null,
             string? medioPago = null)
         {
-            var normalizedEmail = Normalize(email);
+            var normalizedEmail = Normalize(email).ToLower();
             var normalizedPeriodo = NormalizeOptional(periodo);
             var normalizedMedioPago = NormalizeOptional(medioPago);
             var unidades = await GetOwnerUnidadesAsync(normalizedEmail);
@@ -82,7 +82,8 @@ namespace GestionDeConsorciosMVC.Services
                         .ThenInclude(expensa => expensa.UnidadFuncional)
                             .ThenInclude(unidad => unidad.Consorcio)
                     .AsNoTracking()
-                    .Where(pago => selectedUnidadIds.Contains(pago.Expensa.UnidadFuncionalId));
+                    .Where(pago => selectedUnidadIds.Contains(pago.Expensa.UnidadFuncionalId)
+                        && pago.Expensa.UnidadFuncional.MailPropietario.ToLower() == normalizedEmail);
 
                 if (!string.IsNullOrWhiteSpace(normalizedPeriodo))
                 {
@@ -114,9 +115,9 @@ namespace GestionDeConsorciosMVC.Services
                 Pagos = pagos,
                 UnidadesFuncionales = unidades,
                 UnidadesSeleccionadas = unidadesSeleccionadas,
-                PeriodosDisponibles = await GetPeriodosDisponiblesAsync(ownerUnidadIds),
-                AniosDisponibles = await GetAniosDisponiblesAsync(ownerUnidadIds),
-                MediosPagoDisponibles = await GetMediosPagoDisponiblesAsync(ownerUnidadIds),
+                PeriodosDisponibles = await GetPeriodosDisponiblesAsync(ownerUnidadIds, normalizedEmail),
+                AniosDisponibles = await GetAniosDisponiblesAsync(ownerUnidadIds, normalizedEmail),
+                MediosPagoDisponibles = await GetMediosPagoDisponiblesAsync(ownerUnidadIds, normalizedEmail),
                 UnidadFuncionalId = unidadFuncionalId,
                 Periodo = normalizedPeriodo,
                 Anio = anio,
@@ -137,43 +138,6 @@ namespace GestionDeConsorciosMVC.Services
             return pago is null ? null : MapDetails(pago);
         }
 
-        public async Task<bool> AprobarAsync(RevisarPagoViewModel model)
-        {
-            var pago = await _context.Pagos
-                .Include(item => item.Expensa)
-                .FirstOrDefaultAsync(item => item.Id == model.PagoId);
-
-            if (pago is null)
-            {
-                return false;
-            }
-
-            pago.Estado = EstadoPago.Aprobado;
-            pago.FechaRevision = DateTime.Now;
-            pago.ObservacionAdministracion = NormalizeOptional(model.ObservacionAdministracion);
-            pago.Expensa.Estado = EstadoExpensa.Pagada;
-
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> RechazarAsync(RevisarPagoViewModel model)
-        {
-            var pago = await _context.Pagos.FindAsync(model.PagoId);
-
-            if (pago is null)
-            {
-                return false;
-            }
-
-            pago.Estado = EstadoPago.Rechazado;
-            pago.FechaRevision = DateTime.Now;
-            pago.ObservacionAdministracion = NormalizeOptional(model.ObservacionAdministracion);
-
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
         private async Task<List<Consorcio>> GetConsorciosAsync()
         {
             return await _context.Consorcios
@@ -192,13 +156,13 @@ namespace GestionDeConsorciosMVC.Services
             return await _context.UnidadesFuncionales
                 .Include(unidad => unidad.Consorcio)
                 .AsNoTracking()
-                .Where(unidad => unidad.MailPropietario == email)
+                .Where(unidad => unidad.MailPropietario.ToLower() == email)
                 .OrderBy(unidad => unidad.Consorcio.Nombre)
                 .ThenBy(unidad => unidad.NumeroUF)
                 .ToListAsync();
         }
 
-        private async Task<List<string>> GetPeriodosDisponiblesAsync(List<int> unidadIds)
+        private async Task<List<string>> GetPeriodosDisponiblesAsync(List<int> unidadIds, string email)
         {
             if (unidadIds.Count == 0)
             {
@@ -207,14 +171,15 @@ namespace GestionDeConsorciosMVC.Services
 
             return await _context.Pagos
                 .AsNoTracking()
-                .Where(pago => unidadIds.Contains(pago.Expensa.UnidadFuncionalId))
+                .Where(pago => unidadIds.Contains(pago.Expensa.UnidadFuncionalId)
+                    && pago.Expensa.UnidadFuncional.MailPropietario.ToLower() == email)
                 .Select(pago => pago.Expensa.Periodo)
                 .Distinct()
                 .OrderByDescending(periodo => periodo)
                 .ToListAsync();
         }
 
-        private async Task<List<int>> GetAniosDisponiblesAsync(List<int> unidadIds)
+        private async Task<List<int>> GetAniosDisponiblesAsync(List<int> unidadIds, string email)
         {
             if (unidadIds.Count == 0)
             {
@@ -223,7 +188,8 @@ namespace GestionDeConsorciosMVC.Services
 
             var anios = await _context.Pagos
                 .AsNoTracking()
-                .Where(pago => unidadIds.Contains(pago.Expensa.UnidadFuncionalId))
+                .Where(pago => unidadIds.Contains(pago.Expensa.UnidadFuncionalId)
+                    && pago.Expensa.UnidadFuncional.MailPropietario.ToLower() == email)
                 .Select(pago => pago.FechaPago.Year)
                 .Distinct()
                 .OrderByDescending(anio => anio)
@@ -232,7 +198,7 @@ namespace GestionDeConsorciosMVC.Services
             return anios.Count == 0 ? [DateTime.Today.Year] : anios;
         }
 
-        private async Task<List<string>> GetMediosPagoDisponiblesAsync(List<int> unidadIds)
+        private async Task<List<string>> GetMediosPagoDisponiblesAsync(List<int> unidadIds, string email)
         {
             if (unidadIds.Count == 0)
             {
@@ -241,7 +207,8 @@ namespace GestionDeConsorciosMVC.Services
 
             return await _context.Pagos
                 .AsNoTracking()
-                .Where(pago => unidadIds.Contains(pago.Expensa.UnidadFuncionalId))
+                .Where(pago => unidadIds.Contains(pago.Expensa.UnidadFuncionalId)
+                    && pago.Expensa.UnidadFuncional.MailPropietario.ToLower() == email)
                 .Select(pago => pago.MedioPago)
                 .Distinct()
                 .OrderBy(medio => medio)

@@ -35,6 +35,7 @@ namespace GestionDeConsorciosMVC.Controllers
                 .Include(c => c.UnidadesFuncionales)
                     .ThenInclude(u => u.Reclamos)
                 .Include(c => c.Gastos)
+                .Include(c => c.Amenities)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (consorcio is null)
@@ -57,10 +58,11 @@ namespace GestionDeConsorciosMVC.Controllers
         {
             Normalize(model);
             ValidateUnidadesFuncionales(model);
+            ValidateAmenities(model);
 
             if (!ModelState.IsValid)
             {
-                EnsureUnidadFuncionalRow(model);
+                EnsureRows(model);
                 return View(model);
             }
 
@@ -81,6 +83,11 @@ namespace GestionDeConsorciosMVC.Controllers
                 consorcio.UnidadesFuncionales.Add(MapUnidadFuncional(unidad));
             }
 
+            foreach (var amenity in model.Amenities.Where(HasAmenityData))
+            {
+                consorcio.Amenities.Add(MapAmenity(amenity));
+            }
+
             _context.Consorcios.Add(consorcio);
             await _context.SaveChangesAsync();
 
@@ -93,6 +100,7 @@ namespace GestionDeConsorciosMVC.Controllers
         {
             var consorcio = await _context.Consorcios
                 .Include(c => c.UnidadesFuncionales)
+                .Include(c => c.Amenities)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (consorcio is null)
@@ -114,15 +122,17 @@ namespace GestionDeConsorciosMVC.Controllers
 
             Normalize(model);
             ValidateUnidadesFuncionales(model);
+            ValidateAmenities(model);
 
             if (!ModelState.IsValid)
             {
-                EnsureUnidadFuncionalRow(model);
+                EnsureRows(model);
                 return View(model);
             }
 
             var consorcio = await _context.Consorcios
                 .Include(c => c.UnidadesFuncionales)
+                .Include(c => c.Amenities)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (consorcio is null)
@@ -148,7 +158,7 @@ namespace GestionDeConsorciosMVC.Controllers
                 if (unidad is null && unidadModel.Id > 0)
                 {
                     ModelState.AddModelError("", $"La unidad funcional {unidadModel.NumeroUF} no pertenece al consorcio.");
-                    EnsureUnidadFuncionalRow(model);
+                    EnsureRows(model);
                     return View(model);
                 }
 
@@ -159,6 +169,28 @@ namespace GestionDeConsorciosMVC.Controllers
                 }
 
                 UpdateUnidadFuncional(unidad, unidadModel);
+            }
+
+            foreach (var amenityModel in model.Amenities.Where(HasAmenityData))
+            {
+                var amenity = amenityModel.Id > 0
+                    ? consorcio.Amenities.FirstOrDefault(a => a.Id == amenityModel.Id)
+                    : null;
+
+                if (amenity is null && amenityModel.Id > 0)
+                {
+                    ModelState.AddModelError("", $"El amenity {amenityModel.Nombre} no pertenece al consorcio.");
+                    EnsureRows(model);
+                    return View(model);
+                }
+
+                if (amenity is null)
+                {
+                    consorcio.Amenities.Add(MapAmenity(amenityModel));
+                    continue;
+                }
+
+                UpdateAmenity(amenity, amenityModel);
             }
 
             await _context.SaveChangesAsync();
@@ -216,6 +248,44 @@ namespace GestionDeConsorciosMVC.Controllers
             }
         }
 
+        private void ValidateAmenities(ConsorcioViewModel model)
+        {
+            model.Amenities ??= new List<AmenityViewModel>();
+
+            for (var i = 0; i < model.Amenities.Count; i++)
+            {
+                var amenity = model.Amenities[i];
+
+                if (!HasAmenityData(amenity))
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(amenity.Nombre))
+                {
+                    ModelState.AddModelError($"Amenities[{i}].Nombre", "El nombre del amenity es obligatorio.");
+                }
+
+                if (amenity.Capacidad <= 0)
+                {
+                    ModelState.AddModelError($"Amenities[{i}].Capacidad", "La capacidad debe ser mayor a 0.");
+                }
+            }
+
+            var duplicados = model.Amenities
+                .Select((amenity, index) => new { amenity.Nombre, Index = index })
+                .Where(item => !string.IsNullOrWhiteSpace(item.Nombre))
+                .GroupBy(item => item.Nombre.Trim(), StringComparer.OrdinalIgnoreCase)
+                .Where(group => group.Count() > 1)
+                .SelectMany(group => group)
+                .ToList();
+
+            foreach (var duplicado in duplicados)
+            {
+                ModelState.AddModelError($"Amenities[{duplicado.Index}].Nombre", "No pueden existir dos amenities con el mismo nombre.");
+            }
+        }
+
         private static void Normalize(ConsorcioViewModel model)
         {
             model.Nombre = model.Nombre?.Trim() ?? string.Empty;
@@ -225,6 +295,7 @@ namespace GestionDeConsorciosMVC.Controllers
             model.CodigoPostal = model.CodigoPostal?.Trim() ?? string.Empty;
             model.Observaciones = string.IsNullOrWhiteSpace(model.Observaciones) ? null : model.Observaciones.Trim();
             model.UnidadesFuncionales ??= new List<UnidadFuncionalViewModel>();
+            model.Amenities ??= new List<AmenityViewModel>();
 
             foreach (var unidad in model.UnidadesFuncionales)
             {
@@ -236,6 +307,12 @@ namespace GestionDeConsorciosMVC.Controllers
                 unidad.DniPropietario = unidad.DniPropietario?.Trim() ?? string.Empty;
                 unidad.Telefono = string.IsNullOrWhiteSpace(unidad.Telefono) ? null : unidad.Telefono.Trim();
             }
+
+            foreach (var amenity in model.Amenities)
+            {
+                amenity.Nombre = amenity.Nombre?.Trim() ?? string.Empty;
+                amenity.Descripcion = string.IsNullOrWhiteSpace(amenity.Descripcion) ? null : amenity.Descripcion.Trim();
+            }
         }
 
         private static void EnsureUnidadFuncionalRow(ConsorcioViewModel model)
@@ -244,6 +321,20 @@ namespace GestionDeConsorciosMVC.Controllers
             {
                 model.UnidadesFuncionales.Add(new UnidadFuncionalViewModel());
             }
+        }
+
+        private static void EnsureAmenityRow(ConsorcioViewModel model)
+        {
+            if (model.Amenities.Count == 0)
+            {
+                model.Amenities.Add(new AmenityViewModel());
+            }
+        }
+
+        private static void EnsureRows(ConsorcioViewModel model)
+        {
+            EnsureUnidadFuncionalRow(model);
+            EnsureAmenityRow(model);
         }
 
         private static UnidadFuncional MapUnidadFuncional(UnidadFuncionalViewModel model)
@@ -272,6 +363,33 @@ namespace GestionDeConsorciosMVC.Controllers
             unidad.Telefono = model.Telefono;
         }
 
+        private static Amenity MapAmenity(AmenityViewModel model)
+        {
+            return new Amenity
+            {
+                Nombre = model.Nombre,
+                Descripcion = model.Descripcion,
+                Capacidad = model.Capacidad,
+                Activo = model.Activo
+            };
+        }
+
+        private static void UpdateAmenity(Amenity amenity, AmenityViewModel model)
+        {
+            amenity.Nombre = model.Nombre;
+            amenity.Descripcion = model.Descripcion;
+            amenity.Capacidad = model.Capacidad;
+            amenity.Activo = model.Activo;
+        }
+
+        private static bool HasAmenityData(AmenityViewModel amenity)
+        {
+            return amenity.Id > 0
+                || !string.IsNullOrWhiteSpace(amenity.Nombre)
+                || !string.IsNullOrWhiteSpace(amenity.Descripcion)
+                || amenity.Capacidad != 1;
+        }
+
         private static ConsorcioViewModel MapEditViewModel(Consorcio consorcio)
         {
             var model = new ConsorcioViewModel
@@ -288,10 +406,14 @@ namespace GestionDeConsorciosMVC.Controllers
                 UnidadesFuncionales = consorcio.UnidadesFuncionales
                     .OrderBy(u => u.NumeroUF)
                     .Select(MapUnidadFuncionalViewModel)
+                    .ToList(),
+                Amenities = consorcio.Amenities
+                    .OrderBy(a => a.Nombre)
+                    .Select(MapAmenityViewModel)
                     .ToList()
             };
 
-            EnsureUnidadFuncionalRow(model);
+            EnsureRows(model);
             return model;
         }
 
@@ -321,6 +443,10 @@ namespace GestionDeConsorciosMVC.Controllers
                 UnidadesFuncionales = consorcio.UnidadesFuncionales
                     .OrderBy(u => u.NumeroUF)
                     .Select(MapUnidadFuncionalViewModel)
+                    .ToList(),
+                Amenities = consorcio.Amenities
+                    .OrderBy(a => a.Nombre)
+                    .Select(MapAmenityViewModel)
                     .ToList()
             };
         }
@@ -338,6 +464,18 @@ namespace GestionDeConsorciosMVC.Controllers
                 DniPropietario = unidad.DniPropietario,
                 Telefono = unidad.Telefono,
                 Estado = unidad.Estado
+            };
+        }
+
+        private static AmenityViewModel MapAmenityViewModel(Amenity amenity)
+        {
+            return new AmenityViewModel
+            {
+                Id = amenity.Id,
+                Nombre = amenity.Nombre,
+                Descripcion = amenity.Descripcion,
+                Capacidad = amenity.Capacidad,
+                Activo = amenity.Activo
             };
         }
     }

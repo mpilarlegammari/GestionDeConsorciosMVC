@@ -169,12 +169,11 @@
                             <td>@gasto.Consorcio.Nombre</td>
                             <td>@gasto.NumeroFactura</td>
                             <td>@gasto.Concepto</td>
-                            <td><span class="status-badge @CategoriaClass(gasto.Categoria)">@gasto.Categoria</span></td>
+                            <td><span class="status-badge @CategoriaClass(gasto.Categoria.ToString())">@gasto.Categoria</span></td>
                             <td>@gasto.Monto.ToString("C")</td>
                             <td>
                                 <div class="table-actions">
                                     <a asp-controller="Gastos" asp-action="Details" asp-route-id="@gasto.Id">Ver detalle</a>
-                                    <a asp-controller="Gastos" asp-action="Edit" asp-route-id="@gasto.Id">Editar</a>
                                     <a asp-controller="Gastos" asp-action="Delete" asp-route-id="@gasto.Id">Eliminar</a>
                                 </div>
                             </td>

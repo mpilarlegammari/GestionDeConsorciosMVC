@@ -75,7 +75,7 @@ namespace GestionDeConsorciosMVC.Services
 
         public async Task<MisComunicadosViewModel> GetMisComunicadosAsync(string email, bool? importante = null, string? busqueda = null)
         {
-            var normalizedEmail = Normalize(email);
+            var normalizedEmail = Normalize(email).ToLower();
             var normalizedBusqueda = NormalizeOptional(busqueda);
 
             if (string.IsNullOrWhiteSpace(normalizedEmail))
@@ -89,7 +89,7 @@ namespace GestionDeConsorciosMVC.Services
 
             var consorcioIds = await _context.UnidadesFuncionales
                 .AsNoTracking()
-                .Where(unidad => unidad.MailPropietario == normalizedEmail)
+                .Where(unidad => unidad.MailPropietario.ToLower() == normalizedEmail)
                 .Select(unidad => unidad.ConsorcioId)
                 .Distinct()
                 .ToListAsync();
@@ -134,6 +134,21 @@ namespace GestionDeConsorciosMVC.Services
         public async Task<bool> ConsorcioExistsAsync(int consorcioId)
         {
             return await _context.Consorcios.AnyAsync(consorcio => consorcio.Id == consorcioId);
+        }
+
+        public async Task<bool> OwnerCanAccessAsync(int comunicadoId, string email)
+        {
+            var normalizedEmail = Normalize(email).ToLower();
+
+            if (string.IsNullOrWhiteSpace(normalizedEmail))
+            {
+                return false;
+            }
+
+            return await _context.Comunicados
+                .AnyAsync(comunicado => comunicado.Id == comunicadoId
+                    && comunicado.Consorcio.UnidadesFuncionales
+                        .Any(unidad => unidad.MailPropietario.ToLower() == normalizedEmail));
         }
 
         public async Task<Comunicado> CreateAsync(ComunicadoCreateViewModel model, string? archivoAdjuntoPath)

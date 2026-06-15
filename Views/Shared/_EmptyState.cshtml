@@ -1,6 +1,7 @@
+@model string
 @{
     var title = ViewData["EmptyTitle"] as string ?? "Sin resultados";
-    var message = ViewData["EmptyMessage"] as string ?? "No hay registros para mostrar con los filtros actuales.";
+    var message = Model ?? ViewData["EmptyMessage"] as string ?? "No hay registros para mostrar con los filtros actuales.";
     var actionText = ViewData["EmptyActionText"] as string;
     var actionUrl = ViewData["EmptyActionUrl"] as string;
     var variant = ViewData["EmptyVariant"] as string ?? "default";

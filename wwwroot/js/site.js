@@ -228,8 +228,138 @@
     window.validarUFDuplicadas();
   };
 
+  const actualizarIndicesAmenities = () => {
+    document.querySelectorAll("[data-amenity-row]").forEach((row, index) => {
+      row.querySelectorAll("[data-amenity-field]").forEach((field) => {
+        const fieldName = field.dataset.amenityField;
+
+        if (!fieldName) {
+          return;
+        }
+
+        const indexedName = `Amenities[${index}].${fieldName}`;
+        field.name = indexedName;
+        field.id = `Amenities_${index}__${fieldName}`;
+      });
+
+      row.querySelectorAll("[data-amenity-active-hidden]").forEach((field) => {
+        field.name = `Amenities[${index}].Activo`;
+      });
+
+      row.querySelectorAll("[data-amenity-error-for]").forEach((error) => {
+        const fieldName = error.dataset.amenityErrorFor;
+
+        if (!fieldName) {
+          return;
+        }
+
+        const indexedName = `Amenities[${index}].${fieldName}`;
+        error.dataset.errorFor = indexedName;
+        error.setAttribute("data-valmsg-for", indexedName);
+      });
+    });
+  };
+
+  window.agregarAmenity = () => {
+    const body = document.querySelector("[data-amenity-body]");
+    const firstRow = body?.querySelector("[data-amenity-row]");
+
+    if (!body || !firstRow) {
+      return;
+    }
+
+    const clone = firstRow.cloneNode(true);
+
+    clone.querySelectorAll("input").forEach((input) => {
+      if (input.type === "hidden" && input.dataset.amenityField === "Id") {
+        input.value = "0";
+      } else if (input.type === "checkbox") {
+        input.checked = true;
+      } else if (input.dataset.amenityField === "Capacidad") {
+        input.value = "1";
+      } else if (input.type !== "hidden") {
+        input.value = "";
+      }
+
+      input.classList.remove("is-invalid");
+    });
+
+    clone.querySelectorAll(".field-validation").forEach((error) => {
+      error.textContent = "";
+    });
+
+    body.appendChild(clone);
+    actualizarIndicesAmenities();
+  };
+
+  window.eliminarAmenity = (button) => {
+    const rows = document.querySelectorAll("[data-amenity-row]");
+    const row = button.closest("[data-amenity-row]");
+
+    if (rows.length <= 1 || !row) {
+      row?.querySelectorAll("input").forEach((input) => {
+        if (input.type === "checkbox") {
+          input.checked = true;
+        } else if (input.dataset.amenityField === "Capacidad") {
+          input.value = "1";
+        } else if (input.type !== "hidden") {
+          input.value = "";
+        }
+      });
+      return;
+    }
+
+    row.remove();
+    actualizarIndicesAmenities();
+  };
+
+  const validarAmenities = () => {
+    const seen = new Set();
+    let isValid = true;
+
+    document.querySelectorAll("[data-amenity-row]").forEach((row) => {
+      const nombre = row.querySelector("[data-amenity-nombre]");
+      const capacidad = row.querySelector("[data-amenity-capacidad]");
+      const descripcion = row.querySelector("[data-amenity-field='Descripcion']");
+      const hasData = Boolean(
+        nombre?.value.trim()
+        || descripcion?.value.trim()
+        || (capacidad?.value && Number(capacidad.value) !== 1)
+      );
+
+      if (!hasData) {
+        setFieldError(nombre, "");
+        setFieldError(capacidad, "");
+        return;
+      }
+
+      const nombreValue = nombre?.value.trim().toLowerCase() ?? "";
+
+      if (!nombreValue) {
+        setFieldError(nombre, "Campo requerido.");
+        isValid = false;
+      } else if (seen.has(nombreValue)) {
+        setFieldError(nombre, "Amenity duplicado.");
+        isValid = false;
+      } else {
+        seen.add(nombreValue);
+        setFieldError(nombre, "");
+      }
+
+      if (capacidad && (!capacidad.value || Number(capacidad.value) <= 0)) {
+        setFieldError(capacidad, "La capacidad debe ser mayor a 0.");
+        isValid = false;
+      } else if (capacidad) {
+        setFieldError(capacidad, "");
+      }
+    });
+
+    return isValid;
+  };
+
   if (consorcioForm) {
     actualizarIndicesUF();
+    actualizarIndicesAmenities();
 
     consorcioForm.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -258,6 +388,10 @@
       });
 
       if (!window.validarUFDuplicadas()) {
+        isValid = false;
+      }
+
+      if (!validarAmenities()) {
         isValid = false;
       }
 
@@ -476,11 +610,6 @@
     const fileInput = pagoForm.querySelector("[data-pago-file]");
     const file = fileInput?.files?.[0];
 
-    if (fileInput && !file) {
-      setFieldError(fileInput, "El comprobante es obligatorio.");
-      isValid = false;
-    }
-
     if (fileInput && file) {
       const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
 
@@ -492,17 +621,17 @@
 
     if (summary) {
       summary.textContent = isValid
-        ? "Pago mock validado correctamente. No se enviaron datos."
+        ? "Pago listo para enviar."
         : "Revisa los campos marcados antes de continuar.";
       summary.classList.toggle("show", true);
       summary.classList.toggle("success", isValid);
     }
 
     showMockToast({
-      title: isValid ? "Pago listo para revision" : "Revisa el pago",
+      title: isValid ? "Pago listo para enviar" : "Revisa el pago",
       message: isValid
-        ? "El pago quedara pendiente de revision administrativa."
-        : "Completa los datos obligatorios y adjunta un comprobante valido.",
+        ? "La expensa quedara marcada como pagada automaticamente."
+        : "Completa los datos obligatorios y usa un comprobante valido si adjuntas uno.",
       variant: isValid ? "success" : "danger"
     });
 
@@ -729,6 +858,53 @@
         comunicadoForm.submit();
       }
     });
+  }
+
+  const reservaForm = document.querySelector("[data-reserva-form]");
+
+  if (reservaForm) {
+    const ufSelect = reservaForm.querySelector("[data-reserva-uf]");
+    const amenitySelect = reservaForm.querySelector("[data-reserva-amenity]");
+    const emptyMessage = reservaForm.querySelector("[data-reserva-amenity-empty]");
+
+    const actualizarAmenitiesReserva = () => {
+      if (!ufSelect || !amenitySelect) {
+        return;
+      }
+
+      const selectedUf = ufSelect.options[ufSelect.selectedIndex];
+      const consorcioId = selectedUf?.dataset.consorcioId || "";
+      const amenityOptions = Array.from(amenitySelect.options).filter((option) => option.value);
+      let visibleCount = 0;
+
+      amenityOptions.forEach((option) => {
+        const isVisible = !consorcioId || option.dataset.consorcioId === consorcioId;
+        option.hidden = !isVisible;
+        option.disabled = !isVisible;
+
+        if (isVisible) {
+          visibleCount += 1;
+        }
+      });
+
+      const selectedAmenity = amenitySelect.options[amenitySelect.selectedIndex];
+
+      if (selectedAmenity?.disabled) {
+        amenitySelect.value = "";
+      }
+
+      if (!amenitySelect.value && visibleCount === 1) {
+        const onlyVisible = amenityOptions.find((option) => !option.disabled);
+        amenitySelect.value = onlyVisible?.value || "";
+      }
+
+      if (emptyMessage) {
+        emptyMessage.hidden = visibleCount > 0 || !consorcioId;
+      }
+    };
+
+    ufSelect?.addEventListener("change", actualizarAmenitiesReserva);
+    actualizarAmenitiesReserva();
   }
 
   const showMockModal = (modalId) => {

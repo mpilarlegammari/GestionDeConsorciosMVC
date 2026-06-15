@@ -22,7 +22,7 @@
 <section class="page-intro">
     <div>
         <h2>Pagos</h2>
-        <p>Revision administrativa de pagos informados por propietarios.</p>
+        <p>Consulta de pagos informados por propietarios.</p>
     </div>
     <span class="status-badge">Backend</span>
 </section>
@@ -36,12 +36,12 @@
     <article class="app-card metric-card">
         <span>Pendientes</span>
         <strong>@Model.Pendientes</strong>
-        <small>Para revisar</small>
+        <small>Sin aprobacion automatica previa</small>
     </article>
     <article class="app-card metric-card">
         <span>Aprobados</span>
         <strong>@Model.Aprobados</strong>
-        <small>Validados</small>
+        <small>Registrados como pagados</small>
     </article>
     <article class="app-card metric-card">
         <span>Total informado</span>

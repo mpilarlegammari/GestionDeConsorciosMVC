@@ -1,27 +1,57 @@
+@model GestionDeConsorciosMVC.ViewModels.PropietarioDashboardViewModel
 @{
     ViewData["Title"] = "Panel Propietario";
     ViewData["Role"] = "Propietario";
+
+    string Money(decimal value) => value.ToString("C0", new System.Globalization.CultureInfo("es-AR"));
+    string ExpensaBadge(EstadoExpensa estado) => estado switch
+    {
+        EstadoExpensa.Pagada => "success",
+        EstadoExpensa.Vencida => "danger",
+        _ => "warning"
+    };
+    string PagoBadge(EstadoPago estado) => estado switch
+    {
+        EstadoPago.Aprobado => "success",
+        EstadoPago.Rechazado => "danger",
+        _ => "warning"
+    };
 }
 
 <section class="page-intro">
     <div>
         <h2>Panel Propietario</h2>
-        <p>Consulta tus expensas, pagos, comunicados y reservas.</p>
+        <p>Consulta tus expensas, pagos, comunicados y reservas asociados a tus unidades.</p>
     </div>
-    <span class="status-badge">Datos mock</span>
+    <span class="status-badge success">Datos reales</span>
 </section>
 
 <section class="app-card expense-card">
-    <div>
-        <span class="card-kicker">Expensa actual</span>
-        <h3>Periodo: Mayo 2026</h3>
-        <p>Vencimiento: 10/06/2026</p>
-    </div>
-    <div class="expense-summary">
-        <strong>$85.000</strong>
-        <span class="status-badge warning">Pendiente</span>
-        <a class="btn btn-primary" href="/Pagos/InformarPago">Informar pago</a>
-    </div>
+    @if (Model.ExpensaActual is not null)
+    {
+        <div>
+            <span class="card-kicker">Expensa actual</span>
+            <h3>Periodo: @Model.ExpensaActual.Periodo</h3>
+            <p>Vencimiento: @Model.ExpensaActual.FechaVencimiento.ToString("dd/MM/yyyy")</p>
+        </div>
+        <div class="expense-summary">
+            <strong>@Money(Model.ExpensaActual.MontoTotal)</strong>
+            <span class="status-badge @ExpensaBadge(Model.ExpensaActual.Estado)">@Model.ExpensaActual.Estado</span>
+            <a class="btn btn-primary" href="/Pagos/InformarPago">Informar pago</a>
+        </div>
+    }
+    else
+    {
+        <div>
+            <span class="card-kicker">Expensa actual</span>
+            <h3>Sin expensas emitidas</h3>
+            <p>@Model.UnidadesResumen</p>
+        </div>
+        <div class="expense-summary">
+            <strong>@Money(0)</strong>
+            <span class="status-badge">Sin deuda</span>
+        </div>
+    }
 </section>
 
 <section class="quick-actions" aria-label="Accesos rapidos propietario">
@@ -29,28 +59,28 @@
         <span class="quick-action-icon">E</span>
         <span>
             <strong>Ver expensas</strong>
-            <span>Consultar vencimientos</span>
+            <span>@Model.ExpensasPendientes pendientes</span>
         </span>
     </a>
     <a class="quick-action" href="/Pagos/InformarPago">
         <span class="quick-action-icon">P</span>
         <span>
             <strong>Informar pago</strong>
-            <span>Cargar comprobante</span>
+            <span>@Model.PagosPendientesRevision pendientes previos</span>
         </span>
     </a>
     <a class="quick-action" href="/Reclamos/Create">
         <span class="quick-action-icon">R</span>
         <span>
             <strong>Nuevo reclamo</strong>
-            <span>Contactar administracion</span>
+            <span>@Model.ReclamosAbiertos abiertos</span>
         </span>
     </a>
     <a class="quick-action" href="/Reservas/Create">
         <span class="quick-action-icon">A</span>
         <span>
             <strong>Reservar amenity</strong>
-            <span>Elegir espacio y horario</span>
+            <span>@Model.ReservasProximas proximas</span>
         </span>
     </a>
 </section>
@@ -59,22 +89,24 @@
     <article class="app-card">
         <div class="app-card-title">
             <h3>Ultimos comunicados</h3>
-            <span class="status-badge">3 nuevos</span>
+            <span class="status-badge">@Model.ComunicadosRecientes.Count visibles</span>
         </div>
-        <ul class="activity-list">
-            <li>
-                <span class="activity-dot warning"></span>
-                <span>Corte de agua programado.</span>
-            </li>
-            <li>
-                <span class="activity-dot"></span>
-                <span>Limpieza de tanques.</span>
-            </li>
-            <li>
-                <span class="activity-dot success"></span>
-                <span>Asamblea ordinaria.</span>
-            </li>
-        </ul>
+        @if (Model.ComunicadosRecientes.Any())
+        {
+            <ul class="activity-list">
+                @foreach (var comunicado in Model.ComunicadosRecientes)
+                {
+                    <li>
+                        <span class="activity-dot @(comunicado.Importante ? "warning" : string.Empty)"></span>
+                        <span>@comunicado.Titulo - @comunicado.Consorcio.Nombre</span>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <partial name="_EmptyState" model="@("No hay comunicados para tus consorcios.")" />
+        }
     </article>
 
     <aside class="app-card">
@@ -84,15 +116,15 @@
         <ul class="simple-list">
             <li>
                 <span>Consorcio</span>
-                <strong>Consorcio Las Heras</strong>
+                <strong>@Model.ConsorciosResumen</strong>
             </li>
             <li>
                 <span>Unidad</span>
-                <strong>4B</strong>
+                <strong>@Model.UnidadesResumen</strong>
             </li>
             <li>
-                <span>Estado</span>
-                <strong>Pendiente</strong>
+                <span>Monto pendiente</span>
+                <strong>@Money(Model.MontoPendiente)</strong>
             </li>
         </ul>
     </aside>
@@ -101,38 +133,36 @@
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Mis ultimos pagos</h3>
-        <span class="status-badge">Mock</span>
+        <span class="status-badge">@Model.PagosRecientes.Count registros</span>
     </div>
-    <div class="table-responsive">
-        <table class="table table-clean">
-            <thead>
-                <tr>
-                    <th>Periodo</th>
-                    <th>Fecha de pago</th>
-                    <th>Monto</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Abril 2026</td>
-                    <td>12/05/2026</td>
-                    <td>$79.500</td>
-                    <td><span class="status-badge success">Validado</span></td>
-                </tr>
-                <tr>
-                    <td>Marzo 2026</td>
-                    <td>09/04/2026</td>
-                    <td>$76.200</td>
-                    <td><span class="status-badge success">Validado</span></td>
-                </tr>
-                <tr>
-                    <td>Mayo 2026</td>
-                    <td>-</td>
-                    <td>$85.000</td>
-                    <td><span class="status-badge warning">Pendiente</span></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    @if (Model.PagosRecientes.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-clean">
+                <thead>
+                    <tr>
+                        <th>Periodo</th>
+                        <th>Fecha de pago</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var pago in Model.PagosRecientes)
+                    {
+                        <tr>
+                            <td>@pago.Expensa.Periodo</td>
+                            <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
+                            <td>@Money(pago.MontoPagado)</td>
+                            <td><span class="status-badge @PagoBadge(pago.Estado)">@pago.Estado</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <partial name="_EmptyState" model="@("Todavia no hay pagos informados.")" />
+    }
 </section>

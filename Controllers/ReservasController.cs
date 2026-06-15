@@ -64,10 +64,6 @@ namespace GestionDeConsorciosMVC.Controllers
 
             if (!ModelState.IsValid)
             {
-                TempData["Error"] = string.Join(" ", ModelState.Values
-                    .SelectMany(value => value.Errors)
-                    .Select(error => error.ErrorMessage));
-
                 var viewModel = await _reservasService.BuildReservaCreateViewModelAsync(email, model);
                 return View(viewModel);
             }

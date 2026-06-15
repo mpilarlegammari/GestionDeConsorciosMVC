@@ -1,7 +1,7 @@
 @{
     var pageTitle = ViewData["Title"] as string ?? "Inicio";
-    var currentRole = ViewData["Role"] as string ?? "Administrador";
-    var currentEmail = Context.Session.GetString("UserEmail") ?? "Usuario mock";
+    var currentRole = Context.Session.GetString("UserRole") ?? ViewData["Role"] as string ?? "Administrador";
+    var currentEmail = Context.Session.GetString("UserEmail") ?? "Sin sesion";
 }
 
 <header class="app-header">
@@ -17,8 +17,8 @@
     </div>
 
     <div class="header-actions">
-        <div class="role-switcher" aria-label="Rol actual de visualizacion">
-            <span>Vista</span>
+        <div class="role-switcher" aria-label="Rol actual">
+            <span>Rol</span>
             <strong>@currentRole</strong>
         </div>
         <div class="user-chip">

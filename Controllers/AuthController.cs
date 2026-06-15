@@ -43,6 +43,15 @@ namespace GestionDeConsorciosMVC.Controllers
                     ViewBag.Error = "No existe un propietario activo con ese email.";
                     return View();
                 }
+
+                var tieneUnidadFuncional = await _context.UnidadesFuncionales
+                    .AnyAsync(unidad => unidad.MailPropietario.ToLower() == email.ToLower());
+
+                if (!tieneUnidadFuncional)
+                {
+                    ViewBag.Error = "El propietario no tiene unidades funcionales asociadas a ese email.";
+                    return View();
+                }
             }
 
             HttpContext.Session.SetString("UserEmail", email);

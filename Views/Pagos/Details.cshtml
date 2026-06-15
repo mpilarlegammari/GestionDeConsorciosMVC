@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Detalle del Pago";
     ViewData["Role"] = Model.DetailRole;
-    var puedeRevisar = Model.DetailRole == "Administrador" && Model.Estado == EstadoPago.PendienteRevision;
 }
 
 @functions {
@@ -60,7 +59,7 @@
     <article class="app-card metric-card">
         <span>Estado</span>
         <strong><span class="status-badge @EstadoClass(Model.Estado)">@Model.Estado</span></strong>
-        <small>Revision administrativa</small>
+        <small>Registro del pago</small>
     </article>
 </section>
 
@@ -127,7 +126,7 @@
 
     <aside class="app-card">
         <div class="app-card-title">
-            <h3>Estado / revision</h3>
+            <h3>Estado</h3>
         </div>
         <ul class="simple-list">
             <li>
@@ -135,12 +134,12 @@
                 <strong>@Model.Estado</strong>
             </li>
             <li>
-                <span>Fecha de revision</span>
-                <strong>@(Model.FechaRevision.HasValue ? Model.FechaRevision.Value.ToString("dd/MM/yyyy HH:mm") : "Sin revisar")</strong>
+                <span>Fecha de aprobacion</span>
+                <strong>@(Model.FechaRevision.HasValue ? Model.FechaRevision.Value.ToString("dd/MM/yyyy HH:mm") : "Sin registro")</strong>
             </li>
             <li>
-                <span>Observacion administracion</span>
-                <strong>@(string.IsNullOrWhiteSpace(Model.ObservacionAdministracion) ? "Pendiente de validar." : Model.ObservacionAdministracion)</strong>
+                <span>Observacion</span>
+                <strong>@(string.IsNullOrWhiteSpace(Model.ObservacionAdministracion) ? "Sin observaciones." : Model.ObservacionAdministracion)</strong>
             </li>
         </ul>
     </aside>
@@ -174,33 +173,6 @@
         </div>
     </div>
 </section>
-
-@if (puedeRevisar)
-{
-    <section class="app-card section-card">
-        <div class="app-card-title">
-            <h3>Revision administrativa</h3>
-            <span class="status-badge warning">Pendiente</span>
-        </div>
-        <form method="post">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="PagoId" value="@Model.Id" />
-            <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
-
-            <div class="form-grid">
-                <div class="form-span-2">
-                    <label class="form-label" for="ObservacionAdministracion">Observacion administrativa</label>
-                    <textarea class="form-control" id="ObservacionAdministracion" name="ObservacionAdministracion" rows="4" placeholder="Detalle opcional para propietario o registro interno"></textarea>
-                </div>
-            </div>
-
-            <div class="form-actions">
-                <button class="btn btn-primary" type="submit" formaction="@Url.Action("Aprobar", "Pagos")">Aprobar pago</button>
-                <button class="btn btn-outline-danger" type="submit" formaction="@Url.Action("Rechazar", "Pagos")">Rechazar pago</button>
-            </div>
-        </form>
-    </section>
-}
 
 <section class="app-card section-card">
     <div class="button-group">

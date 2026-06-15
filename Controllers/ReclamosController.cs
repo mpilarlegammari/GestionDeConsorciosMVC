@@ -16,6 +16,11 @@ namespace GestionDeConsorciosMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(EstadoReclamo? estado, int? consorcioId, string? busqueda)
         {
+            if (IsPropietario())
+            {
+                return RedirectToAction(nameof(MisReclamos));
+            }
+
             var model = await _reclamosService.GetAdminIndexAsync(estado, consorcioId, busqueda);
             return View(model);
         }
@@ -25,7 +30,7 @@ namespace GestionDeConsorciosMVC.Controllers
         {
             var email = HttpContext.Session.GetString("UserEmail");
 
-            if (string.IsNullOrWhiteSpace(email))
+            if (!IsPropietario() || string.IsNullOrWhiteSpace(email))
             {
                 return RedirectToAction("Login", "Auth");
             }
@@ -46,7 +51,7 @@ namespace GestionDeConsorciosMVC.Controllers
         {
             var email = HttpContext.Session.GetString("UserEmail");
 
-            if (string.IsNullOrWhiteSpace(email))
+            if (!IsPropietario() || string.IsNullOrWhiteSpace(email))
             {
                 return RedirectToAction("Login", "Auth");
             }
@@ -81,7 +86,7 @@ namespace GestionDeConsorciosMVC.Controllers
         {
             var email = HttpContext.Session.GetString("UserEmail");
 
-            if (string.IsNullOrWhiteSpace(email))
+            if (!IsPropietario() || string.IsNullOrWhiteSpace(email))
             {
                 return RedirectToAction("Login", "Auth");
             }
@@ -129,6 +134,11 @@ namespace GestionDeConsorciosMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CambiarEstado(CambiarEstadoReclamoViewModel model)
         {
+            if (IsPropietario())
+            {
+                return RedirectToAction(nameof(MisReclamos));
+            }
+
             if (!Enum.IsDefined(typeof(EstadoReclamo), model.Estado))
             {
                 ModelState.AddModelError(nameof(model.Estado), "Debe seleccionar un estado valido.");
@@ -176,6 +186,12 @@ namespace GestionDeConsorciosMVC.Controllers
             return esPropietario
                 ? Url.Action(nameof(MisReclamos), "Reclamos") ?? "/Reclamos/MisReclamos"
                 : Url.Action(nameof(Index), "Reclamos") ?? "/Reclamos";
+        }
+
+        private bool IsPropietario()
+        {
+            return HttpContext.Session.GetString("UserRole")
+                ?.Equals("Propietario", StringComparison.OrdinalIgnoreCase) == true;
         }
     }
 }

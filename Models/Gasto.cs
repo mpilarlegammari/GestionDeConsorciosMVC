@@ -10,7 +10,7 @@ public class Gasto
     public DateTime Fecha { get; set; }
     public decimal Monto { get; set; }
     public string Concepto { get; set; } = string.Empty;
-    public string Categoria { get; set; } = string.Empty;
+    public CategoriaGasto Categoria { get; set; } = CategoriaGasto.Otros;
     public string? ArchivoFacturaPath { get; set; }
 
     public string? Descripcion { get; set; }

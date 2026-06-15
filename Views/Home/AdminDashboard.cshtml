@@ -1,14 +1,23 @@
+@model GestionDeConsorciosMVC.ViewModels.AdminDashboardViewModel
 @{
     ViewData["Title"] = "Panel Administrador";
     ViewData["Role"] = "Administrador";
+
+    string Money(decimal value) => value.ToString("C0", new System.Globalization.CultureInfo("es-AR"));
+    string ConsorcioBadge(EstadoConsorcio estado) => estado switch
+    {
+        EstadoConsorcio.Activo => "success",
+        EstadoConsorcio.Inactivo => "danger",
+        _ => "warning"
+    };
 }
 
 <section class="page-intro">
     <div>
         <h2>Panel Administrador</h2>
-        <p>Resumen general de consorcios, expensas, pagos y reclamos.</p>
+        <p>Resumen general con informacion real de consorcios, expensas, pagos y reclamos.</p>
     </div>
-    <span class="status-badge">Datos mock</span>
+    <span class="status-badge success">Datos reales</span>
 </section>
 
 <section class="quick-actions" aria-label="Accesos rapidos administrador">
@@ -16,28 +25,28 @@
         <span class="quick-action-icon">C</span>
         <span>
             <strong>Crear consorcio</strong>
-            <span>Alta de edificio o complejo</span>
+            <span>@Model.TotalConsorcios consorcios cargados</span>
         </span>
     </a>
     <a class="quick-action" href="/Gastos/Create">
         <span class="quick-action-icon">G</span>
         <span>
             <strong>Registrar gasto</strong>
-            <span>Cargar gastos del periodo</span>
+            <span>@Model.TotalUnidadesFuncionales unidades administradas</span>
         </span>
     </a>
     <a class="quick-action" href="/Expensas/Generar">
         <span class="quick-action-icon">E</span>
         <span>
             <strong>Generar expensas</strong>
-            <span>Preparar liquidacion mensual</span>
+            <span>@Model.ExpensasPendientes expensas pendientes</span>
         </span>
     </a>
     <a class="quick-action" href="/Comunicados/Create">
         <span class="quick-action-icon">M</span>
         <span>
             <strong>Nuevo comunicado</strong>
-            <span>Informar novedades</span>
+            <span>@Model.ComunicadosImportantes importantes</span>
         </span>
     </a>
 </section>
@@ -46,26 +55,24 @@
     <article class="app-card">
         <div class="app-card-title">
             <h3>Actividad reciente</h3>
-            <span class="status-badge">Mock</span>
+            <span class="status-badge">@Model.ActividadReciente.Count eventos</span>
         </div>
-        <ul class="activity-list">
-            <li>
-                <span class="activity-dot success"></span>
-                <span>Se registro un nuevo gasto de mantenimiento.</span>
-            </li>
-            <li>
-                <span class="activity-dot warning"></span>
-                <span>Se informo un pago pendiente de revision.</span>
-            </li>
-            <li>
-                <span class="activity-dot"></span>
-                <span>Se creo un comunicado para el Consorcio Las Heras.</span>
-            </li>
-            <li>
-                <span class="activity-dot danger"></span>
-                <span>Se abrio un nuevo reclamo.</span>
-            </li>
-        </ul>
+        @if (Model.ActividadReciente.Any())
+        {
+            <ul class="activity-list">
+                @foreach (var item in Model.ActividadReciente)
+                {
+                    <li>
+                        <span class="activity-dot @item.Tone"></span>
+                        <span>@item.Tipo: @item.Detalle (@item.Estado)</span>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <partial name="_EmptyState" model="@("Todavia no hay actividad registrada.")" />
+        }
     </article>
 
     <aside class="app-card">
@@ -74,16 +81,20 @@
         </div>
         <ul class="simple-list">
             <li>
-                <span>Pagos para revisar</span>
-                <strong>12</strong>
+                <span>Expensas pendientes</span>
+                <strong>@Money(Model.MontoExpensasPendientes)</strong>
             </li>
             <li>
-                <span>Comunicados activos</span>
-                <strong>5</strong>
+                <span>Pagos pendientes previos</span>
+                <strong>@Model.PagosPendientesRevision</strong>
+            </li>
+            <li>
+                <span>Reclamos abiertos</span>
+                <strong>@Model.ReclamosAbiertos</strong>
             </li>
             <li>
                 <span>Reservas pendientes</span>
-                <strong>3</strong>
+                <strong>@Model.ReservasPendientes</strong>
             </li>
         </ul>
     </aside>
@@ -92,49 +103,40 @@
 <section class="app-card section-card">
     <div class="app-card-title">
         <h3>Consorcios recientes</h3>
-        <span class="status-badge">Vista previa</span>
+        <span class="status-badge">@Model.ConsorciosRecientes.Count visibles</span>
     </div>
-    <div class="table-responsive">
-        <table class="table table-clean">
-            <thead>
-                <tr>
-                    <th>Consorcio</th>
-                    <th>Direccion</th>
-                    <th>Cantidad UF</th>
-                    <th>Estado</th>
-                    <th>Accion</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Consorcio Las Heras</td>
-                    <td>Av. Las Heras 2450</td>
-                    <td>28</td>
-                    <td><span class="status-badge success">Activo</span></td>
-                    <td><a href="/Consorcios" class="table-action">Ver</a></td>
-                </tr>
-                <tr>
-                    <td>Edificio San Martin</td>
-                    <td>San Martin 1180</td>
-                    <td>20</td>
-                    <td><span class="status-badge success">Activo</span></td>
-                    <td><a href="/Consorcios" class="table-action">Ver</a></td>
-                </tr>
-                <tr>
-                    <td>Complejo Los Robles</td>
-                    <td>Mitre 630</td>
-                    <td>24</td>
-                    <td><span class="status-badge warning">Revision</span></td>
-                    <td><a href="/Consorcios" class="table-action">Ver</a></td>
-                </tr>
-                <tr>
-                    <td>Torres del Parque</td>
-                    <td>Paraguay 410</td>
-                    <td>14</td>
-                    <td><span class="status-badge success">Activo</span></td>
-                    <td><a href="/Consorcios" class="table-action">Ver</a></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    @if (Model.ConsorciosRecientes.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-clean">
+                <thead>
+                    <tr>
+                        <th>Consorcio</th>
+                        <th>Direccion</th>
+                        <th>Cantidad UF</th>
+                        <th>Estado</th>
+                        <th>Accion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var consorcio in Model.ConsorciosRecientes)
+                    {
+                        <tr>
+                            <td>@consorcio.Nombre</td>
+                            <td>@consorcio.Direccion</td>
+                            <td>@consorcio.CantidadUnidades</td>
+                            <td><span class="status-badge @ConsorcioBadge(consorcio.Estado)">@consorcio.Estado</span></td>
+                            <td>
+                                <a asp-controller="Consorcios" asp-action="Details" asp-route-id="@consorcio.Id" class="table-action">Ver</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <partial name="_EmptyState" model="@("Todavia no hay consorcios cargados.")" />
+    }
 </section>

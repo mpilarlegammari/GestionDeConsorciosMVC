@@ -145,6 +145,22 @@ namespace GestionDeConsorciosMVC.Services
                 viewModel.UnidadFuncionalId = viewModel.UnidadesFuncionales[0].Id;
             }
 
+            if (viewModel.AmenityId == 0 && viewModel.UnidadFuncionalId > 0)
+            {
+                var selectedConsorcioId = viewModel.UnidadesFuncionales
+                    .FirstOrDefault(unidad => unidad.Id == viewModel.UnidadFuncionalId)
+                    ?.ConsorcioId;
+
+                var compatibleAmenities = viewModel.Amenities
+                    .Where(amenity => amenity.ConsorcioId == selectedConsorcioId)
+                    .ToList();
+
+                if (compatibleAmenities.Count == 1)
+                {
+                    viewModel.AmenityId = compatibleAmenities[0].Id;
+                }
+            }
+
             return viewModel;
         }
 
@@ -204,7 +220,7 @@ namespace GestionDeConsorciosMVC.Services
 
             return await _context.Reservas.AnyAsync(reserva =>
                 reserva.Id == reservaId
-                && reserva.UnidadFuncional.MailPropietario == normalizedEmail);
+                && reserva.UnidadFuncional.MailPropietario.ToLower() == normalizedEmail);
         }
 
         public async Task<List<string>> ValidateReservaAsync(ReservaCreateViewModel model, string email)
@@ -382,7 +398,7 @@ namespace GestionDeConsorciosMVC.Services
             return await _context.UnidadesFuncionales
                 .Include(unidad => unidad.Consorcio)
                 .AsNoTracking()
-                .Where(unidad => unidad.MailPropietario == normalizedEmail)
+                .Where(unidad => unidad.MailPropietario.ToLower() == normalizedEmail)
                 .OrderBy(unidad => unidad.Consorcio.Nombre)
                 .ThenBy(unidad => unidad.NumeroUF)
                 .ToListAsync();
@@ -439,7 +455,7 @@ namespace GestionDeConsorciosMVC.Services
 
         private static string Normalize(string? value)
         {
-            return (value ?? string.Empty).Trim();
+            return (value ?? string.Empty).Trim().ToLowerInvariant();
         }
 
         private static string? NormalizeOptional(string? value)

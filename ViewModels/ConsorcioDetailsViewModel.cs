@@ -18,5 +18,6 @@ namespace GestionDeConsorciosMVC.ViewModels
         public int CantidadGastos { get; set; }
         public int ReclamosAbiertos { get; set; }
         public List<UnidadFuncionalViewModel> UnidadesFuncionales { get; set; } = new();
+        public List<AmenityViewModel> Amenities { get; set; } = new();
     }
 }

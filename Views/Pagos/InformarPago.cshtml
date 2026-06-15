@@ -8,9 +8,9 @@
 <section class="page-intro">
     <div>
         <h2>Informar Pago</h2>
-        <p>Carga los datos del pago realizado para que la administracion lo revise.</p>
+        <p>Carga los datos del pago realizado para registrar la expensa como pagada.</p>
     </div>
-    <span class="status-badge warning">Pendiente de revision</span>
+    <span class="status-badge success">Aprobacion automatica</span>
 </section>
 
 @if (TempData["Error"] is string errorMessage)
@@ -99,7 +99,7 @@
                 <input class="form-control" id="BancoEntidad" name="BancoEntidad" type="text" placeholder="Ej: Banco Nacion" />
             </div>
             <div class="form-span-2">
-                <label class="form-label" for="ComprobantePago">Comprobante de pago</label>
+                <label class="form-label" for="ComprobantePago">Comprobante de pago opcional</label>
                 <input class="form-control" id="ComprobantePago" name="ComprobantePago" type="file" accept=".pdf,.jpg,.jpeg,.png" data-pago-file onchange="mostrarComprobanteSeleccionado(this)" />
                 <span class="field-validation" data-error-for="ComprobantePago"></span>
                 <div class="file-preview" data-payment-file-preview></div>
@@ -110,12 +110,12 @@
             </div>
         </div>
 
-        <p class="form-note">El pago quedara pendiente de revision hasta que la administracion lo apruebe.</p>
+        <p class="form-note">Al enviar el pago, la expensa quedara marcada como pagada automaticamente.</p>
         <div class="form-summary" data-pago-summary></div>
 
         <div class="form-actions">
             <a class="btn btn-outline-secondary" asp-controller="Pagos" asp-action="MisPagos">Cancelar</a>
-            <button class="btn btn-primary" type="submit">Enviar pago para revision</button>
+            <button class="btn btn-primary" type="submit">Enviar pago</button>
         </div>
     </section>
 </form>

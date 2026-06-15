@@ -51,9 +51,9 @@ namespace GestionDeConsorciosMVC.Services
 
 			var normalizedCategoria = Normalize(categoria);
 
-			if (!string.IsNullOrWhiteSpace(normalizedCategoria))
+			if (TryParseCategoria(normalizedCategoria, out var categoriaGasto))
 			{
-				query = query.Where(gasto => gasto.Categoria == normalizedCategoria);
+				query = query.Where(gasto => gasto.Categoria == categoriaGasto);
 			}
 
 			var normalizedBusqueda = Normalize(busqueda);
@@ -110,9 +110,9 @@ namespace GestionDeConsorciosMVC.Services
 				query = query.Where(gasto => gasto.Fecha.Year == anio.Value);
 			}
 
-			if (!string.IsNullOrWhiteSpace(normalizedCategoria))
+			if (TryParseCategoria(normalizedCategoria, out var categoriaGasto))
 			{
-				query = query.Where(gasto => gasto.Categoria == normalizedCategoria);
+				query = query.Where(gasto => gasto.Categoria == categoriaGasto);
 			}
 
 			if (!string.IsNullOrWhiteSpace(normalizedBusqueda))
@@ -168,7 +168,7 @@ namespace GestionDeConsorciosMVC.Services
 				Fecha = gasto.Fecha,
 				Monto = gasto.Monto,
 				Concepto = gasto.Concepto,
-				Categoria = gasto.Categoria,
+				Categoria = gasto.Categoria.ToString(),
 				Descripcion = gasto.Descripcion,
 				ArchivoFacturaPath = gasto.ArchivoFacturaPath
 			};
@@ -200,7 +200,7 @@ namespace GestionDeConsorciosMVC.Services
 				Fecha = model.Fecha.Date,
 				Monto = model.Monto,
 				Concepto = Normalize(model.Concepto),
-				Categoria = Normalize(model.Categoria),
+				Categoria = ParseCategoria(model.Categoria),
 				ArchivoFacturaPath = archivoFacturaPath,
 				Descripcion = NormalizeOptional(model.Descripcion)
 			};
@@ -225,7 +225,7 @@ namespace GestionDeConsorciosMVC.Services
 			gasto.Fecha = model.Fecha.Date;
 			gasto.Monto = model.Monto;
 			gasto.Concepto = Normalize(model.Concepto);
-			gasto.Categoria = Normalize(model.Categoria);
+			gasto.Categoria = ParseCategoria(model.Categoria);
 			gasto.Descripcion = NormalizeOptional(model.Descripcion);
 
 			if (!string.IsNullOrWhiteSpace(archivoFacturaPath))
@@ -262,6 +262,16 @@ namespace GestionDeConsorciosMVC.Services
 			return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
 		}
 
+		private static CategoriaGasto ParseCategoria(string? value)
+		{
+			return TryParseCategoria(value, out var categoria) ? categoria : CategoriaGasto.Otros;
+		}
+
+		private static bool TryParseCategoria(string? value, out CategoriaGasto categoria)
+		{
+			return Enum.TryParse(Normalize(value), ignoreCase: true, out categoria);
+		}
+
 		private async Task<List<UnidadFuncional>> GetOwnerUnidadesAsync(string email)
 		{
 			if (string.IsNullOrWhiteSpace(email))
@@ -285,13 +295,16 @@ namespace GestionDeConsorciosMVC.Services
 				return DefaultCategorias;
 			}
 
-			var categorias = await _context.Gastos
+			var gastos = await _context.Gastos
 				.AsNoTracking()
 				.Where(gasto => consorcioIds.Contains(gasto.ConsorcioId))
-				.Select(gasto => gasto.Categoria)
+				.ToListAsync();
+
+			var categorias = gastos
+				.Select(gasto => gasto.Categoria.ToString())
 				.Distinct()
 				.OrderBy(categoria => categoria)
-				.ToListAsync();
+				.ToList();
 
 			return categorias.Count == 0 ? DefaultCategorias : categorias;
 		}
