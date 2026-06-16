@@ -25,6 +25,7 @@ namespace GestionDeConsorciosMVC.Controllers
         public async Task<IActionResult> Login(string email, string password, string role)
         {
             email = email?.Trim() ?? string.Empty;
+            password = password?.Trim() ?? string.Empty;
             role = role?.Trim() ?? string.Empty;
 
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(role))
@@ -33,31 +34,44 @@ namespace GestionDeConsorciosMVC.Controllers
                 return View();
             }
 
-            if (role.Equals("Propietario", StringComparison.OrdinalIgnoreCase))
+            if (!Enum.TryParse<RolUsuario>(role, ignoreCase: true, out var rolUsuario))
             {
-                var usuario = await _context.Usuarios
-                    .FirstOrDefaultAsync(u => u.Email == email && u.Rol == RolUsuario.Propietario && u.Activo);
+                ViewBag.Error = "Debe seleccionar un rol valido.";
+                return View();
+            }
 
-                if (usuario is null)
-                {
-                    ViewBag.Error = "No existe un propietario activo con ese email.";
-                    return View();
-                }
+            // Entrega academica: se compara texto plano. En produccion debe usarse hash real y verificacion segura.
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u =>
+                    u.Email == email &&
+                    u.PasswordHash == password &&
+                    u.Rol == rolUsuario &&
+                    u.Activo);
 
+            if (usuario is null)
+            {
+                ViewBag.Error = "Email, contrasena o rol invalidos, o el usuario esta inactivo.";
+                return View();
+            }
+
+            if (rolUsuario == RolUsuario.Propietario)
+            {
                 var tieneUnidadFuncional = await _context.UnidadesFuncionales
-                    .AnyAsync(unidad => unidad.MailPropietario.ToLower() == email.ToLower());
+                    .AnyAsync(unidad =>
+                        unidad.MailPropietario != null &&
+                        unidad.MailPropietario.ToLower() == usuario.Email.ToLower());
 
                 if (!tieneUnidadFuncional)
                 {
-                    ViewBag.Error = "El propietario no tiene unidades funcionales asociadas a ese email.";
+                    ViewBag.Error = "El propietario no tiene una unidad funcional asociada.";
                     return View();
                 }
             }
 
-            HttpContext.Session.SetString("UserEmail", email);
-            HttpContext.Session.SetString("UserRole", role);
+            HttpContext.Session.SetString("UserEmail", usuario.Email);
+            HttpContext.Session.SetString("UserRole", rolUsuario.ToString());
 
-            return role.Equals("Propietario", StringComparison.OrdinalIgnoreCase)
+            return rolUsuario == RolUsuario.Propietario
                 ? RedirectToAction("PropietarioDashboard", "Home")
                 : RedirectToAction("AdminDashboard", "Home");
         }

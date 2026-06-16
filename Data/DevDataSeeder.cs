@@ -1,13 +1,50 @@
 using GestionDeConsorciosMVC.Context;
+using GestionDeConsorciosMVC.Services;
 using Microsoft.EntityFrameworkCore;
 
 public static class DevDataSeeder
 {
+    public static async Task EnsureAdminUserAsync(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<GestionDeConsorciosContext>();
+
+        var admin = await context.Usuarios
+            .FirstOrDefaultAsync(usuario => usuario.Email == "admin@admin.com");
+
+        if (admin is null)
+        {
+            context.Usuarios.Add(new Usuario
+            {
+                Nombre = "Administrador",
+                Apellido = "Demo",
+                Email = "admin@admin.com",
+                PasswordHash = "admin",
+                Rol = RolUsuario.Administrador,
+                Activo = true
+            });
+        }
+        else
+        {
+            admin.Rol = RolUsuario.Administrador;
+            admin.Activo = true;
+
+            if (string.IsNullOrWhiteSpace(admin.PasswordHash) ||
+                !string.Equals(admin.PasswordHash, "admin", StringComparison.Ordinal))
+            {
+                admin.PasswordHash = "admin";
+            }
+        }
+
+        await context.SaveChangesAsync();
+    }
+
     public static async Task SeedFirstConsorcioOwnersAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<GestionDeConsorciosContext>();
         var environment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+        var usuariosService = scope.ServiceProvider.GetRequiredService<IUsuariosService>();
 
         var consorcio = await context.Consorcios
             .Include(c => c.UnidadesFuncionales)
@@ -26,10 +63,10 @@ public static class DevDataSeeder
             .Take(2)
             .ToList();
 
+        await usuariosService.EnsurePropietarioUsersAsync(unidades);
+
         foreach (var unidad in unidades)
         {
-            await EnsureUsuarioAsync(context, unidad);
-
             var expensa = unidad.Expensas
                 .OrderByDescending(e => e.FechaEmision)
                 .FirstOrDefault();
@@ -45,30 +82,6 @@ public static class DevDataSeeder
         }
 
         await context.SaveChangesAsync();
-    }
-
-    private static async Task EnsureUsuarioAsync(GestionDeConsorciosContext context, UnidadFuncional unidad)
-    {
-        var email = unidad.MailPropietario.Trim();
-        var exists = await context.Usuarios.AnyAsync(u => u.Email == email);
-
-        if (exists)
-        {
-            return;
-        }
-
-        var partesNombre = (unidad.NombrePropietario ?? string.Empty)
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-        context.Usuarios.Add(new Usuario
-        {
-            Nombre = partesNombre.FirstOrDefault() ?? $"Propietario UF {unidad.NumeroUF}",
-            Apellido = partesNombre.Length > 1 ? string.Join(' ', partesNombre.Skip(1)) : unidad.NumeroUF,
-            Email = email,
-            PasswordHash = "dev-seed-password",
-            Rol = RolUsuario.Propietario,
-            Activo = true
-        });
     }
 
     private static Expensa CreateSeedExpensa(UnidadFuncional unidad)

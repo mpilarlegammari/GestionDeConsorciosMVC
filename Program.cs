@@ -13,6 +13,7 @@ builder.Services.AddScoped<IPagosService, PagosService>();
 builder.Services.AddScoped<IComunicadosService, ComunicadosService>();
 builder.Services.AddScoped<IReclamosService, ReclamosService>();
 builder.Services.AddScoped<IReservasService, ReservasService>();
+builder.Services.AddScoped<IUsuariosService, UsuariosService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddDbContext<GestionDeConsorciosContext>(options =>
     options.UseSqlServer(
@@ -23,6 +24,7 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    await DevDataSeeder.EnsureAdminUserAsync(app.Services);
     await DevDataSeeder.SeedFirstConsorcioOwnersAsync(app.Services);
 }
 

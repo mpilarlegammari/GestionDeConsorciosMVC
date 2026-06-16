@@ -1,4 +1,5 @@
 using GestionDeConsorciosMVC.Context;
+using GestionDeConsorciosMVC.Services;
 using GestionDeConsorciosMVC.ViewModels;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
@@ -9,10 +10,12 @@ namespace GestionDeConsorciosMVC.Controllers
     public class ConsorciosController : Controller
     {
         private readonly GestionDeConsorciosContext _context;
+        private readonly IUsuariosService _usuariosService;
 
-        public ConsorciosController(GestionDeConsorciosContext context)
+        public ConsorciosController(GestionDeConsorciosContext context, IUsuariosService usuariosService)
         {
             _context = context;
+            _usuariosService = usuariosService;
         }
 
         [HttpGet]
@@ -90,6 +93,7 @@ namespace GestionDeConsorciosMVC.Controllers
 
             _context.Consorcios.Add(consorcio);
             await _context.SaveChangesAsync();
+            await _usuariosService.EnsurePropietarioUsersAsync(consorcio.UnidadesFuncionales);
 
             TempData["Success"] = "Consorcio creado correctamente.";
             return RedirectToAction(nameof(Details), new { id = consorcio.Id });
@@ -194,6 +198,7 @@ namespace GestionDeConsorciosMVC.Controllers
             }
 
             await _context.SaveChangesAsync();
+            await _usuariosService.EnsurePropietarioUsersAsync(consorcio.UnidadesFuncionales);
 
             TempData["Success"] = "Consorcio actualizado correctamente.";
             return RedirectToAction(nameof(Details), new { id = consorcio.Id });
