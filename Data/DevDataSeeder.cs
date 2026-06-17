@@ -108,7 +108,7 @@ public static class DevDataSeeder
         Expensa expensa)
     {
         var numeroOperacion = $"SEED-CONSORCIO-{unidad.ConsorcioId}-UF-{unidad.NumeroUF}-{expensa.Periodo}";
-        var exists = await context.Pagos.AnyAsync(p =>
+        var pagoExistente = await context.Pagos.FirstOrDefaultAsync(p =>
             p.NumeroOperacion == numeroOperacion
             || (p.ExpensaId == expensa.Id
                 && p.NumeroOperacion != null
@@ -116,8 +116,12 @@ public static class DevDataSeeder
                 && p.Comentarios != null
                 && p.Comentarios.Contains(unidad.MailPropietario)));
 
-        if (exists)
+        if (pagoExistente is not null)
         {
+            pagoExistente.Estado = EstadoPago.Aprobado;
+            pagoExistente.FechaRevision ??= DateTime.UtcNow;
+            pagoExistente.ObservacionAdministracion ??= "Aprobado automaticamente para datos de desarrollo.";
+            expensa.Estado = EstadoExpensa.Pagada;
             return;
         }
 
@@ -133,8 +137,12 @@ public static class DevDataSeeder
             BancoEntidad = "Banco Nacion",
             ComprobantePath = comprobantePath,
             Comentarios = $"Pago de desarrollo asociado a {unidad.MailPropietario}.",
-            Estado = EstadoPago.PendienteRevision
+            Estado = EstadoPago.Aprobado,
+            FechaRevision = DateTime.UtcNow,
+            ObservacionAdministracion = "Aprobado automaticamente para datos de desarrollo."
         });
+
+        expensa.Estado = EstadoExpensa.Pagada;
     }
 
     private static async Task<string> EnsureComprobanteAsync(

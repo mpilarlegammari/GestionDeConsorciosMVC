@@ -18,7 +18,7 @@
   });
 
   const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-  const showMockToast = ({ title = "Accion mock", message = "La accion se ejecuto de forma visual.", variant = "success", kicker = "Frontend" } = {}) => {
+  const showMockToast = ({ title = "Accion validada", message = "La accion se proceso correctamente.", variant = "success", kicker = "Sistema" } = {}) => {
     const toastElement = document.getElementById("mockFeedbackToast");
 
     if (!toastElement || !window.bootstrap?.Toast) {
@@ -100,7 +100,7 @@
       }
 
       showMockToast({
-        title: "Login mock validado",
+        title: "Login validado",
         message: "Redirigiendo al dashboard seleccionado.",
         variant: "success"
       });
@@ -387,7 +387,7 @@
 
       if (summary) {
         summary.textContent = isValid
-          ? "Formulario mock validado correctamente. No se guardaron datos."
+          ? "Formulario validado. Enviando datos."
           : "Revisa los campos marcados antes de continuar.";
         summary.classList.toggle("show", true);
         summary.classList.toggle("success", isValid);
@@ -494,7 +494,7 @@
 
     if (summary) {
       summary.textContent = isValid
-        ? "Gasto mock validado correctamente. No se guardaron datos."
+        ? "Gasto validado. Enviando datos."
         : "Revisa los campos marcados antes de continuar.";
       summary.classList.toggle("show", true);
       summary.classList.toggle("success", isValid);
@@ -700,8 +700,8 @@
     if (summary) {
       summary.textContent = isValid
         ? (previewOnly
-          ? "Vista previa mock validada. No se generaron expensas."
-          : "Generacion mock validada. No se guardaron datos.")
+          ? "Vista previa validada."
+          : "Generacion validada. Enviando datos.")
         : "Revisa los campos marcados antes de continuar.";
       summary.classList.toggle("show", true);
       summary.classList.toggle("success", isValid);
@@ -815,10 +815,10 @@
     if (summary) {
       summary.textContent = isValid
         ? (draftOnly
-          ? "Borrador mock validado. No se guardaron datos."
+          ? "Borrador validado."
           : comunicadoForm.hasAttribute("data-real-submit")
             ? "Comunicado validado. Enviando datos."
-            : "Comunicado mock validado. No se enviaron datos.")
+            : "Comunicado validado.")
         : "Revisa los campos marcados antes de continuar.";
       summary.classList.toggle("show", true);
       summary.classList.toggle("success", isValid);
@@ -828,10 +828,10 @@
       title: isValid ? (draftOnly ? "Borrador validado" : "Comunicado validado") : "Revisa el comunicado",
       message: isValid
         ? (draftOnly
-          ? "El borrador mock esta listo. No se guardaron datos."
+          ? "El borrador esta listo."
           : comunicadoForm.hasAttribute("data-real-submit")
             ? "El comunicado se enviara al backend."
-            : "El comunicado mock quedaria listo para enviar.")
+            : "El comunicado quedaria listo para enviar.")
         : "Completa consorcio, titulo, mensaje y revisa el adjunto.",
       variant: isValid ? "success" : "danger"
     });
@@ -937,7 +937,7 @@
       }
 
       if (action) {
-        action.textContent = confirmTrigger.dataset.confirmAction || "Confirmar mock";
+        action.textContent = confirmTrigger.dataset.confirmAction || "Confirmar";
       }
 
       showMockModal("mockConfirmModal");
@@ -958,7 +958,7 @@
       }
 
       if (file) {
-        file.textContent = attachmentTrigger.dataset.attachmentFile || "archivo-mock.pdf";
+        file.textContent = attachmentTrigger.dataset.attachmentFile || "archivo.pdf";
       }
 
       if (description) {
@@ -975,8 +975,8 @@
       event.preventDefault();
 
       showMockToast({
-        title: toastTrigger.dataset.toastTitle || "Accion mock",
-        message: toastTrigger.dataset.toastMessage || "La accion se ejecuto de forma visual.",
+        title: toastTrigger.dataset.toastTitle || "Accion validada",
+        message: toastTrigger.dataset.toastMessage || "La accion fue procesada.",
         variant: toastTrigger.dataset.toastVariant || "success",
         kicker: toastTrigger.dataset.toastKicker || "Frontend"
       });

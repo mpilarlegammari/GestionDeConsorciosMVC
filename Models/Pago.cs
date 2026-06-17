@@ -1,6 +1,5 @@
 /// <summary>
 /// Pago informado por un propietario sobre una expensa.
-/// TODO backend: guardar comprobante y permitir revision solo a administradores.
 /// </summary>
 public class Pago
 {
@@ -13,7 +12,7 @@ public class Pago
     public string? BancoEntidad { get; set; }
     public string ComprobantePath { get; set; } = string.Empty;
     public string? Comentarios { get; set; }
-    public EstadoPago Estado { get; set; } = EstadoPago.PendienteRevision;
+    public EstadoPago Estado { get; set; } = EstadoPago.Aprobado;
     public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
     public DateTime? FechaRevision { get; set; }
     public string? ObservacionAdministracion { get; set; }

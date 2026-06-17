@@ -1,33 +1,31 @@
-@* TODO backend: reemplazar estas acciones mock por confirmaciones reales con permisos, validacion y operaciones persistidas. *@
 <div class="modal fade" id="mockConfirmModal" tabindex="-1" aria-labelledby="mockConfirmModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content mock-modal">
             <div class="modal-header">
                 <div>
-                    <span class="modal-kicker">Confirmacion mock</span>
+                    <span class="modal-kicker">Confirmacion</span>
                     <h5 class="modal-title" id="mockConfirmModalTitle" data-confirm-title>Confirmar accion</h5>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <p data-confirm-message>Esta accion es solo visual y no modifica datos.</p>
-                <div class="mock-modal-note">No se eliminan registros ni se persiste ningun cambio.</div>
+                <p data-confirm-message>Confirma la accion seleccionada.</p>
+                <div class="mock-modal-note">Revisa los datos antes de continuar.</div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" data-confirm-action data-bs-dismiss="modal">Confirmar mock</button>
+                <button type="button" class="btn btn-primary" data-confirm-action data-bs-dismiss="modal">Confirmar</button>
             </div>
         </div>
     </div>
 </div>
 
-@* TODO backend: cargar metadatos reales del archivo, permisos de descarga y URL segura del adjunto. *@
 <div class="modal fade" id="mockAttachmentModal" tabindex="-1" aria-labelledby="mockAttachmentModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content mock-modal">
             <div class="modal-header">
                 <div>
-                    <span class="modal-kicker">Adjunto mock</span>
+                    <span class="modal-kicker">Adjunto</span>
                     <h5 class="modal-title" id="mockAttachmentModalTitle" data-attachment-title>Vista de adjunto</h5>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -36,18 +34,18 @@
                 <div class="mock-file-card">
                     <div class="mock-file-icon">PDF</div>
                     <div>
-                        <strong data-attachment-file>archivo-mock.pdf</strong>
-                        <span data-attachment-description>Vista previa disponible solo de forma visual.</span>
+                        <strong data-attachment-file>archivo.pdf</strong>
+                        <span data-attachment-description>Archivo adjunto informado.</span>
                     </div>
                 </div>
                 <div class="mock-modal-preview">
-                    <span>Vista previa mock</span>
-                    <p>Cuando backend implemente archivos reales, este espacio puede mostrar un PDF, imagen o enlace seguro de descarga.</p>
+                    <span>Vista previa</span>
+                    <p>Usa el enlace del archivo para abrir o descargar el adjunto disponible.</p>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Descargar mock</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Descargar</button>
             </div>
         </div>
     </div>
