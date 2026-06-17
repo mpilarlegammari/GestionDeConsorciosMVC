@@ -22,21 +22,14 @@ namespace GestionDeConsorciosMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string email, string password, string role)
+        public async Task<IActionResult> Login(string email, string password)
         {
             email = email?.Trim() ?? string.Empty;
             password = password?.Trim() ?? string.Empty;
-            role = role?.Trim() ?? string.Empty;
 
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(role))
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
-                ViewBag.Error = "Completa email, contrasena y rol para continuar.";
-                return View();
-            }
-
-            if (!Enum.TryParse<RolUsuario>(role, ignoreCase: true, out var rolUsuario))
-            {
-                ViewBag.Error = "Debe seleccionar un rol valido.";
+                ViewBag.Error = "Completa email y contrasena para continuar.";
                 return View();
             }
 
@@ -45,16 +38,15 @@ namespace GestionDeConsorciosMVC.Controllers
                 .FirstOrDefaultAsync(u =>
                     u.Email == email &&
                     u.PasswordHash == password &&
-                    u.Rol == rolUsuario &&
                     u.Activo);
 
             if (usuario is null)
             {
-                ViewBag.Error = "Email, contrasena o rol invalidos, o el usuario esta inactivo.";
+                ViewBag.Error = "Email o contrasena invalidos, o el usuario esta inactivo.";
                 return View();
             }
 
-            if (rolUsuario == RolUsuario.Propietario)
+            if (usuario.Rol == RolUsuario.Propietario)
             {
                 var tieneUnidadFuncional = await _context.UnidadesFuncionales
                     .AnyAsync(unidad =>
@@ -69,9 +61,9 @@ namespace GestionDeConsorciosMVC.Controllers
             }
 
             HttpContext.Session.SetString("UserEmail", usuario.Email);
-            HttpContext.Session.SetString("UserRole", rolUsuario.ToString());
+            HttpContext.Session.SetString("UserRole", usuario.Rol.ToString());
 
-            return rolUsuario == RolUsuario.Propietario
+            return usuario.Rol == RolUsuario.Propietario
                 ? RedirectToAction("PropietarioDashboard", "Home")
                 : RedirectToAction("AdminDashboard", "Home");
         }

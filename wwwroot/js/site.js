@@ -53,8 +53,7 @@
   if (loginForm) {
     const fields = {
       email: loginForm.querySelector("[name='email']"),
-      password: loginForm.querySelector("[name='password']"),
-      role: loginForm.querySelector("[name='role']")
+      password: loginForm.querySelector("[name='password']")
     };
 
     const setLoginError = (name, message) => {
@@ -73,12 +72,10 @@
 
       const email = fields.email?.value.trim() ?? "";
       const password = fields.password?.value.trim() ?? "";
-      const role = fields.role?.value ?? "";
       let isValid = true;
 
       setLoginError("email", "");
       setLoginError("password", "");
-      setLoginError("role", "");
 
       if (!email) {
         setLoginError("email", "El email es obligatorio.");
@@ -93,15 +90,10 @@
         isValid = false;
       }
 
-      if (!role) {
-        setLoginError("role", "Selecciona un rol.");
-        isValid = false;
-      }
-
       if (!isValid) {
         showMockToast({
           title: "Revisa el login",
-          message: "Completa email, contrasena y rol para continuar.",
+          message: "Completa email y contrasena para continuar.",
           variant: "danger"
         });
         return;
@@ -118,9 +110,7 @@
         return;
       }
 
-      window.location.href = role === "Propietario"
-        ? "/Home/PropietarioDashboard"
-        : "/Home/AdminDashboard";
+      window.location.href = "/Home/Index";
     });
   }
 

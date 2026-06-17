@@ -67,21 +67,11 @@
                         <span class="field-validation" data-error-for="password"></span>
                     </div>
 
-                    <div>
-                        <label class="form-label" for="role">Rol</label>
-                        <select class="form-select" id="role" name="role" required>
-                            <option value="">Seleccionar rol</option>
-                            <option value="Administrador">Administrador</option>
-                            <option value="Propietario">Propietario</option>
-                        </select>
-                        <span class="field-validation" data-error-for="role"></span>
-                    </div>
-
                     <button class="btn btn-primary w-100" type="submit">Ingresar al panel</button>
                 </form>
 
                 <div class="auth-helper">
-                    <span>El rol propietario valida email activo y UF asociada.</span>
+                    <span>El perfil se toma del usuario activo registrado.</span>
                     <a asp-area="" asp-controller="Home" asp-action="Index">Volver al inicio</a>
                 </div>
             </div>
